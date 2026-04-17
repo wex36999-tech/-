@@ -101,12 +101,29 @@ const Footer = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white p-8 rounded-[24px] border border-border">
-            <form className="space-y-4">
-              <input type="text" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" placeholder="성함" />
-              <input type="email" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" placeholder="이메일" />
-              <textarea className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand h-32" placeholder="문의 내용"></textarea>
-              <button className="w-full py-4 bg-ink text-white font-bold rounded-xl hover:bg-brand hover:text-ink transition-all">
+          <div className="bg-white p-8 rounded-[24px] border border-border mt-10 md:mt-0">
+            <form action="https://formspree.io/f/xaqaervl" method="POST" className="space-y-4">
+              <input 
+                name="name"
+                required
+                type="text" 
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" 
+                placeholder="성함" 
+              />
+              <input 
+                name="email"
+                required
+                type="email" 
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" 
+                placeholder="이메일" 
+              />
+              <textarea 
+                name="message"
+                required
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand h-32" 
+                placeholder="문의 내용"
+              ></textarea>
+              <button type="submit" className="w-full py-4 bg-ink text-white font-bold rounded-xl hover:bg-brand hover:text-ink transition-all">
                 문의 보내기
               </button>
             </form>
