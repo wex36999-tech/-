@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "SiteConfig": {
+      "title": "Site Configuration",
+      "description": "Global settings for the website",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slogan": { "type": "string" },
+        "description": { "type": "string" },
+        "heroImage": { "type": "string", "format": "uri" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "businessNumber": { "type": "string" },
+        "representative": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "sns": {
+          "type": "object",
+          "properties": {
+            "instagram": { "type": "string" },
+            "kakao": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Product": {
+      "title": "Product",
+      "description": "A product for sale",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "string" },
+        "description": { "type": "string" },
+        "image": { "type": "string", "format": "uri" },
+        "category": { "type": "string" },
+        "options": { "type": "string" },
+        "isSoldOut": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "price", "image", "category"]
+    }
+  },
+  "firestore": {
+    "/config/site": {
+      "schema": "SiteConfig",
+      "description": "Singleton site configuration"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of products"
+    }
+  }
+}
