@@ -107,7 +107,6 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
               />
             </motion.a>
           ))}
-          {/* 관리자 페이지로 이동하는 Link 컴포넌트 유지 */}
           <Link to="/admin" className="bg-ink text-white px-5 py-2.5 rounded-full text-[12px] font-bold hover:bg-brand hover:text-ink transition-all shadow-lg shadow-black/5">
             관리자
           </Link>
@@ -235,6 +234,7 @@ const CategoryButton = React.memo(({ cat, isActive, onClick }: { cat: string, is
 const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: string, setActiveCategory: (c: string) => void }) => {
   const { config, products } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+  const [isOrderView, setIsOrderView] = React.useState(false); // 주문 화면 전환 상태 추가
 
   const filteredProducts = React.useMemo(() => {
     return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
@@ -269,7 +269,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onClick={setSelectedProduct} />
+              <ProductCard key={product.id} product={product} onClick={(p) => { setSelectedProduct(p); setIsOrderView(false); }} />
             ))}
           </div>
         </section>
@@ -277,77 +277,4 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
       <AnimatePresence>
         {selectedProduct && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm" 
-            onClick={() => setSelectedProduct(null)}
-          >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }} 
-              animate={{ scale: 1, y: 0 }} 
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row relative" 
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
-                <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
-              </div>
-              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                <div className="mb-2">
-                  <span className="text-[12px] font-bold text-brand-dark bg-brand/10 px-3 py-1 rounded-full">{selectedProduct.category}</span>
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-ink">{selectedProduct.name}</h2>
-                <p className="text-ink-muted mb-8 leading-relaxed text-[15px]">{selectedProduct.description}</p>
-                <div className="flex items-center justify-between mt-auto pt-6 border-t border-gray-100">
-                  <span className="text-2xl font-black text-ink">{selectedProduct.price}</span>
-                  {/* 사용자님의 원본 '구매 문의' 링크 유지 */}
-                  <a 
-                    href={config.sns?.kakao} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="bg-brand text-black px-8 py-4 rounded-2xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
-                  >
-                    <MessageCircle size={18} /> 구매 문의
-                  </a>
-                </div>
-              </div>
-              <button 
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-6 right-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white md:text-ink md:bg-gray-100 hover:rotate-90 transition-all"
-              >
-                <X size={20} />
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-const AppContent = () => {
-  const [activeCategory, setActiveCategory] = React.useState('전체');
-  return (
-    <div className="min-h-screen bg-white font-pretendard text-ink selection:bg-brand selection:text-ink">
-      <MetadataManager />
-      <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-      <Routes>
-        <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
-        <Route path="/admin" element={<AdminPage />} />
-      </Routes>
-      <Footer />
-    </div>
-  );
-};
-
-export default function App() {
-  return (
-    <ConfigProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </ConfigProvider>
-  );
-}
+          <motion.div
