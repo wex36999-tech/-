@@ -144,6 +144,27 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
 
 const Footer = () => {
   const { config } = useConfig();
+  
+  const handleFooterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    
+    try {
+      const response = await fetch("https://formspree.io/f/xaqaervl", {
+        method: "POST",
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (response.ok) {
+        alert("문의가 성공적으로 전달되었습니다.");
+        form.reset();
+      }
+    } catch (error) {
+      alert("전송 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <footer id="contact" className="bg-[#fafafa] border-t border-border py-20 px-10">
       <div className="max-w-7xl mx-auto">
@@ -170,7 +191,7 @@ const Footer = () => {
             </div>
           </div>
           <div className="bg-white p-8 rounded-[24px] border border-border mt-10 md:mt-0">
-            <form action="https://formspree.io/f/xaqaervl" method="POST" className="space-y-4">
+            <form onSubmit={handleFooterSubmit} className="space-y-4">
               <input name="name" required type="text" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" placeholder="성함" />
               <input name="email" required type="email" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" placeholder="이메일" />
               <textarea name="message" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand h-32" placeholder="문의 내용"></textarea>
@@ -222,10 +243,38 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const { config, products } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isOrderView, setIsOrderView] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const filteredProducts = React.useMemo(() => {
     return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
   }, [products, activeCategory]);
+
+  const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const response = await fetch("https://formspree.io/f/xaqaervl", {
+        method: "POST",
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (response.ok) {
+        alert("감사합니다. 배송안내 문자를 확인해주세요 오늘도 가성비!");
+        setSelectedProduct(null);
+        setIsOrderView(false);
+      } else {
+        alert("주문 전송에 실패했습니다. 다시 시도해주세요.");
+      }
+    } catch (error) {
+      alert("네트워크 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="pt-20">
@@ -279,12 +328,18 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                   <div className="w-full">
                     <button onClick={() => setIsOrderView(false)} className="text-gray-400 text-sm mb-4 hover:text-ink">← 뒤로가기</button>
                     <h2 className="text-2xl font-black mb-6">주문서 작성</h2>
-                    <form action="https://formspree.io/f/xaqaervl" method="POST" className="space-y-4">
+                    <form onSubmit={handleOrderSubmit} className="space-y-4">
                       <input type="hidden" name="상품명" value={selectedProduct.name} />
                       <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
                       <input name="연락처" required placeholder="연락처" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
                       <textarea name="주소" required placeholder="배송지 주소" className="w-full p-4 bg-gray-50 rounded-xl outline-none h-24"></textarea>
-                      <button type="submit" className="w-full py-4 bg-ink text-white font-bold rounded-xl hover:bg-brand hover:text-ink">주문 완료</button>
+                      <button 
+                        type="submit" 
+                        disabled={isSubmitting}
+                        className={`w-full py-4 font-bold rounded-xl transition-all ${isSubmitting ? 'bg-gray-300' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
+                      >
+                        {isSubmitting ? "전송 중..." : "주문 완료"}
+                      </button>
                     </form>
                   </div>
                 )}
