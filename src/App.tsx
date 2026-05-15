@@ -2,10 +2,9 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { motion, AnimatePresence } from 'motion/react';
-// 빌드 오류 방지를 위해 사용하지 않는 firebase 관련 import만 제거했습니다.
 import { Menu, X, MessageCircle, Settings, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
 
-// --- 관리자 페이지 임포트 (src/pages/AdminPage.tsx 파일이 반드시 있어야 합니다) ---
+// --- 관리자 페이지 임포트 ---
 import AdminPage from './pages/AdminPage';
 
 // --- Components ---
@@ -15,7 +14,6 @@ const MetadataManager = () => {
 
   React.useEffect(() => {
     document.title = `${config.name} | ${config.slogan}`;
-    
     const setMetaTag = (property: string, content: string, attr = 'property') => {
       let element = document.querySelector(`meta[${attr}="${property}"]`);
       if (!element) {
@@ -61,16 +59,12 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
       e.preventDefault();
       setActiveCategory(link.category);
       const element = document.getElementById('products');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
     } else if (link.path.startsWith('#')) {
       e.preventDefault();
       const id = link.path.replace('#', '');
       const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -81,7 +75,6 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
           <div className="w-3 h-3 bg-brand rounded-full"></div>
           {config.name}
         </Link>
-
         <div className="hidden md:flex items-center gap-10">
           {navLinks.map((link) => (
             <motion.a 
@@ -111,12 +104,10 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
             관리자
           </Link>
         </div>
-
         <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X /> : <Menu />}
         </button>
       </div>
-
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -141,11 +132,7 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
                 <ChevronRight size={20} className={`${(link.category && activeCategory === link.category) ? 'text-brand' : 'text-gray-300'} group-hover:text-brand transition-colors`} />
               </a>
             ))}
-            <Link
-              to="/admin"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 text-gray-500 py-2"
-            >
+            <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 text-gray-500 py-2">
               <Settings size={20} /> 관리자 설정
             </Link>
           </motion.div>
@@ -234,7 +221,7 @@ const CategoryButton = React.memo(({ cat, isActive, onClick }: { cat: string, is
 const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: string, setActiveCategory: (c: string) => void }) => {
   const { config, products } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
-  const [isOrderView, setIsOrderView] = React.useState(false); // 주문 화면 전환 상태 추가
+  const [isOrderView, setIsOrderView] = React.useState(false);
 
   const filteredProducts = React.useMemo(() => {
     return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
@@ -244,12 +231,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
     <div className="pt-20">
       <section className="relative h-[85vh] min-h-[600px] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
+          <img src="https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg" alt="Hero" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-10 w-full">
@@ -277,4 +259,66 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
       <AnimatePresence>
         {selectedProduct && (
-          <motion.div
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row relative" onClick={e => e.stopPropagation()}>
+              <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
+                <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
+              </div>
+              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                {!isOrderView ? (
+                  <>
+                    <div className="mb-2"><span className="text-[12px] font-bold text-brand-dark bg-brand/10 px-3 py-1 rounded-full">{selectedProduct.category}</span></div>
+                    <h2 className="text-2xl md:text-3xl font-bold mb-4 text-ink">{selectedProduct.name}</h2>
+                    <p className="text-ink-muted mb-8 text-[15px]">{selectedProduct.description}</p>
+                    <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                      <span className="text-2xl font-black text-ink">{selectedProduct.price}</span>
+                      <button onClick={() => setIsOrderView(true)} className="bg-brand text-black px-8 py-4 rounded-2xl font-bold">구매하기</button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full">
+                    <button onClick={() => setIsOrderView(false)} className="text-gray-400 text-sm mb-4 hover:text-ink">← 뒤로가기</button>
+                    <h2 className="text-2xl font-black mb-6">주문서 작성</h2>
+                    <form action="https://formspree.io/f/xaqaervl" method="POST" className="space-y-4">
+                      <input type="hidden" name="상품명" value={selectedProduct.name} />
+                      <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
+                      <input name="연락처" required placeholder="연락처" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
+                      <textarea name="주소" required placeholder="배송지 주소" className="w-full p-4 bg-gray-50 rounded-xl outline-none h-24"></textarea>
+                      <button type="submit" className="w-full py-4 bg-ink text-white font-bold rounded-xl hover:bg-brand hover:text-ink">주문 완료</button>
+                    </form>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setSelectedProduct(null)} className="absolute top-6 right-6 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><X size={20} /></button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const AppContent = () => {
+  const [activeCategory, setActiveCategory] = React.useState('전체');
+  return (
+    <div className="min-h-screen bg-white font-pretendard text-ink">
+      <MetadataManager />
+      <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+      <Routes>
+        <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
+        <Route path="/admin" element={<AdminPage />} />
+      </Routes>
+      <Footer />
+    </div>
+  );
+};
+
+export default function App() {
+  return (
+    <ConfigProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </ConfigProvider>
+  );
+}
