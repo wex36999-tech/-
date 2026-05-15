@@ -2,11 +2,10 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { db, auth } from './lib/firebase';
-import { signInAnonymously } from 'firebase/auth';
-import { Menu, X, Instagram, MessageCircle, Settings, LogIn, ChevronRight, ChevronLeft, Mail, Phone, MapPin, Plus, Trash2, Edit2, Save, User, ArrowUp, ArrowDown, Check, Ban } from 'lucide-react';
+// 사용하지 않는 firebase, auth 관련 import는 빌드 오류 방지를 위해 정리했습니다.
+import { Menu, X, MessageCircle, Settings, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
 
-// --- 페이지 컴포넌트 임포트 (관리자 페이지) ---
+// --- 페이지 컴포넌트 임포트 (src/pages/AdminPage.tsx 파일이 있는지 꼭 확인해주세요!) ---
 import AdminPage from './pages/AdminPage';
 
 // --- Components ---
@@ -44,7 +43,6 @@ const MetadataManager = () => {
 const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string, setActiveCategory: (c: string) => void }) => {
   const { config } = useConfig();
   const [isOpen, setIsOpen] = React.useState(false);
-  const location = useLocation();
 
   const navLinks = [
     { name: '메인', path: '#', category: '전체' },
@@ -199,8 +197,8 @@ const Footer = () => {
             주소: {config.address} | Copyright © {new Date().getFullYear()} ValueToday All rights reserved.
           </div>
           <div className="flex gap-4">
-            <a href={config.sns.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">IG</a>
-            <a href={config.sns.kakao} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">KT</a>
+            <a href={config.sns?.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">IG</a>
+            <a href={config.sns?.kakao} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">KT</a>
           </div>
         </div>
       </div>
@@ -276,7 +274,6 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
         </section>
       </main>
 
-      {/* --- 상세 페이지 모달 복구 완료 --- */}
       <AnimatePresence>
         {selectedProduct && (
           <motion.div 
@@ -290,7 +287,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
               initial={{ scale: 0.9, y: 20 }} 
               animate={{ scale: 1, y: 0 }} 
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row" 
+              className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:row relative" 
               onClick={e => e.stopPropagation()}
             >
               <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
@@ -305,7 +302,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                 <div className="flex items-center justify-between mt-auto pt-6 border-t border-gray-100">
                   <span className="text-2xl font-black text-ink">{selectedProduct.price}</span>
                   <a 
-                    href={config.sns.kakao} 
+                    href={config.sns?.kakao} 
                     target="_blank" 
                     rel="noreferrer" 
                     className="bg-brand text-black px-8 py-4 rounded-2xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
@@ -336,7 +333,7 @@ const AppContent = () => {
       <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       <Routes>
         <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
-        <Route path="/admin" element={<AdminPage />} /> {/* 관리자 페이지 경로 복구 */}
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
       <Footer />
     </div>
