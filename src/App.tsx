@@ -6,6 +6,9 @@ import { db, auth } from './lib/firebase';
 import { signInAnonymously } from 'firebase/auth';
 import { Menu, X, Instagram, MessageCircle, Settings, LogIn, ChevronRight, ChevronLeft, Mail, Phone, MapPin, Plus, Trash2, Edit2, Save, User, ArrowUp, ArrowDown, Check, Ban } from 'lucide-react';
 
+// --- 페이지 컴포넌트 임포트 (관리자 페이지) ---
+import AdminPage from './pages/AdminPage';
+
 // --- Components ---
 
 const MetadataManager = () => {
@@ -218,9 +221,9 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
       )}
       <div className="absolute bottom-2 right-2 bg-brand text-ink text-[10px] font-bold px-2 py-1 rounded-lg border border-white shadow-sm opacity-90">무료배송</div>
     </div>
-    <h3 className="text-[15px] font-semibold mb-1 text-ink">{product.name}</h3>
-    <div className="text-[14px] text-ink-muted mb-2 line-clamp-1">{product.description}</div>
-    <div className="text-[16px] text-brand-dark font-bold">{product.price}</div>
+    <h3 className="text-[15px] font-semibold mb-1 text-ink px-4">{product.name}</h3>
+    <div className="text-[14px] text-ink-muted mb-2 line-clamp-1 px-4">{product.description}</div>
+    <div className="text-[16px] text-brand-dark font-bold px-4 pb-4">{product.price}</div>
   </div>
 ));
 
@@ -234,15 +237,9 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const { config, products } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
 
-  const ITEMS_PER_PAGE = 8;
-  const [currentPage, setCurrentPage] = React.useState(1);
-
   const filteredProducts = React.useMemo(() => {
-    let result = activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
-    return result;
+    return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
   }, [products, activeCategory]);
-
-  const visibleProducts = filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div className="pt-20">
@@ -272,14 +269,61 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
             ))}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {visibleProducts.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} onClick={setSelectedProduct} />
             ))}
           </div>
         </section>
       </main>
-      
-      {/* 상세 모달 생략(사용자님 원본 참고하여 닫는 태그 정리) */}
+
+      {/* --- 상세 페이지 모달 복구 완료 --- */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm" 
+            onClick={() => setSelectedProduct(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row" 
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
+                <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
+              </div>
+              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                <div className="mb-2">
+                  <span className="text-[12px] font-bold text-brand-dark bg-brand/10 px-3 py-1 rounded-full">{selectedProduct.category}</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-ink">{selectedProduct.name}</h2>
+                <p className="text-ink-muted mb-8 leading-relaxed text-[15px]">{selectedProduct.description}</p>
+                <div className="flex items-center justify-between mt-auto pt-6 border-t border-gray-100">
+                  <span className="text-2xl font-black text-ink">{selectedProduct.price}</span>
+                  <a 
+                    href={config.sns.kakao} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="bg-brand text-black px-8 py-4 rounded-2xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
+                  >
+                    <MessageCircle size={18} /> 구매 문의
+                  </a>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedProduct(null)}
+                className="absolute top-6 right-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white md:text-ink md:bg-gray-100 hover:rotate-90 transition-all"
+              >
+                <X size={20} />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -292,6 +336,7 @@ const AppContent = () => {
       <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       <Routes>
         <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
+        <Route path="/admin" element={<AdminPage />} /> {/* 관리자 페이지 경로 복구 */}
       </Routes>
       <Footer />
     </div>
