@@ -2,10 +2,10 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { motion, AnimatePresence } from 'motion/react';
-// 사용하지 않는 firebase, auth 관련 import는 빌드 오류 방지를 위해 정리했습니다.
+// 빌드 오류 방지를 위해 사용하지 않는 firebase 관련 import만 제거했습니다.
 import { Menu, X, MessageCircle, Settings, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
 
-// --- 페이지 컴포넌트 임포트 (src/pages/AdminPage.tsx 파일이 있는지 꼭 확인해주세요!) ---
+// --- 관리자 페이지 임포트 (src/pages/AdminPage.tsx 파일이 반드시 있어야 합니다) ---
 import AdminPage from './pages/AdminPage';
 
 // --- Components ---
@@ -107,6 +107,7 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
               />
             </motion.a>
           ))}
+          {/* 관리자 페이지로 이동하는 Link 컴포넌트 유지 */}
           <Link to="/admin" className="bg-ink text-white px-5 py-2.5 rounded-full text-[12px] font-bold hover:bg-brand hover:text-ink transition-all shadow-lg shadow-black/5">
             관리자
           </Link>
@@ -287,7 +288,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
               initial={{ scale: 0.9, y: 20 }} 
               animate={{ scale: 1, y: 0 }} 
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:row relative" 
+              className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row relative" 
               onClick={e => e.stopPropagation()}
             >
               <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
@@ -301,6 +302,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                 <p className="text-ink-muted mb-8 leading-relaxed text-[15px]">{selectedProduct.description}</p>
                 <div className="flex items-center justify-between mt-auto pt-6 border-t border-gray-100">
                   <span className="text-2xl font-black text-ink">{selectedProduct.price}</span>
+                  {/* 사용자님의 원본 '구매 문의' 링크 유지 */}
                   <a 
                     href={config.sns?.kakao} 
                     target="_blank" 
