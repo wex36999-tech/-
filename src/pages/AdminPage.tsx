@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Package, Settings } from 'lucide-react'; // 👈 Settings를 추가했습니다!
+import { Plus, Trash2, Package, Settings, Lock } from 'lucide-react'; // 👈 Lock 아이콘 안전하게 추가!
+
+const ADMIN_PASSWORD = '1234'; // 👈 사장님 전용 관리자 비밀번호
 
 const AdminPage = () => {
-  const { products, updateProducts } = useConfig(); // 👈 사용하지 않는 config, updateConfig 정리
+  const { products, updateProducts } = useConfig();
+  const [passwordInput, setPasswordInput] = useState('');
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
@@ -11,6 +16,17 @@ const AdminPage = () => {
     image: '',
     category: '농산물'
   });
+
+  // 비밀번호 검사 함수
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsAuthorized(true);
+    } else {
+      alert('비밀번호가 틀렸습니다!');
+      setPasswordInput('');
+    }
+  };
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +44,46 @@ const AdminPage = () => {
     }
   };
 
+  // 1. 비밀번호 입력 전 화면 (자물쇠 로그인 창)
+  if (!isAuthorized) {
+    return (
+      <div className="pt-40 pb-20 px-6 max-w-md mx-auto flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="bg-white p-8 rounded-[32px] border border-border shadow-xl w-full text-center">
+          <div className="w-16 h-16 bg-brand/10 text-brand-dark rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock size={28} />
+          </div>
+          <h1 className="text-2xl font-black mb-2">관리자 인증</h1>
+          <p className="text-gray-400 text-sm mb-8">안전한 상점 관리를 위해 비밀번호를 입력해주세요.</p>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input 
+              type="password" 
+              value={passwordInput} 
+              onChange={e => setPasswordInput(e.target.value)} 
+              className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand text-center text-lg tracking-widest" 
+              placeholder="••••"
+              required 
+            />
+            <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-2xl hover:bg-brand hover:text-ink transition-all shadow-md">
+              로그인
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. 비밀번호 인증 후 보여주는 진짜 관리자 화면
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-      <div className="flex items-center gap-3 mb-10">
-        <Settings className="text-brand-dark" />
-        <h1 className="text-3xl font-black">관리자 모드</h1>
+      <div className="flex items-center justify-between mb-10 pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <Settings className="text-brand-dark" />
+          <h1 className="text-3xl font-black">오늘도가성비 관리자</h1>
+        </div>
+        <button onClick={() => setIsAuthorized(false)} className="text-xs font-bold text-gray-400 hover:text-red-500 border border-gray-200 px-4 py-2 rounded-xl bg-white transition-all">
+          로그아웃
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
