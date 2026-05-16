@@ -245,9 +245,28 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const [isOrderView, setIsOrderView] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  // 🔍 사장님 요청: 8개씩 끊어 보여주기 위한 페이지 상태 추가
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const productsPerPage = 8;
+
+  // 카테고리가 바뀌면 페이지 번호를 다시 1페이지로 강제 리셋해 줍니다.
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory]);
+
   const filteredProducts = React.useMemo(() => {
     return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
   }, [products, activeCategory]);
+
+  // 🔍 현재 페이지에 속한 8개의 상품만 계산해서 추출하는 코드
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = React.useMemo(() => {
+    return filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  }, [filteredProducts, indexOfFirstProduct, indexOfLastProduct]);
+
+  // 총 몇 페이지가 필요한지 계산 (ex: 상품 10개면 2페이지)
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -299,21 +318,60 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
             ))}
           </div>
 
-          {/* 🔍 사장님 요청 1: 상품목록 문구 추가 */}
           <h2 className="text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
 
+          {/* 🔍 기존의 filteredProducts 대신 8개로 쪼갠 currentProducts를 뿌려줍니다 */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
+            {currentProducts.map((product) => (
               <ProductCard key={product.id} product={product} onClick={(p) => { setSelectedProduct(p); setIsOrderView(false); }} />
             ))}
           </div>
+
+          {/* 🔍 사장님 요청: 8개가 넘어가면 나타나는 깔끔한 페이지네이션 버튼 UI */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => {
+                  setCurrentPage(prev => prev - 1);
+                  document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${currentPage === 1 ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-ink hover:bg-gray-50'}`}
+              >
+                이전
+              </button>
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                <button
+                  key={pageNum}
+                  onClick={() => {
+                    setCurrentPage(pageNum);
+                    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${currentPage === pageNum ? 'bg-brand text-black font-black shadow-sm' : 'bg-white text-gray-400 hover:text-ink'}`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+
+              <button 
+                disabled={currentPage === totalPages}
+                onClick={() => {
+                  setCurrentPage(prev => prev + 1);
+                  document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${currentPage === totalPages ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-ink hover:bg-gray-50'}`}
+              >
+                다음
+              </button>
+            </div>
+          )}
         </section>
       </main>
 
       <AnimatePresence>
         {selectedProduct && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
-            {/* 🔍 사장님 요청 2: 상세창 크기를 max-w-md에서 max-w-3xl로 쾌적하게 확장 */}
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row relative" onClick={e => e.stopPropagation()}>
               <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
                 <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
@@ -324,7 +382,6 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                     <div className="mb-2"><span className="text-[12px] font-bold text-brand-dark bg-brand/10 px-3 py-1 rounded-full">{selectedProduct.category}</span></div>
                     <h2 className="text-2xl md:text-3xl font-bold mb-4 text-ink">{selectedProduct.name}</h2>
                     
-                    {/* 🔍 사장님 요청 3: 넉넉한 줄간격(leading-relaxed) 및 자동 엔터/띄어쓰기 반영(whitespace-pre-line) */}
                     <p className="text-ink-muted mb-8 text-[15px] leading-relaxed whitespace-pre-line">
                       {selectedProduct.description}
                     </p>
