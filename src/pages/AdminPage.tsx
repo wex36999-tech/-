@@ -26,6 +26,9 @@ const AdminPage = () => {
   // 상품 목록 필터링용 상태
   const [selectedFilter, setSelectedFilter] = useState<string>('전체');
 
+  // 상품 등록 팝업(모달) 제어 상태
+  const [showAddModal, setShowAddModal] = useState(false);
+
   // 상품 등록 폼 상태
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -91,6 +94,7 @@ const AdminPage = () => {
       category: categories[0] || '농산물', 
       isSoldOut: false 
     });
+    setShowAddModal(false); // 💡 등록 성공 후 팝업창 자동으로 닫기
     alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
   };
 
@@ -141,7 +145,7 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+    <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto">
       {/* 상단 헤더 */}
       <div className="flex items-center justify-between mb-10 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
@@ -151,22 +155,94 @@ const AdminPage = () => {
         <button onClick={() => setIsAuthorized(false)} className="text-xs font-bold text-gray-400 hover:text-red-500 border border-gray-200 px-4 py-2 rounded-xl bg-white transition-all">로그아웃</button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* [왼쪽 블록] 상품 등록 섹션 */}
-        <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm flex flex-col justify-between">
-          <div>
+      {/* 💻 [메인 영역] 등록된 상품 관리 한 축으로 넓게 재배치 */}
+      <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div className="flex items-center gap-2">
+            <Package size={24} className="text-gray-700" />
+            <h2 className="text-2xl font-black text-ink">
+              등록된 상품 관리 <span className="text-brand-dark text-lg ml-1">({filteredProducts.length})</span>
+            </h2>
+          </div>
+          
+          {/* 액션 버튼 세트 (카테고리 편집, 상품 등록) */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={() => setShowCategoryModal(true)} className="flex items-center gap-1.5 text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 px-4 py-3 rounded-2xl transition-all">
+              <FolderPlus size={16} /> 카테고리 편집
+            </button>
+            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1.5 text-sm font-extrabold text-black bg-brand hover:shadow-md px-5 py-3 rounded-2xl transition-all">
+              <Plus size={18} /> 새 상품 등록
+            </button>
+          </div>
+        </div>
+
+        {/* 카테고리 필터 탭 */}
+        <div className="flex gap-1.5 bg-gray-50 p-1.5 rounded-2xl mb-6 overflow-x-auto border border-gray-100">
+          <button onClick={() => setSelectedFilter('전체')} className={`px-4 py-2 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${selectedFilter === '전체' ? 'bg-white shadow-sm text-ink font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}>전체</button>
+          {categories.map(cat => (
+            <button key={cat} onClick={() => setSelectedFilter(cat)} className={`px-4 py-2 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${selectedFilter === cat ? 'bg-white shadow-sm text-ink font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}>{cat}</button>
+          ))}
+        </div>
+
+        {/* 상품 리스트 (넓은 너비로 시원하게 배치) */}
+        <div className="space-y-3 pr-1">
+          {filteredProducts.map((product: any) => (
+            <div key={product.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/70 rounded-2xl transition-all border gap-4 ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-60' : 'border-transparent shadow-sm'}`}>
+              <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
+                <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 border border-gray-100 flex-shrink-0">
+                  <img src={product.image} className="w-full h-full object-cover" alt="" />
+                  {product.isSoldOut && (
+                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-[1px] flex items-center justify-center">
+                      <span className="text-xs text-white font-black tracking-wider">품절</span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-extrabold text-base text-ink">{product.name}</p>
+                    <span className="text-[11px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 font-bold rounded-lg shadow-sm">{product.category}</span>
+                  </div>
+                  <p className="text-sm font-bold text-gray-500 mt-1">{product.price}</p>
+                  {product.description && <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-xl">{product.description}</p>}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200">
+                <button onClick={() => toggleSoldOut(product)} className={`p-2.5 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-600' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
+                  {product.isSoldOut ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+                <button onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="p-2.5 bg-white text-gray-400 hover:text-ink rounded-xl shadow-sm transition-all">
+                  <Edit3 size={18} />
+                </button>
+                <button onClick={() => handleDeleteProduct(product.id)} className="p-2.5 text-red-400 hover:bg-red-50 rounded-xl transition-all">
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          ))}
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <Package size={32} className="mx-auto text-gray-300 mb-2" />
+              <p className="text-sm text-gray-400 font-medium">등록된 상품이 없습니다.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 📬 팝업 1: 새 상품 등록 모달 (기존 양방향 레이아웃을 팝업창으로 격상!) */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Plus size={20} /> 새 상품 등록
-              </h2>
-              <button onClick={() => setShowCategoryModal(true)} className="flex items-center gap-1 text-xs font-bold text-gray-500 bg-gray-100 hover:bg-brand hover:text-ink px-3 py-2 rounded-xl transition-all">
-                <FolderPlus size={14} /> 카테고리 편집
-              </button>
+              <h3 className="font-black text-xl flex items-center gap-2">
+                <Plus size={22} className="text-brand-dark" /> 새 상품 등록
+              </h3>
+              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
             </div>
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">商品名</label>
+                <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
                 <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -191,74 +267,21 @@ const AdminPage = () => {
                 <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
                 <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24" placeholder="상품 설명을 적어주세요."></textarea>
               </div>
-              <button type="submit" className="w-full py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">상품 등록하기</button>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
+                <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">등록하기</button>
+              </div>
             </form>
           </div>
         </div>
+      )}
 
-        {/* [오른쪽 블록] 등록된 상품 관리 섹션 */}
-        <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Package size={20} /> 등록된 상품 관리 ({filteredProducts.length})
-            </h2>
-            
-            <div className="flex gap-1 bg-gray-50 p-1 rounded-xl overflow-x-auto">
-              <button onClick={() => setSelectedFilter('전체')} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${selectedFilter === '전체' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>전체</button>
-              {categories.map(cat => (
-                <button key={cat} onClick={() => setSelectedFilter(cat)} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${selectedFilter === cat ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>{cat}</button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-            {filteredProducts.map((product: any) => (
-              <div key={product.id} className={`flex items-center justify-between p-4 bg-gray-50 rounded-2xl transition-all border ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-70' : 'border-transparent'}`}>
-                <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
-                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-200">
-                    <img src={product.image} className="w-full h-full object-cover" alt="" />
-                    {product.isSoldOut && (
-                      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center">
-                        <span className="text-[10px] text-white font-black tracking-tighter">품절</span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <p className="font-bold text-sm text-ink">{product.name}</p>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-gray-200 text-gray-500 font-bold rounded-md">{product.category}</span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">{product.price}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {/* 품절 토글 버튼 연동 */}
-                  <button onClick={() => toggleSoldOut(product)} className={`p-2 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-500' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
-                    {product.isSoldOut ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                  <button onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="p-2 bg-white text-gray-400 hover:text-ink rounded-xl shadow-sm transition-all">
-                    <Edit3 size={16} />
-                  </button>
-                  <button onClick={() => handleDeleteProduct(product.id)} className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-all">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
-            {filteredProducts.length === 0 && (
-              <p className="text-center py-10 text-sm text-gray-400 font-medium">등록된 상품이 없습니다.</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 팝업 1: 카테고리 편집 모달 */}
+      {/* 팝업 2: 카테고리 편집 모달 */}
       {showCategoryModal && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[32px] p-6 max-w-sm w-full border border-border shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-black text-lg">카테고리 편집</h3>
+              <h3 className="font-black text-lg">카테게리 편집</h3>
               <button onClick={() => setShowCategoryModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
             </div>
             <form onSubmit={handleAddCategory} className="flex gap-2 mb-4">
@@ -277,7 +300,7 @@ const AdminPage = () => {
         </div>
       )}
 
-      {/* 팝업 2: 상품 상세 수정 모달 */}
+      {/* 팝업 3: 상품 상세 수정 모달 */}
       {showEditModal && editingProduct && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
