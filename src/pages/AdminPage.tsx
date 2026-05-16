@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X } from 'lucide-react';
+import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown } from 'lucide-react';
 
-const ADMIN_PASSWORD = '동마123';
+// 🔒 사장님이 요청하신 관리자 새 비밀번호!
+const ADMIN_PASSWORD = '0121';
 
 const AdminPage = () => {
-  // 👈 파이어베이스 실시간 구글 서버 기능들을 안전하게 연동해 줍니다!
+  // 👈 파이어베이스 실시간 구글 서버 기능 연동
   const { 
     products, 
     addProduct, 
@@ -18,10 +19,13 @@ const AdminPage = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   
-  // 💡 [해결] 로컬 고정값이 아니라 ConfigContext(구글 서버)에서 보관하는 카테고리 데이터를 가져옵니다.
+  // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터
   const categories = config.categories || ['농산물', '수산물'];
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+
+  // 🔍 [신규 추가] 상품 실시간 검색어 상태
+  const [searchQuery, setSearchQuery] = useState('');
 
   // 상품 목록 필터링용 상태
   const [selectedFilter, setSelectedFilter] = useState<string>('전체');
@@ -78,12 +82,28 @@ const AdminPage = () => {
     }
   };
 
-  // 3. 새 상품 등록 함수 (구글 파이어베이스 DB로 직통 슛!)
+  // 🔄 3. [신규 추가] 카테고리 순서 변경 함수 (서버 실시간 반영)
+  const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
+    const updatedCategories = [...categories];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    // 칸을 벗어나면 정지
+    if (targetIndex < 0 || targetIndex >= updatedCategories.length) return;
+
+    // 위치 스왑
+    const temp = updatedCategories[index];
+    updatedCategories[index] = updatedCategories[targetIndex];
+    updatedCategories[targetIndex] = temp;
+
+    // 구글 서버에 바로 저장
+    await updateConfig({ categories: updatedCategories });
+  };
+
+  // 4. 새 상품 등록 함수 (구글 파이어베이스 DB로 직통 슛!)
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = Date.now().toString();
     
-    // ConfigContext에 설계된 구글 전송 양식에 맞춰 id를 포함하여 보냅니다.
     await addProduct({ ...newProduct, id, options: '기본선택' });
     
     setNewProduct({ 
@@ -94,11 +114,11 @@ const AdminPage = () => {
       category: categories[0] || '농산물', 
       isSoldOut: false 
     });
-    setShowAddModal(false); // 💡 등록 성공 후 팝업창 자동으로 닫기
+    setShowAddModal(false); // 등록 성공 후 팝업창 자동으로 닫기
     alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
   };
 
-  // 4. 상품 수정 저장 함수 (구글 파이어베이스 DB 실시간 업데이트)
+  // 5. 상품 수정 저장 함수 (구글 파이어베이스 DB 실시간 업데이트)
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     await updateProduct(editingProduct.id, { ...editingProduct, options: editingProduct.options || '기본선택' });
@@ -106,13 +126,13 @@ const AdminPage = () => {
     alert('상품 정보가 실시간으로 수정되었습니다!');
   };
 
-  // 5. 품절 토글 함수 (터미널 명령어 없이 1초 만에 즉시 실시간 반영!)
+  // 6. 품절 토글 함수
   const toggleSoldOut = async (product: any) => {
     const updatedProduct = { ...product, isSoldOut: !product.isSoldOut };
     await updateProduct(product.id, updatedProduct);
   };
 
-  // 6. 상품 삭제 함수 (구글 파이어베이스 DB 영구 삭제)
+  // 7. 상품 삭제 함수
   const handleDeleteProduct = async (id: string) => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
       await deleteProduct(id);
@@ -120,10 +140,12 @@ const AdminPage = () => {
     }
   };
 
-  // 필터링된 상품 목록 계산
-  const filteredProducts = selectedFilter === '전체' 
-    ? products 
-    : products.filter((p: any) => p.category === selectedFilter);
+  // 🔍 [개조] 필터링 기능에 실시간 "검색 기능"까지 결합하여 계산
+  const filteredProducts = products.filter((p: any) => {
+    const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   // 🔒 로그인 전 화면
   if (!isAuthorized) {
@@ -157,7 +179,7 @@ const AdminPage = () => {
 
       {/* 💻 [메인 영역] 등록된 상품 관리 한 축으로 넓게 재배치 */}
       <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div className="flex items-center gap-2">
             <Package size={24} className="text-gray-700" />
             <h2 className="text-2xl font-black text-ink">
@@ -174,6 +196,15 @@ const AdminPage = () => {
               <Plus size={18} /> 새 상품 등록
             </button>
           </div>
+        </div>
+
+        {/* 🔍 [신규 추가] 실시간 상품 검색창 */}
+        <div className="relative mb-6">
+          <Search className="absolute left-4 top-3.5 text-gray-400" size={18} />
+          <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand text-sm font-medium" placeholder="수정할 상품의 이름을 입력해 보세요... (예: 장어)" />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-3.5 text-gray-400 hover:text-ink"><X size={16} /></button>
+          )}
         </div>
 
         {/* 카테고리 필터 탭 */}
@@ -223,13 +254,13 @@ const AdminPage = () => {
           {filteredProducts.length === 0 && (
             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
               <Package size={32} className="mx-auto text-gray-300 mb-2" />
-              <p className="text-sm text-gray-400 font-medium">등록된 상품이 없습니다.</p>
+              <p className="text-sm text-gray-400 font-medium">검색어와 일치하거나 등록된 상품이 없습니다.</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* 📬 팝업 1: 새 상품 등록 모달 (기존 양방향 레이아웃을 팝업창으로 격상!) */}
+      {/* 📬 팝업 1: 새 상품 등록 모달 */}
       {showAddModal && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -276,23 +307,33 @@ const AdminPage = () => {
         </div>
       )}
 
-      {/* 팝업 2: 카테고리 편집 모달 */}
+      {/* 📬 팝업 2: 카테고리 편집 모달 (🔼🔽 순서조정 화살표 탑재!) */}
       {showCategoryModal && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[32px] p-6 max-w-sm w-full border border-border shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-black text-lg">카테게리 편집</h3>
+              <h3 className="font-black text-lg">카테고리 편집</h3>
               <button onClick={() => setShowCategoryModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
             </div>
             <form onSubmit={handleAddCategory} className="flex gap-2 mb-4">
               <input required value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} className="flex-1 p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-brand text-sm" placeholder="예: 축산물, 과일류" />
               <button type="submit" className="px-4 bg-brand text-black font-bold text-sm rounded-xl transition-all">추가</button>
             </form>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {categories.map(cat => (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {categories.map((cat, index) => (
                 <div key={cat} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
-                  <span>{cat}</span>
-                  <button onClick={() => handleDropCategory(cat)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1">삭제</button>
+                  <span className="truncate max-w-[140px]">{cat}</span>
+                  
+                  {/* 순서 제어용 화살표 버튼 세트 */}
+                  <div className="flex items-center gap-1">
+                    <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로">
+                      <ArrowUp size={15} />
+                    </button>
+                    <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로">
+                      <ArrowDown size={15} />
+                    </button>
+                    <button onClick={() => handleDropCategory(cat)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
+                  </div>
                 </div>
               ))}
             </div>
