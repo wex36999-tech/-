@@ -298,6 +298,10 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
               <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={setActiveCategory} />
             ))}
           </div>
+
+          {/* 🔍 사장님 요청 1: 상품목록 문구 추가 */}
+          <h2 className="text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} onClick={(p) => { setSelectedProduct(p); setIsOrderView(false); }} />
@@ -309,6 +313,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
       <AnimatePresence>
         {selectedProduct && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+            {/* 🔍 사장님 요청 2: 상세창 크기를 max-w-md에서 max-w-3xl로 쾌적하게 확장 */}
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row relative" onClick={e => e.stopPropagation()}>
               <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
                 <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
@@ -318,7 +323,12 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                   <>
                     <div className="mb-2"><span className="text-[12px] font-bold text-brand-dark bg-brand/10 px-3 py-1 rounded-full">{selectedProduct.category}</span></div>
                     <h2 className="text-2xl md:text-3xl font-bold mb-4 text-ink">{selectedProduct.name}</h2>
-                    <p className="text-ink-muted mb-8 text-[15px]">{selectedProduct.description}</p>
+                    
+                    {/* 🔍 사장님 요청 3: 넉넉한 줄간격(leading-relaxed) 및 자동 엔터/띄어쓰기 반영(whitespace-pre-line) */}
+                    <p className="text-ink-muted mb-8 text-[15px] leading-relaxed whitespace-pre-line">
+                      {selectedProduct.description}
+                    </p>
+                    
                     <div className="flex items-center justify-between pt-6 border-t border-gray-100">
                       <span className="text-2xl font-black text-ink">{selectedProduct.price}</span>
                       <button onClick={() => setIsOrderView(true)} className="bg-brand text-black px-8 py-4 rounded-2xl font-bold">구매하기</button>
