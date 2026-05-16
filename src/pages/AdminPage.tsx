@@ -5,29 +5,38 @@ import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, 
 const ADMIN_PASSWORD = '동마123';
 
 const AdminPage = () => {
-  const { products, updateProducts } = useConfig();
+  // 👈 파이어베이스 실시간 구글 서버 기능들을 안전하게 연동해 줍니다!
+  const { 
+    products, 
+    addProduct, 
+    updateProduct, 
+    deleteProduct, 
+    config, 
+    updateConfig 
+  } = useConfig();
+
   const [passwordInput, setPasswordInput] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   
-  // 기본 카테고리 목록 상태 (기본적으로 농산물, 수산물이 있고 사장님이 추가/삭제 가능)
-  const [categories, setCategories] = useState<string[]>(['농산물', '수산물']);
+  // 💡 [해결] 로컬 고정값이 아니라 ConfigContext(구글 서버)에서 보관하는 카테고리 데이터를 가져옵니다.
+  const categories = config.categories || ['농산물', '수산물'];
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
-  // 상품 목록 필터링용 상태 ('전체' 또는 특정 카테고리)
+  // 상품 목록 필터링용 상태
   const [selectedFilter, setSelectedFilter] = useState<string>('전체');
 
-  // 상품 등록 폼 상태 (품절 여부인 isSoldOut 추가)
+  // 상품 등록 폼 상태
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     description: '',
     image: '',
-    category: '농산물',
+    category: categories[0] || '농산물',
     isSoldOut: false
   });
 
-  // 상품 수정 모달(팝업) 관련 상태
+  // 상품 수정 모달 상태
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
@@ -42,63 +51,68 @@ const AdminPage = () => {
     }
   };
 
-  // 1. 카테고리 추가 함수
-  const handleAddCategory = (e: React.FormEvent) => {
+  // 1. 카테고리 추가 함수 (구글 서버 실시간 저장 연동)
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
     if (categories.includes(newCategoryName.trim())) {
       alert('이미 존재하는 카테고리입니다.');
       return;
     }
-    setCategories([...categories, newCategoryName.trim()]);
+    const updatedCategories = [...categories, newCategoryName.trim()];
+    await updateConfig({ categories: updatedCategories });
     setNewCategoryName('');
   };
 
-  // 2. 카테고리 삭제 함수
-  const handleDropCategory = (catName: string) => {
+  // 2. 카테고리 삭제 함수 (구글 서버 실시간 저장 연동)
+  const handleDropCategory = async (catName: string) => {
     if (window.confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) {
-      setCategories(categories.filter(c => c !== catName));
+      const updatedCategories = categories.filter(c => c !== catName);
+      await updateConfig({ categories: updatedCategories });
       if (newProduct.category === catName) {
-        setNewProduct({ ...newProduct, category: categories[0] || '' });
+        setNewProduct({ ...newProduct, category: updatedCategories[0] || '' });
       }
     }
   };
 
-  // 3. 새 상품 등록 함수
-  const handleAddProduct = (e: React.FormEvent) => {
+  // 3. 새 상품 등록 함수 (구글 파이어베이스 DB로 직통 슛!)
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = Date.now().toString();
-    const updatedProducts = [...products, { ...newProduct, id }];
-    updateProducts(updatedProducts);
-    setNewProduct({ name: '', price: '', description: '', image: '', category: categories[0] || '농산물', isSoldOut: false });
-    alert('상품이 등록되었습니다!');
-  };
-
-  // 4. 상품 수정 저장 함수
-  const handleUpdateProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    const updatedProducts = products.map((p: any) => p.id === editingProduct.id ? editingProduct : p);
-    updateProducts(updatedProducts);
-    setShowEditModal(false);
-    alert('상품 정보가 수정되었습니다!');
-  };
-
-  // 5. 품절 토글 함수 (리스트에서 바로 품절 처리가능)
-  const toggleSoldOut = (id: string) => {
-    const updatedProducts = products.map((p: any) => {
-      if (p.id === id) {
-        return { ...p, isSoldOut: !p.isSoldOut };
-      }
-      return p;
+    
+    // ConfigContext에 설계된 구글 전송 양식에 맞춰 id를 포함하여 보냅니다.
+    await addProduct({ ...newProduct, id, options: '기본선택' });
+    
+    setNewProduct({ 
+      name: '', 
+      price: '', 
+      description: '', 
+      image: '', 
+      category: categories[0] || '농산물', 
+      isSoldOut: false 
     });
-    updateProducts(updatedProducts);
+    alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
   };
 
-  // 6. 상품 삭제 함수
-  const handleDeleteProduct = (id: string) => {
+  // 4. 상품 수정 저장 함수 (구글 파이어베이스 DB 실시간 업데이트)
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await updateProduct(editingProduct.id, { ...editingProduct, options: editingProduct.options || '기본선택' });
+    setShowEditModal(false);
+    alert('상품 정보가 실시간으로 수정되었습니다!');
+  };
+
+  // 5. 품절 토글 함수 (터미널 명령어 없이 1초 만에 즉시 실시간 반영!)
+  const toggleSoldOut = async (product: any) => {
+    const updatedProduct = { ...product, isSoldOut: !product.isSoldOut };
+    await updateProduct(product.id, updatedProduct);
+  };
+
+  // 6. 상품 삭제 함수 (구글 파이어베이스 DB 영구 삭제)
+  const handleDeleteProduct = async (id: string) => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
-      const updatedProducts = products.filter((p: any) => p.id !== id);
-      updateProducts(updatedProducts);
+      await deleteProduct(id);
+      alert('상품이 삭제되었습니다.');
     }
   };
 
@@ -145,7 +159,6 @@ const AdminPage = () => {
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Plus size={20} /> 새 상품 등록
               </h2>
-              {/* 카테고리 추가/관리 팝업 열기 버튼 */}
               <button onClick={() => setShowCategoryModal(true)} className="flex items-center gap-1 text-xs font-bold text-gray-500 bg-gray-100 hover:bg-brand hover:text-ink px-3 py-2 rounded-xl transition-all">
                 <FolderPlus size={14} /> 카테고리 편집
               </button>
@@ -153,7 +166,7 @@ const AdminPage = () => {
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
+                <label className="text-xs font-bold text-gray-400 ml-1">商品名</label>
                 <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -190,7 +203,6 @@ const AdminPage = () => {
               <Package size={20} /> 등록된 상품 관리 ({filteredProducts.length})
             </h2>
             
-            {/* 카테고리별 필터 선택 탭 */}
             <div className="flex gap-1 bg-gray-50 p-1 rounded-xl overflow-x-auto">
               <button onClick={() => setSelectedFilter('전체')} className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${selectedFilter === '전체' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>전체</button>
               {categories.map(cat => (
@@ -199,11 +211,9 @@ const AdminPage = () => {
             </div>
           </div>
 
-          {/* 상품 리스트 */}
           <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
             {filteredProducts.map((product: any) => (
               <div key={product.id} className={`flex items-center justify-between p-4 bg-gray-50 rounded-2xl transition-all border ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-70' : 'border-transparent'}`}>
-                {/* 상품 클릭 시 수정 팝업 열림 */}
                 <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-200">
                     <img src={product.image} className="w-full h-full object-cover" alt="" />
@@ -223,15 +233,13 @@ const AdminPage = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {/* 품절 토글 버튼 */}
-                  <button onClick={() => toggleSoldOut(product.id)} className={`p-2 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-500' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
+                  {/* 품절 토글 버튼 연동 */}
+                  <button onClick={() => toggleSoldOut(product)} className={`p-2 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-500' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
                     {product.isSoldOut ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
-                  {/* 상세 수정 버튼 */}
                   <button onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="p-2 bg-white text-gray-400 hover:text-ink rounded-xl shadow-sm transition-all">
                     <Edit3 size={16} />
                   </button>
-                  {/* 삭제 버튼 */}
                   <button onClick={() => handleDeleteProduct(product.id)} className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-all">
                     <Trash2 size={16} />
                   </button>
@@ -245,7 +253,7 @@ const AdminPage = () => {
         </div>
       </div>
 
-      {/* 팝업 1: 카테고리 추가/삭제 모달 */}
+      {/* 팝업 1: 카테고리 편집 모달 */}
       {showCategoryModal && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[32px] p-6 max-w-sm w-full border border-border shadow-2xl">
