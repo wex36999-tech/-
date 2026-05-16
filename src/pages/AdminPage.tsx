@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Package, Settings, Lock } from 'lucide-react'; // 👈 Lock 아이콘 안전하게 추가!
+import { Plus, Trash2, Package, Settings, Lock } from 'lucide-react';
 
-const ADMIN_PASSWORD = '1234'; // 👈 사장님 전용 관리자 비밀번호
+const ADMIN_PASSWORD = '동마123'; // 👈 새로운 관리자 비밀번호로 변경 완료!
 
 const AdminPage = () => {
   const { products, updateProducts } = useConfig();
@@ -44,7 +44,7 @@ const AdminPage = () => {
     }
   };
 
-  // 1. 비밀번호 입력 전 화면 (자물쇠 로그인 창)
+  // 1. 비밀번호 입력 전 화면
   if (!isAuthorized) {
     return (
       <div className="pt-40 pb-20 px-6 max-w-md mx-auto flex flex-col items-center justify-center min-h-[60vh]">
@@ -73,7 +73,7 @@ const AdminPage = () => {
     );
   }
 
-  // 2. 비밀번호 인증 후 보여주는 진짜 관리자 화면
+  // 2. 비밀번호 인증 후 화면
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-10 pb-4 border-b border-gray-100">
