@@ -9,7 +9,6 @@ import AdminPage from './pages/AdminPage';
 
 // --- Components ---
 
-// 🔍 사장님 요청 해결: 페이지 이동 시 화면을 맨 위로 강제 고정하는 기능
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   React.useEffect(() => {
@@ -50,6 +49,7 @@ const MetadataManager = () => {
 const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string, setActiveCategory: (c: string) => void }) => {
   const { config } = useConfig();
   const [isOpen, setIsOpen] = React.useState(false);
+  const location = useLocation();
 
   const navLinks = [
     { name: '메인', path: '#', category: '전체' },
@@ -60,15 +60,23 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
   ];
 
   const handleNavLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link: typeof navLinks[0]) => {
+    // 만약 관리자 페이지(/admin)에 가 있다면, 먼저 메인 홈('/')으로 이동시켜 줍니다.
+    if (location.pathname !== '/') {
+      return; // 상단 Link 태그가 리액트 라우터 작동을 대신 처리해 줍니다.
+    }
+
     if (link.name === '메인') {
       e.preventDefault();
       setActiveCategory('전체');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (link.category) {
       e.preventDefault();
+      // 🔍 사장님 요청 해결: 상단 메뉴 클릭 시 하단 카테고리 필터도 똑같이 바꿔줌!
       setActiveCategory(link.category);
-      const element = document.getElementById('products');
-      if (element) element.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+        const element = document.getElementById('products');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     } else if (link.path.startsWith('#')) {
       e.preventDefault();
       const id = link.path.replace('#', '');
@@ -86,12 +94,10 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
         </Link>
         <div className="hidden md:flex items-center gap-10">
           {navLinks.map((link) => (
-            <motion.a 
+            <Link
               key={link.name} 
-              href={link.path} 
+              to={link.path.startsWith('#') ? `/${link.path}` : '/'}
               onClick={(e) => handleNavLinkClick(e, link)}
-              initial="initial"
-              whileHover="hover"
               className={`group relative py-2 text-[14px] font-bold transition-colors ${
                 (link.category && activeCategory === link.category) ? 'text-ink' : 'text-ink-muted hover:text-ink'
               }`}
@@ -101,15 +107,16 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
                 className={`absolute -bottom-1 left-0 right-0 h-[3px] bg-brand rounded-full origin-left ${
                   (link.category && activeCategory === link.category) ? 'scale-x-100 opacity-100' : ''
                 }`}
-                variants={{
-                  initial: { scaleX: link.category && activeCategory === link.category ? 1 : 0, opacity: link.category && activeCategory === link.category ? 1 : 0 },
-                  hover: { scaleX: 1, opacity: 1 }
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ 
+                  scaleX: link.category && activeCategory === link.category ? 1 : 0, 
+                  opacity: link.category && activeCategory === link.category ? 1 : 0 
                 }}
-                transition={{ duration: 0.3, ease: "circOut" }}
+                whileHover={{ scaleX: 1, opacity: 1 }}
+                transition={{ duration: 0.2, ease: "circOut" }}
               />
-            </motion.a>
+            </Link>
           ))}
-          {/* 관리자 버튼: Link로 이동 시 이제 ScrollToTop이 화면을 위로 올려줍니다 */}
           <Link to="/admin" className="bg-ink text-white px-5 py-2.5 rounded-full text-[12px] font-bold hover:bg-brand hover:text-ink transition-all shadow-lg shadow-black/5">
             관리자
           </Link>
@@ -127,9 +134,9 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
             className="md:hidden absolute top-20 left-0 right-0 bg-white border-b border-gray-100 p-6 flex flex-col gap-4"
           >
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.path}
+                to={link.path.startsWith('#') ? `/${link.path}` : '/'}
                 onClick={(e) => {
                   handleNavLinkClick(e, link);
                   setIsOpen(false);
@@ -140,7 +147,7 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
               >
                 {link.name}
                 <ChevronRight size={20} className={`${(link.category && activeCategory === link.category) ? 'text-brand' : 'text-gray-300'} group-hover:text-brand transition-colors`} />
-              </a>
+              </Link>
             ))}
             <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 text-gray-500 py-2">
               <Settings size={20} /> 관리자 설정
@@ -429,7 +436,6 @@ const AppContent = () => {
   return (
     <div className="min-h-screen bg-white font-pretendard text-ink">
       <MetadataManager />
-      {/* 🔍 새로 추가된 ScrollToTop 컴포넌트가 모든 페이지 이동 시 화면을 위로 올려줍니다 */}
       <ScrollToTop />
       <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       <Routes>
