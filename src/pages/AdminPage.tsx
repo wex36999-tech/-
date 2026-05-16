@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Save, Package } from 'lucide-react';
+import { Plus, Trash2, Package, Settings } from 'lucide-react'; // 👈 Settings를 추가했습니다!
 
 const AdminPage = () => {
-  const { config, products, updateConfig, updateProducts } = useConfig();
+  const { products, updateProducts } = useConfig(); // 👈 사용하지 않는 config, updateConfig 정리
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
