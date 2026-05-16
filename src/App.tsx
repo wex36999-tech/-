@@ -9,6 +9,15 @@ import AdminPage from './pages/AdminPage';
 
 // --- Components ---
 
+// 🔍 사장님 요청 해결: 페이지 이동 시 화면을 맨 위로 강제 고정하는 기능
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 const MetadataManager = () => {
   const { config } = useConfig();
 
@@ -100,6 +109,7 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
               />
             </motion.a>
           ))}
+          {/* 관리자 버튼: Link로 이동 시 이제 ScrollToTop이 화면을 위로 올려줍니다 */}
           <Link to="/admin" className="bg-ink text-white px-5 py-2.5 rounded-full text-[12px] font-bold hover:bg-brand hover:text-ink transition-all shadow-lg shadow-black/5">
             관리자
           </Link>
@@ -245,11 +255,9 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const [isOrderView, setIsOrderView] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // 🔍 사장님 요청: 8개씩 끊어 보여주기 위한 페이지 상태 추가
   const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 8;
 
-  // 카테고리가 바뀌면 페이지 번호를 다시 1페이지로 강제 리셋해 줍니다.
   React.useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory]);
@@ -258,14 +266,12 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
     return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
   }, [products, activeCategory]);
 
-  // 🔍 현재 페이지에 속한 8개의 상품만 계산해서 추출하는 코드
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = React.useMemo(() => {
     return filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
   }, [filteredProducts, indexOfFirstProduct, indexOfLastProduct]);
 
-  // 총 몇 페이지가 필요한지 계산 (ex: 상품 10개면 2페이지)
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -320,14 +326,12 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
           <h2 className="text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
 
-          {/* 🔍 기존의 filteredProducts 대신 8개로 쪼갠 currentProducts를 뿌려줍니다 */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {currentProducts.map((product) => (
               <ProductCard key={product.id} product={product} onClick={(p) => { setSelectedProduct(p); setIsOrderView(false); }} />
             ))}
           </div>
 
-          {/* 🔍 사장님 요청: 8개가 넘어가면 나타나는 깔끔한 페이지네이션 버튼 UI */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-12">
               <button 
@@ -425,6 +429,8 @@ const AppContent = () => {
   return (
     <div className="min-h-screen bg-white font-pretendard text-ink">
       <MetadataManager />
+      {/* 🔍 새로 추가된 ScrollToTop 컴포넌트가 모든 페이지 이동 시 화면을 위로 올려줍니다 */}
+      <ScrollToTop />
       <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       <Routes>
         <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
