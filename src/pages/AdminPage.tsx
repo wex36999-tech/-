@@ -33,13 +33,14 @@ const AdminPage = () => {
   // 상품 등록 팝업(모달) 제어 상태
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // 상품 등록 폼 상태
+  // 상품 등록 폼 상태 (options 추가)
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     description: '',
     image: '',
     category: categories[0] || '농산물',
+    options: '', // 💡 구매 옵션 글자 상태 추가
     isSoldOut: false
   });
 
@@ -107,7 +108,10 @@ const AdminPage = () => {
     e.preventDefault();
     const id = Date.now().toString();
     
-    await addProduct({ ...newProduct, id, options: '기본선택' });
+    // 비어있으면 '기본선택'으로 저장
+    const finalOptions = newProduct.options.trim() || '기본선택';
+    
+    await addProduct({ ...newProduct, id, options: finalOptions });
     
     setNewProduct({ 
       name: '', 
@@ -115,6 +119,7 @@ const AdminPage = () => {
       description: '', 
       image: '', 
       category: categories[0] || '농산물', 
+      options: '',
       isSoldOut: false 
     });
     setShowAddModal(false); // 등록 성공 후 팝업창 자동으로 닫기
@@ -124,7 +129,8 @@ const AdminPage = () => {
   // 5. 상품 수정 저장 함수 (구글 파이어베이스 DB 실시간 업데이트)
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateProduct(editingProduct.id, { ...editingProduct, options: editingProduct.options || '기본선택' });
+    const finalOptions = editingProduct.options?.trim() || '기본선택';
+    await updateProduct(editingProduct.id, { ...editingProduct, options: finalOptions });
     setShowEditModal(false);
     alert('상품 정보가 실시간으로 수정되었습니다!');
   };
@@ -262,6 +268,10 @@ const AdminPage = () => {
                   </div>
                   <p className="text-sm font-bold text-gray-500 mt-1">{product.price}</p>
                   {product.description && <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-xl">{product.description}</p>}
+                  {/* 💡 관리목록에서 옵션 등록 여부 살짝 표시 */}
+                  {product.options && product.options !== '기본선택' && (
+                    <p className="text-[11px] text-brand-dark font-semibold mt-1">옵션: {product.options}</p>
+                  )}
                 </div>
               </div>
 
@@ -326,6 +336,11 @@ const AdminPage = () => {
                   </select>
                 </div>
               </div>
+              {/* 💡 [옵션 기능 추가] 신규 등록할 때 옵션 적는 칸 */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (쉼표로 구분)</label>
+                <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg, 3kg, 5kg (비워두면 기본선택)" />
+              </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
                 <input required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="https://res.cloudinary.com/..." />
@@ -343,7 +358,7 @@ const AdminPage = () => {
         </div>
       )}
 
-      {/* 📬 팝업 2: 카테고리 편집 모달 (🔼🔽 순서조정 화살표 탑재!) */}
+      {/* 📬 팝업 2: 카테고리 편집 모달 */}
       {showCategoryModal && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[32px] p-6 max-w-sm w-full border border-border shadow-2xl">
@@ -360,7 +375,6 @@ const AdminPage = () => {
                 <div key={cat} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
                   <span className="truncate max-w-[140px]">{cat}</span>
                   
-                  {/* 순서 제어용 화살표 버튼 세트 */}
                   <div className="flex items-center gap-1">
                     <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로">
                       <ArrowUp size={15} />
@@ -403,6 +417,11 @@ const AdminPage = () => {
                     ))}
                   </select>
                 </div>
+              </div>
+              {/* 💡 [옵션 기능 추가] 기존 상품 수정할 때 옵션 고치는 칸 */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (쉼표로 구분)</label>
+                <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg, 3kg, 5kg" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
