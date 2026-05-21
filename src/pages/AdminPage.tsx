@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown, Save } from 'lucide-react';
 
 // 🔒 사장님이 요청하신 관리자 새 비밀번호!
 const ADMIN_PASSWORD = '0121';
@@ -46,6 +46,9 @@ const AdminPage = () => {
   // 상품 수정 모달 상태
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+
+  // 💡 [신규 추가] 미니 저장 알림창(Toast) 제어 상태
+  const [showToast, setShowToast] = useState(false);
 
   // 비밀번호 검사
   const handleLogin = (e: React.FormEvent) => {
@@ -140,6 +143,21 @@ const AdminPage = () => {
     }
   };
 
+  // ⭐ [신규 추가] 우측 하단 대형 저장 버튼 클릭 시 작동하는 함수
+  const handleMainSave = () => {
+    setShowToast(true);
+  };
+
+  // 알림창 2초 뒤 자동으로 사라지게 만드는 타이머 효과
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   // 🔍 [개조] 필터링 기능에 실시간 "검색 기능"까지 결합하여 계산
   const filteredProducts = products.filter((p: any) => {
     const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
@@ -167,7 +185,16 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto">
+    <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto relative">
+      
+      {/* 🔔 [신규 추가] 상단 중앙 미니 저장 알림창 (Toast) */}
+      {showToast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] bg-ink/90 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-xl animate-bounce text-sm font-bold border border-white/10 backdrop-blur-sm">
+          <div className="w-2 h-2 bg-brand rounded-full"></div>
+          성공적으로 저장되었습니다.
+        </div>
+      )}
+
       {/* 상단 헤더 */}
       <div className="flex items-center justify-between mb-10 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
@@ -178,7 +205,7 @@ const AdminPage = () => {
       </div>
 
       {/* 💻 [메인 영역] 등록된 상품 관리 한 축으로 넓게 재배치 */}
-      <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm">
+      <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm mb-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div className="flex items-center gap-2">
             <Package size={24} className="text-gray-700" />
@@ -259,6 +286,15 @@ const AdminPage = () => {
           )}
         </div>
       </div>
+
+      {/* 💾 [신규 추가] 우측 하단 고정형 (Floating) 대형 저장하기 버튼 */}
+      <button 
+        onClick={handleMainSave}
+        className="fixed bottom-8 right-8 z-[150] flex items-center gap-2 bg-ink text-white hover:bg-brand hover:text-black font-black px-7 py-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 group border border-white/10"
+      >
+        <Save size={20} className="group-hover:rotate-12 transition-transform" />
+        저장하기
+      </button>
 
       {/* 📬 팝업 1: 새 상품 등록 모달 */}
       {showAddModal && (
