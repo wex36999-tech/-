@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, MessageCircle, Settings, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
+import { Menu, X, MessageCircle, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus } from 'lucide-react';
 
 // --- 관리자 페이지 임포트 ---
 import AdminPage from './pages/AdminPage';
@@ -266,12 +266,22 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const [isOrderView, setIsOrderView] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  // --- 🔍 구매 수량 및 옵션 상태 추가 ---
+  const [quantity, setQuantity] = React.useState<number>(1);
+  const [selectedOption, setSelectedOption] = React.useState<string>('');
+
   const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 8;
 
   React.useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory]);
+
+  // 모달이 닫히거나 바뀔 때 수량 및 옵션 초기화
+  React.useEffect(() => {
+    setQuantity(1);
+    setSelectedOption('');
+  }, [selectedProduct, isOrderView]);
 
   const filteredProducts = React.useMemo(() => {
     return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
@@ -285,10 +295,23 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
+  // 상품에 등록된 옵션을 배열로 가공하는 헬퍼 함수
+  const productOptions = React.useMemo(() => {
+    if (!selectedProduct || !selectedProduct.options) return [];
+    if (Array.isArray(selectedProduct.options)) return selectedProduct.options;
+    return selectedProduct.options.split(',').map((opt: string) => opt.trim()).filter(Boolean);
+  }, [selectedProduct]);
+
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
+    // 옵션이 존재하는데 소비자가 선택하지 않은 경우 체크
+    if (productOptions.length > 0 && !selectedOption) {
+      alert("상품 옵션을 선택해 주세요.");
+      return;
+    }
+
+    setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     
     try {
@@ -396,7 +419,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
               <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
                 <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
               </div>
-              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center overflow-y-auto max-h-[calc(90vh-16rem)] md:max-h-[90vh]">
                 {!isOrderView ? (
                   <>
                     <div className="mb-2"><span className="text-[12px] font-bold text-brand-dark bg-brand/10 px-3 py-1 rounded-full">{selectedProduct.category}</span></div>
@@ -416,14 +439,66 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                     <button onClick={() => setIsOrderView(false)} className="text-gray-400 text-sm mb-4 hover:text-ink">← 뒤로가기</button>
                     <h2 className="text-2xl font-black mb-6">주문서 작성</h2>
                     <form onSubmit={handleOrderSubmit} className="space-y-4">
+                      {/* 숨겨진 폼 데이터 전송용 태그들 */}
                       <input type="hidden" name="상품명" value={selectedProduct.name} />
-                      <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
+                      <input type="hidden" name="구매수량" value={quantity} />
+                      {productOptions.length > 0 && (
+                        <input type="hidden" name="선택옵션" value={selectedOption} />
+                      )}
+
+                      {/* --- 🔍 옵션 선택 필드 추가 --- */}
+                      {productOptions.length > 0 && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-ink-muted px-1">옵션 선택</label>
+                          <select 
+                            value={selectedOption} 
+                            onChange={(e) => setSelectedOption(e.target.value)}
+                            required
+                            className="w-full p-4 bg-gray-50 rounded-xl outline-none text-[14px] font-medium border border-transparent focus:border-brand appearance-none cursor-pointer"
+                          >
+                            <option value="" disabled>옵션을 선택해주세요</option>
+                            {productOptions.map((opt: string, idx: number) => (
+                              <option key={idx} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* --- 🔍 수량 조절 필드 추가 --- */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-ink-muted px-1">수량 조절</label>
+                        <div className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl border border-transparent">
+                          <span className="text-sm font-bold text-ink pl-2">{quantity}개</span>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              type="button"
+                              onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                              className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100 transition-colors"
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => setQuantity(prev => prev + 1)}
+                              className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100 transition-colors"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 pt-2">
+                        <label className="text-xs font-bold text-ink-muted px-1">배송 정보</label>
+                        <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
+                      </div>
                       <input name="연락처" required placeholder="연락처" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
                       <textarea name="주소" required placeholder="배송지 주소" className="w-full p-4 bg-gray-50 rounded-xl outline-none h-24"></textarea>
+                      
                       <button 
                         type="submit" 
                         disabled={isSubmitting}
-                        className={`w-full py-4 font-bold rounded-xl transition-all ${isSubmitting ? 'bg-gray-300' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
+                        className={`w-full py-4 font-bold rounded-xl transition-all mt-4 ${isSubmitting ? 'bg-gray-300' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
                       >
                         {isSubmitting ? "전송 중..." : "주문 완료"}
                       </button>
