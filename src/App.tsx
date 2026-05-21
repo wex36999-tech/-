@@ -60,9 +60,8 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
   ];
 
   const handleNavLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link: typeof navLinks[0]) => {
-    // 만약 관리자 페이지(/admin)에 가 있다면, 먼저 메인 홈('/')으로 이동시켜 줍니다.
     if (location.pathname !== '/') {
-      return; // 상단 Link 태그가 리액트 라우터 작동을 대신 처리해 줍니다.
+      return;
     }
 
     if (link.name === '메인') {
@@ -71,7 +70,6 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (link.category) {
       e.preventDefault();
-      // 🔍 사장님 요청 해결: 상단 메뉴 클릭 시 하단 카테고리 필터도 똑같이 바꿔줌!
       setActiveCategory(link.category);
       setTimeout(() => {
         const element = document.getElementById('products');
@@ -231,22 +229,28 @@ const Footer = () => {
   );
 };
 
+{/* 🔍 2열 최적화가 적용된 상품 카드 컴포넌트 */}
 const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (p: any) => void }) => (
-  <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden">
-    <div className="w-full aspect-square bg-gray-50/50 rounded-[12px] mb-4 overflow-hidden relative">
+  <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
+    {/* 모바일 배송 라벨 최적화 및 간격 조정 */}
+    <div className="w-full aspect-square bg-gray-50/50 rounded-t-[16px] overflow-hidden relative">
       <img src={product.image} alt={product.name} loading="lazy" className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isSoldOut ? 'grayscale-[0.5] blur-[1px]' : ''}`} referrerPolicy="no-referrer" />
       {product.isSoldOut && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
-          <div className="bg-white/95 px-6 py-2.5 rounded-full border border-gray-200 shadow-2xl scale-110">
-            <span className="text-black font-black text-sm md:text-lg tracking-[0.2em]">품절</span>
+          <div className="bg-white/95 px-4 py-2 rounded-full border border-gray-200 shadow-2xl scale-100 md:scale-110">
+            <span className="text-black font-black text-xs md:text-lg tracking-[0.2em]">품절</span>
           </div>
         </div>
       )}
-      <div className="absolute bottom-2 right-2 bg-brand text-ink text-[10px] font-bold px-2 py-1 rounded-lg border border-white shadow-sm opacity-90">무료배송</div>
+      <div className="absolute bottom-2 right-2 bg-brand text-ink text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-md border border-white shadow-sm opacity-90">무료배송</div>
     </div>
-    <h3 className="text-[15px] font-semibold mb-1 text-ink px-4">{product.name}</h3>
-    <div className="text-[14px] text-ink-muted mb-2 line-clamp-1 px-4">{product.description}</div>
-    <div className="text-[16px] text-brand-dark font-bold px-4 pb-4">{product.price}</div>
+    
+    {/* 모바일 글자 크기와 카드 하단 여백 다듬기 */}
+    <div className="p-3 md:p-4">
+      <h3 className="text-[14px] md:text-[15px] font-bold mb-0.5 text-ink line-clamp-1 break-keep">{product.name}</h3>
+      <div className="text-[12px] md:text-[14px] text-ink-muted mb-1.5 line-clamp-1 break-keep">{product.description}</div>
+      <div className="text-[14px] md:text-[16px] text-brand-dark font-black">{product.price}</div>
+    </div>
   </div>
 ));
 
@@ -310,30 +314,35 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
   return (
     <div className="pt-20">
-      <section className="relative h-[85vh] min-h-[600px] flex items-center overflow-hidden">
+      {/* 🔍 메인 배너 모바일 텍스트 깨짐 수정 부분 */}
+      <section className="relative h-[75vh] md:h-[85vh] min-h-[500px] md:min-h-[600px] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src="https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg" alt="Hero" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-10 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 w-full">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-            <h1 className="text-[56px] md:text-[80px] font-extrabold mb-8 leading-[1.05] text-white">오늘도 가성비,<br /><span className="text-brand italic">감각적인</span> 일상</h1>
-            <p className="text-[18px] md:text-[20px] text-white/90 mb-10">{config.description}</p>
+            {/* break-keep, 자간 tracking-tight, 모바일 전용 줄바꿈 조절로 정렬 최적화 */}
+            <h1 className="text-[38px] sm:text-[56px] md:text-[80px] font-extrabold mb-5 md:mb-8 leading-[1.15] md:leading-[1.05] text-white break-keep tracking-tight">
+              오늘도 가성비,<br className="block sm:hidden" /><span className="text-brand italic">감각적인</span> 일상
+            </h1>
+            <p className="text-[15px] md:text-[20px] text-white/90 mb-8 md:mb-10 max-w-md break-keep">{config.description}</p>
           </motion.div>
         </div>
       </section>
 
-      <main className="max-w-7xl mx-auto px-10 py-16">
+      <main className="max-w-7xl mx-auto px-4 md:px-10 py-12 md:py-16">
         <section id="products">
-          <div className="flex flex-wrap gap-2 mb-12">
+          <div className="flex flex-wrap gap-2 mb-8 md:mb-12">
             {['전체', ...(config.categories || [])].map(cat => (
               <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={setActiveCategory} />
             ))}
           </div>
 
-          <h2 className="text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
+          <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {/* 🔍 모바일 2열 간격 좁혀서 트렌디하게 디자인 다듬기 (gap-3 적용) */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {currentProducts.map((product) => (
               <ProductCard key={product.id} product={product} onClick={(p) => { setSelectedProduct(p); setIsOrderView(false); }} />
             ))}
@@ -455,4 +464,4 @@ export default function App() {
       </Router>
     </ConfigProvider>
   );
-} 
+}
