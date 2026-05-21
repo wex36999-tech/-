@@ -263,7 +263,7 @@ const AdminPage = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-extrabold text-base text-ink">{product.name}</p>
+                    <p className="font-extrabold text-base text-inkdeploy">{product.name}</p>
                     <span className="text-[11px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 font-bold rounded-lg shadow-sm">{product.category}</span>
                   </div>
                   <p className="text-sm font-bold text-gray-500 mt-1">{product.price}</p>
@@ -319,7 +319,7 @@ const AdminPage = () => {
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
+                <label className="text-xs font-bold text-gray-400 ml-1">商品명</label>
                 <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -336,10 +336,10 @@ const AdminPage = () => {
                   </select>
                 </div>
               </div>
-              {/* 💡 [옵션 기능 추가] 신규 등록할 때 옵션 적는 칸 */}
+              {/* 💡 [옵션 기능 개조] 슬래시 분리 관련 플레이스홀더 수정 */}
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (쉼표로 구분)</label>
-                <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg, 3kg, 5kg (비워두면 기본선택)" />
+                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (슬래시 / 로 구분)</label>
+                <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 기본맛 / 매운맛 / 치즈맛 (비워두면 기본선택)" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
@@ -418,10 +418,10 @@ const AdminPage = () => {
                   </select>
                 </div>
               </div>
-              {/* 💡 [옵션 기능 추가] 기존 상품 수정할 때 옵션 고치는 칸 */}
+              {/* 💡 [옵션 기능 개조] 슬래시 분리 관련 플레이스홀더 수정 */}
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (쉼표로 구분)</label>
-                <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg, 3kg, 5kg" />
+                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (슬래시 / 로 구분)</label>
+                <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 기본맛 / 매운맛 / 치즈맛" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
