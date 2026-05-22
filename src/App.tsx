@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, MessageCircle, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus } from 'lucide-react';
+import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown } from 'lucide-react';
 
 // --- 관리자 페이지 임포트 ---
 import AdminPage from './pages/AdminPage';
@@ -232,7 +232,6 @@ const Footer = () => {
 {/* 🔍 2열 최적화가 적용된 상품 카드 컴포넌트 */}
 const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (p: any) => void }) => (
   <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
-    {/* 모바일 배송 라벨 최적화 및 간격 조정 */}
     <div className="w-full aspect-square bg-gray-50/50 rounded-t-[16px] overflow-hidden relative">
       <img src={product.image} alt={product.name} loading="lazy" className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isSoldOut ? 'grayscale-[0.5] blur-[1px]' : ''}`} referrerPolicy="no-referrer" />
       {product.isSoldOut && (
@@ -245,7 +244,6 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
       <div className="absolute bottom-2 right-2 bg-brand text-ink text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-md border border-white shadow-sm opacity-90">무료배송</div>
     </div>
     
-    {/* md:p-4 */}
     <div className="p-3 md:p-4">
       <h3 className="text-[14px] md:text-[15px] font-bold mb-0.5 text-ink line-clamp-1 break-keep">{product.name}</h3>
       <div className="text-[12px] md:text-[14px] text-ink-muted mb-1.5 line-clamp-1 break-keep">{product.description}</div>
@@ -266,15 +264,20 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const [isOrderView, setIsOrderView] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // --- 🔍 구매 수량 및 옵션 상태 추가 ---
+  // --- 🔍 검색 바 상태 추가 ---
+  const [searchQuery, setSearchQuery] = React.useState<string>('');
+
+  // --- 🔍 구매 수량 및 옵션 상태 ---
   const [quantity, setQuantity] = React.useState<number>(1);
   const [selectedOption, setSelectedOption] = React.useState<string>('');
 
   const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 8;
 
+  // 카테고리가 변경되면 검색바 및 현재 페이지 초기화
   React.useEffect(() => {
     setCurrentPage(1);
+    setSearchQuery('');
   }, [activeCategory]);
 
   // 모달이 닫히거나 바뀔 때 수량 및 옵션 초기화
@@ -283,9 +286,14 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
     setSelectedOption('');
   }, [selectedProduct, isOrderView]);
 
+  // 🔍 [카테고리 + 실시간 검색] 결합된 필터링 로직
   const filteredProducts = React.useMemo(() => {
-    return activeCategory === '전체' ? [...products] : products.filter(p => p.category === activeCategory);
-  }, [products, activeCategory]);
+    return products.filter(p => {
+      const matchesCategory = activeCategory === '전체' || p.category === activeCategory;
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [products, activeCategory, searchQuery]);
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -295,9 +303,9 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
-  // 💡 상품에 등록된 옵션을 배열로 가공하는 헬퍼 함수 (슬래시 '/' 기준으로 쪼개도록 변경완료!)
+  // 💡 상품 옵션 쪼개기 헬퍼 함수
   const productOptions = React.useMemo(() => {
-    if (!selectedProduct || !selectedProduct.options) return [];
+    if (!selectedProduct || !selectedProduct.options || selectedProduct.options === '기본선택') return [];
     if (Array.isArray(selectedProduct.options)) return selectedProduct.options;
     return selectedProduct.options.split('/').map((opt: string) => opt.trim()).filter(Boolean);
   }, [selectedProduct]);
@@ -305,7 +313,6 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // 옵션이 존재하는데 소비자가 선택하지 않은 경우 체크
     if (productOptions.length > 0 && !selectedOption) {
       alert("상품 옵션을 선택해 주세요.");
       return;
@@ -337,7 +344,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
   return (
     <div className="pt-20">
-      {/* 🔍 메인 배너 모바일 텍스트 깨짐 수정 부분 */}
+      {/* 메인 배너 */}
       <section className="relative h-[75vh] md:h-[85vh] min-h-[500px] md:min-h-[600px] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src="https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg" alt="Hero" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -345,7 +352,6 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 w-full">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
-            {/* break-keep, 자간 tracking-tight, 모바일 전용 줄바꿈 조절로 정렬 최적화 */}
             <h1 className="text-[38px] sm:text-[56px] md:text-[80px] font-extrabold mb-5 md:mb-8 leading-[1.15] md:leading-[1.05] text-white break-keep tracking-tight">
               오늘도 가성비,<br className="block sm:hidden" /><span className="text-brand italic">감각적인</span> 일상
             </h1>
@@ -356,21 +362,50 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
       <main className="max-w-7xl mx-auto px-4 md:px-10 py-12 md:py-16">
         <section id="products">
-          <div className="flex flex-wrap gap-2 mb-8 md:mb-12">
-            {['전체', ...(config.categories || [])].map(cat => (
-              <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={setActiveCategory} />
-            ))}
+          
+          {/* 🔍 일체형 카테고리 & 실시간 검색 바 영역 */}
+          <div className="bg-gray-50 rounded-3xl p-4 border border-gray-100 mb-8 md:mb-12 space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {['전체', ...(config.categories || [])].map(cat => (
+                <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={setActiveCategory} />
+              ))}
+            </div>
+
+            {/* 깔끔하게 정돈된 손님용 검색창 */}
+            <div className="relative max-w-md">
+              <Search className="absolute left-4 top-3.5 text-gray-400" size={16} />
+              <input 
+                type="text" 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)} 
+                className="w-full pl-11 pr-10 py-3 bg-white border border-gray-200/60 rounded-2xl outline-none focus:ring-2 focus:ring-brand text-xs font-medium transition-all shadow-sm placeholder-gray-400" 
+                placeholder={`'${activeCategory}' 카테고리 안에서 찾기... (예: 사과)`} 
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-4 top-3.5 text-gray-400 hover:text-ink">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
 
           <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
 
-          {/* 🔍 모바일 2열 간격 좁혀서 트렌디하게 디자인 다듬기 (gap-3 적용) */}
+          {/* 상품 리스트 */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {currentProducts.map((product) => (
               <ProductCard key={product.id} product={product} onClick={(p) => { setSelectedProduct(p); setIsOrderView(false); }} />
             ))}
           </div>
 
+          {/* 검색결과 및 상품 없을 때 예외처리 */}
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-24 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+              <p className="text-sm text-gray-400 font-medium">찾으시는 조건의 가성비 상품이 없습니다.</p>
+            </div>
+          )}
+
+          {/* 페이지네이션 */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-12">
               <button 
@@ -388,6 +423,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                 <button
                   key={pageNum}
                   onClick={() => {
+                    navLinks
                     setCurrentPage(pageNum);
                     document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
                   }}
@@ -412,101 +448,132 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
         </section>
       </main>
 
+      {/* 📬 인스타 감성의 단정하고 트렌디한 올인원 옵션 선택 & 주문 모달 */}
       <AnimatePresence>
         {selectedProduct && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white max-w-3xl w-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col md:flex-row relative" onClick={e => e.stopPropagation()}>
-              <div className="w-full md:w-1/2 h-64 md:h-auto overflow-hidden">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+            <motion.div 
+              initial={{ scale: 0.95, y: 50 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.95, y: 50 }} 
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="bg-white max-w-md w-full rounded-t-[32px] sm:rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative max-h-[85vh]" 
+              onClick={e => e.stopPropagation()}
+            >
+              {/* 이미지 상단 배치 레이아웃 */}
+              <div className="w-full h-48 sm:h-52 overflow-hidden relative flex-shrink-0">
                 <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
+                <div className="absolute top-4 left-4"><span className="text-[11px] font-bold text-brand-dark bg-brand/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shadow-sm">{selectedProduct.category}</span></div>
+                <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-8 h-8 bg-black/40 text-white hover:bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm transition-all"><X size={16} /></button>
               </div>
-              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center overflow-y-auto max-h-[calc(90vh-16rem)] md:max-h-[90vh]">
-                {!isOrderView ? (
-                  <>
-                    <div className="mb-2"><span className="text-[12px] font-bold text-brand-dark bg-brand/10 px-3 py-1 rounded-full">{selectedProduct.category}</span></div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-4 text-ink">{selectedProduct.name}</h2>
-                    
-                    <p className="text-ink-muted mb-8 text-[15px] leading-relaxed whitespace-pre-line">
-                      {selectedProduct.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                      <span className="text-2xl font-black text-ink">{selectedProduct.price}</span>
-                      <button onClick={() => setIsOrderView(true)} className="bg-brand text-black px-8 py-4 rounded-2xl font-bold">구매하기</button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-full">
-                    <button onClick={() => setIsOrderView(false)} className="text-gray-400 text-sm mb-4 hover:text-ink">← 뒤로가기</button>
-                    <h2 className="text-2xl font-black mb-6">주문서 작성</h2>
-                    <form onSubmit={handleOrderSubmit} className="space-y-4">
-                      {/* 숨겨진 폼 데이터 전송용 태그들 */}
-                      <input type="hidden" name="상품명" value={selectedProduct.name} />
-                      <input type="hidden" name="구매수량" value={quantity} />
-                      {productOptions.length > 0 && (
-                        <input type="hidden" name="선택옵션" value={selectedOption} />
-                      )}
 
-                      {/* --- 🔍 옵션 선택 필드 추가 --- */}
+              {/* 하단 옵션선택 및 주문서 폼 콘텐츠 영역 */}
+              <div className="p-6 overflow-y-auto flex-1">
+                {!isOrderView ? (
+                  /* 단계 1: 옵션 확인 및 수량 조절 무드 */
+                  <div className="flex flex-col h-full justify-between">
+                    <div>
+                      <h2 className="text-xl font-black text-ink mb-1">{selectedProduct.name}</h2>
+                      <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct.description}</p>
+                      
+                      {/* 옵션이 있을 경우에만 단정하게 드롭다운 표출 */}
                       {productOptions.length > 0 && (
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-ink-muted px-1">옵션 선택</label>
-                          <select 
-                            value={selectedOption} 
-                            onChange={(e) => setSelectedOption(e.target.value)}
-                            required
-                            className="w-full p-4 bg-gray-50 rounded-xl outline-none text-[14px] font-medium border border-transparent focus:border-brand appearance-none cursor-pointer"
-                          >
-                            <option value="" disabled>옵션을 선택해주세요</option>
-                            {productOptions.map((opt: string, idx: number) => (
-                              <option key={idx} value={opt}>{opt}</option>
-                            ))}
-                          </select>
+                        <div className="space-y-1.5 mb-4">
+                          <label className="text-[11px] font-bold text-gray-400 ml-1">구매 옵션 선택</label>
+                          <div className="relative">
+                            <select 
+                              value={selectedOption} 
+                              onChange={(e) => setSelectedOption(e.target.value)}
+                              className="w-full p-3 bg-gray-50 border border-gray-200/70 rounded-xl outline-none focus:ring-2 focus:ring-brand text-xs font-bold appearance-none cursor-pointer pr-10 text-ink"
+                            >
+                              <option value="" disabled>눌러서 상세 옵션을 선택해 주세요</option>
+                              {productOptions.map((opt: string, idx: number) => (
+                                <option key={idx} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-4 top-3.5 text-gray-400 pointer-events-none" size={14} />
+                          </div>
                         </div>
                       )}
 
-                      {/* --- 🔍 수량 조절 필드 추가 --- */}
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-ink-muted px-1">수량 조절</label>
-                        <div className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl border border-transparent">
-                          <span className="text-sm font-bold text-ink pl-2">{quantity}개</span>
+                      {/* 수량 설정 영역 패널화 */}
+                      <div className="space-y-1.5 mb-6">
+                        <label className="text-[11px] font-bold text-gray-400 ml-1">주문 수량</label>
+                        <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl border border-gray-100">
+                          <span className="text-xs font-bold text-ink pl-2">{quantity}개</span>
                           <div className="flex items-center gap-1">
-                            <button 
-                              type="button"
-                              onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                              className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100 transition-colors"
-                            >
-                              <Minus size={16} />
-                            </button>
-                            <button 
-                              type="button"
-                              onClick={() => setQuantity(prev => prev + 1)}
-                              className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100 transition-colors"
-                            >
-                              <Plus size={16} />
-                            </button>
+                            <button type="button" onClick={() => setQuantity(prev => Math.max(1, prev - 1))} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100 transition-colors"><Minus size={14} /></button>
+                            <button type="button" onClick={() => setQuantity(prev => prev + 1)} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100 transition-colors"><Plus size={14} /></button>
                           </div>
                         </div>
                       </div>
-
-                      <div className="space-y-1.5 pt-2">
-                        <label className="text-xs font-bold text-ink-muted px-1">배송 정보</label>
-                        <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
+                    </div>
+                    
+                    {/* 과하지 않은 핏의 하단 최종 가격 및 구매하기 버튼 */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-gray-400">총 상품 금액</span>
+                        <span className="text-lg font-black text-ink">{selectedProduct.price}</span>
                       </div>
-                      <input name="연락처" required placeholder="연락처" className="w-full p-4 bg-gray-50 rounded-xl outline-none" />
-                      <textarea name="주소" required placeholder="배송지 주소" className="w-full p-4 bg-gray-50 rounded-xl outline-none h-24"></textarea>
+                      <button 
+                        onClick={() => {
+                          if (productOptions.length > 0 && !selectedOption) {
+                            alert("상품 옵션을 선택해 주세요.");
+                            return;
+                          }
+                          setIsOrderView(true);
+                        }} 
+                        className="bg-ink text-white text-xs font-extrabold px-6 py-3.5 rounded-xl hover:bg-brand hover:text-black shadow-md flex items-center gap-1.5 transition-all"
+                      >
+                        <ShoppingBag size={14} />
+                        구매하기
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* 단계 2: 주소 입력 주문 양식 무드 */
+                  <div className="w-full">
+                    <button onClick={() => setIsOrderView(false)} className="text-gray-400 text-xs font-bold mb-4 hover:text-ink flex items-center gap-1">← 선택 화면으로 돌아가기</button>
+                    <h2 className="text-lg font-black mb-4">배송지 주문서 작성</h2>
+                    
+                    <form onSubmit={handleOrderSubmit} className="space-y-3.5">
+                      <input type="hidden" name="商品명" value={selectedProduct.name} />
+                      <input type="hidden" name="구매수량" value={quantity} />
+                      {productOptions.length > 0 && <input type="hidden" name="선택옵션" value={selectedOption} />}
+
+                      <div>
+                        <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
+                        <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
+                          {selectedProduct.name} / {quantity}개 {selectedOption ? `[옵션: ${selectedOption}]` : ''}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-400 ml-1">주문자 성함</label>
+                        <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium" />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-400 ml-1">연락처</label>
+                        <input name="연락처" required placeholder="예: 010-1234-5678" className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium" />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-400 ml-1">배송 주소지</label>
+                        <textarea name="주소" required placeholder="상세 주소까지 정확하게 입력해 주세요." className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium h-20 resize-none"></textarea>
+                      </div>
                       
                       <button 
                         type="submit" 
                         disabled={isSubmitting}
-                        className={`w-full py-4 font-bold rounded-xl transition-all mt-4 ${isSubmitting ? 'bg-gray-300' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
+                        className={`w-full py-4 text-xs font-extrabold rounded-xl transition-all mt-2 shadow-sm ${isSubmitting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
                       >
-                        {isSubmitting ? "전송 중..." : "주문 완료"}
+                        {isSubmitting ? "주문 데이터 전송 중..." : "최종 주문 완료하기"}
                       </button>
                     </form>
                   </div>
                 )}
               </div>
-              <button onClick={() => setSelectedProduct(null)} className="absolute top-6 right-6 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><X size={20} /></button>
             </motion.div>
           </motion.div>
         )}
