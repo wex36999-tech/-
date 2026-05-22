@@ -310,19 +310,35 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
     return selectedProduct.options.split('/').map((opt: string) => opt.trim()).filter(Boolean);
   }, [selectedProduct]);
 
-  // 💰 [추가] 상품 가격과 수량을 곱해 실시간 총 금액을 계산하는 변수
+  // 💰 [수정 완료] 옵션 선택 변경 시 실시간으로 가격 변동이 반영되도록 로직 튜닝
   const totalPriceString = React.useMemo(() => {
     if (!selectedProduct || !selectedProduct.price) return '0원';
     
-    // "15,000원" 같은 문자열에서 숫자만 추출
-    const rawPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
+    // 1. 기본 상품 가격 숫자 추출 (예: "15,000원" -> 15000)
+    let basePrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
     
-    // 수량 반영 금액 계산
-    const calculatedTotal = rawPrice * quantity;
+    // 2. 만약 선택된 옵션이 있고, 그 옵션 텍스트 안에 가격 변동 내용(예: +5,000원 또는 -2,000원)이 있다면 파싱
+    if (selectedOption) {
+      // 괄호 안의 + 또는 - 부호와 숫자를 매칭 (예: (+5,000원) 이나 (+ 5000) 등)
+      const optionPriceMatch = selectedOption.match(/\(([-+])\s*([0-9,]+)\s*원?\)/);
+      if (optionPriceMatch) {
+        const sign = optionPriceMatch[1]; // "+" 또는 "-"
+        const amount = parseInt(optionPriceMatch[2].replace(/[^0-9]/g, ''), 10) || 0;
+        
+        if (sign === '+') {
+          basePrice += amount;
+        } else if (sign === '-') {
+          basePrice -= amount;
+        }
+      }
+    }
     
-    // 이쁘게 콤마 붙여서 '원' 결합
+    // 3. 최종 연산된 가격에 수량을 곱함
+    const calculatedTotal = basePrice * quantity;
+    
+    // 4. 세 자리 콤마 포맷팅 후 반환
     return `${calculatedTotal.toLocaleString()}원`;
-  }, [selectedProduct, quantity]);
+  }, [selectedProduct, selectedOption, quantity]); // 👈 selectedOption 상태 감지 추가!
 
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -437,7 +453,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                 <button
                   key={pageNum}
                   onClick={() => {
-                    setCurrentPage(pageNum); // 👈 불필요한 navLinks 오타 완벽 제거!
+                    setCurrentPage(pageNum);
                     document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${currentPage === pageNum ? 'bg-brand text-black font-black shadow-sm' : 'bg-white text-gray-400 hover:text-ink'}`}
@@ -523,12 +539,12 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-bold text-gray-400">총 상품 금액</span>
-                        <span className="text-lg font-black text-ink">{totalPriceString}</span> {/* 👈 실시간 연산 금액 반영 완료! */}
+                        <span className="text-lg font-black text-ink">{totalPriceString}</span>
                       </div>
                       <button 
                         onClick={() => {
                           if (productOptions.length > 0 && !selectedOption) {
-                            alert("商品 옵션을 선택해 주세요.");
+                            alert("상품 옵션을 선택해 주세요.");
                             return;
                           }
                           setIsOrderView(true);
@@ -550,11 +566,10 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                       <input type="hidden" name="상품명" value={selectedProduct.name} />
                       <input type="hidden" name="구매수량" value={quantity} />
                       {productOptions.length > 0 && <input type="hidden" name="선택옵션" value={selectedOption} />}
-                      <input type="hidden" name="결제금액" value={totalPriceString} /> {/* 👈 최종 금액 전송용 데이터 인풋 추가 */}
+                      <input type="hidden" name="결제금액" value={totalPriceString} />
 
                       <div>
                         <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
-                        {/* 👈 결제할 총 가성비 금액을 미리 한눈에 볼 수 있게 우측 괄호 안에 바인딩 */}
                         <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
                           {selectedProduct.name} / {quantity}개 {selectedOption ? `[옵션: ${selectedOption}]` : ''} ({totalPriceString})
                         </div>
@@ -566,7 +581,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                       </div>
                       
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-400 ml-1">連絡처</label>
+                        <label className="text-[11px] font-bold text-gray-400 ml-1">연락처</label>
                         <input name="연락처" required placeholder="예: 010-1234-5678" className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium" />
                       </div>
                       
