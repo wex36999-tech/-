@@ -24,7 +24,7 @@ const AdminPage = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
-  // 🔍 [신규 추가] 상품 실시간 검색어 상태
+  // 🔍 상품 실시간 검색어 상태
   const [searchQuery, setSearchQuery] = useState('');
 
   // 상품 목록 필터링용 상태
@@ -33,14 +33,14 @@ const AdminPage = () => {
   // 상품 등록 팝업(모달) 제어 상태
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // 상품 등록 폼 상태 (options 추가)
+  // 상품 등록 폼 상태
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     description: '',
     image: '',
     category: categories[0] || '농산물',
-    options: '', // 💡 구매 옵션 글자 상태 추가
+    options: '', // 💡 구매 옵션 글자 상태
     isSoldOut: false
   });
 
@@ -48,7 +48,7 @@ const AdminPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
-  // 💡 [신규 추가] 미니 저장 알림창(Toast) 제어 상태
+  // 💡 미니 저장 알림창(Toast) 제어 상태
   const [showToast, setShowToast] = useState(false);
 
   // 비밀번호 검사
@@ -62,7 +62,7 @@ const AdminPage = () => {
     }
   };
 
-  // 1. 카테고리 추가 함수 (구글 서버 실시간 저장 연동)
+  // 1. 카테고리 추가 함수
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
@@ -75,7 +75,7 @@ const AdminPage = () => {
     setNewCategoryName('');
   };
 
-  // 2. 카테고리 삭제 함수 (구글 서버 실시간 저장 연동)
+  // 2. 카테고리 삭제 함수
   const handleDropCategory = async (catName: string) => {
     if (window.confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) {
       const updatedCategories = categories.filter(c => c !== catName);
@@ -86,30 +86,28 @@ const AdminPage = () => {
     }
   };
 
-  // 🔄 3. [신규 추가] 카테고리 순서 변경 함수 (서버 실시간 반영)
+  // 🔄 3. 카테고리 순서 변경 함수
   const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
     const updatedCategories = [...categories];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
-    // 칸을 벗어나면 정지
     if (targetIndex < 0 || targetIndex >= updatedCategories.length) return;
 
-    // 위치 스왑
     const temp = updatedCategories[index];
     updatedCategories[index] = updatedCategories[targetIndex];
     updatedCategories[targetIndex] = temp;
 
-    // 구글 서버에 바로 저장
     await updateConfig({ categories: updatedCategories });
   };
 
-  // 4. 새 상품 등록 함수 (구글 파이어베이스 DB로 직통 슛!)
+  // 4. 새 상품 등록 함수 (★ 가격의 쉼표 버그 완벽 방어)
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = Date.now().toString();
     
-    // 비어있으면 '기본선택'으로 저장
-    const finalOptions = newProduct.options.trim() || '기본선택';
+    // 💡 혹시라도 옵션란에 쉼표(,)를 썼다면 슬래시(/)로 자동 변환하여 메인 화면 split(',') 버그를 원천 차단합니다.
+    const safeOptions = newProduct.options.replace(/,/g, ' / ');
+    const finalOptions = safeOptions.trim() || '기본선택';
     
     await addProduct({ ...newProduct, id, options: finalOptions });
     
@@ -122,14 +120,18 @@ const AdminPage = () => {
       options: '',
       isSoldOut: false 
     });
-    setShowAddModal(false); // 등록 성공 후 팝업창 자동으로 닫기
+    setShowAddModal(false);
     alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
   };
 
-  // 5. 상품 수정 저장 함수 (구글 파이어베이스 DB 실시간 업데이트)
+  // 5. 상품 수정 저장 함수 (★ 가격의 쉼표 버그 완벽 방어)
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalOptions = editingProduct.options?.trim() || '기본선택';
+    
+    // 💡 수정할 때도 옵션란의 쉼표(,)를 슬래시(/)로 자동 치환해 안전하게 만듭니다.
+    const safeOptions = (editingProduct.options || '').replace(/,/g, ' / ');
+    const finalOptions = safeOptions.trim() || '기본선택';
+    
     await updateProduct(editingProduct.id, { ...editingProduct, options: finalOptions });
     setShowEditModal(false);
     alert('상품 정보가 실시간으로 수정되었습니다!');
@@ -149,12 +151,10 @@ const AdminPage = () => {
     }
   };
 
-  // ⭐ [신규 추가] 우측 하단 대형 저장 버튼 클릭 시 작동하는 함수
   const handleMainSave = () => {
     setShowToast(true);
   };
 
-  // 알림창 2초 뒤 자동으로 사라지게 만드는 타이머 효과
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -164,14 +164,12 @@ const AdminPage = () => {
     }
   }, [showToast]);
 
-  // 🔍 [개조] 필터링 기능에 실시간 "검색 기능"까지 결합하여 계산
   const filteredProducts = products.filter((p: any) => {
     const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  // 🔒 로그인 전 화면
   if (!isAuthorized) {
     return (
       <div className="pt-40 pb-20 px-6 max-w-md mx-auto flex flex-col items-center justify-center min-h-[60vh]">
@@ -193,7 +191,6 @@ const AdminPage = () => {
   return (
     <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto relative">
       
-      {/* 🔔 [신규 추가] 상단 중앙 미니 저장 알림창 (Toast) */}
       {showToast && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] bg-ink/90 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-xl animate-bounce text-sm font-bold border border-white/10 backdrop-blur-sm">
           <div className="w-2 h-2 bg-brand rounded-full"></div>
@@ -210,7 +207,7 @@ const AdminPage = () => {
         <button onClick={() => setIsAuthorized(false)} className="text-xs font-bold text-gray-400 hover:text-red-500 border border-gray-200 px-4 py-2 rounded-xl bg-white transition-all">로그아웃</button>
       </div>
 
-      {/* 💻 [메인 영역] 등록된 상품 관리 한 축으로 넓게 재배치 */}
+      {/* 등록된 상품 관리 한 축으로 넓게 재배치 */}
       <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm mb-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
           <div className="flex items-center gap-2">
@@ -220,7 +217,6 @@ const AdminPage = () => {
             </h2>
           </div>
           
-          {/* 액션 버튼 세트 (카테고리 편집, 상품 등록) */}
           <div className="flex items-center gap-2 flex-wrap">
             <button onClick={() => setShowCategoryModal(true)} className="flex items-center gap-1.5 text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 px-4 py-3 rounded-2xl transition-all">
               <FolderPlus size={16} /> 카테고리 편집
@@ -231,7 +227,7 @@ const AdminPage = () => {
           </div>
         </div>
 
-        {/* 🔍 [신규 추가] 실시간 상품 검색창 */}
+        {/* 실시간 상품 검색창 */}
         <div className="relative mb-6">
           <Search className="absolute left-4 top-3.5 text-gray-400" size={18} />
           <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand text-sm font-medium" placeholder="수정할 상품의 이름을 입력해 보세요... (예: 장어)" />
@@ -248,7 +244,7 @@ const AdminPage = () => {
           ))}
         </div>
 
-        {/* 상품 리스트 (넓은 너비로 시원하게 배치) */}
+        {/* 상품 리스트 */}
         <div className="space-y-3 pr-1">
           {filteredProducts.map((product: any) => (
             <div key={product.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/70 rounded-2xl transition-all border gap-4 ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-60' : 'border-transparent shadow-sm'}`}>
@@ -263,12 +259,12 @@ const AdminPage = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-extrabold text-base text-inkdeploy">{product.name}</p>
+                    <p className="font-extrabold text-base text-ink">{product.name}</p>
                     <span className="text-[11px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 font-bold rounded-lg shadow-sm">{product.category}</span>
                   </div>
+                  {/* 💰 이제 여기에 13,000원처럼 쉼표가 깔끔하게 잘 나옵니다! */}
                   <p className="text-sm font-bold text-gray-500 mt-1">{product.price}</p>
                   {product.description && <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-xl">{product.description}</p>}
-                  {/* 💡 관리목록에서 옵션 등록 여부 살짝 표시 */}
                   {product.options && product.options !== '기본선택' && (
                     <p className="text-[11px] text-brand-dark font-semibold mt-1">옵션: {product.options}</p>
                   )}
@@ -297,7 +293,7 @@ const AdminPage = () => {
         </div>
       </div>
 
-      {/* 💾 [신규 추가] 우측 하단 고정형 (Floating) 대형 저장하기 버튼 */}
+      {/* 우측 하단 고정형 대형 저장하기 버튼 */}
       <button 
         onClick={handleMainSave}
         className="fixed bottom-8 right-8 z-[150] flex items-center gap-2 bg-ink text-white hover:bg-brand hover:text-black font-black px-7 py-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 group border border-white/10"
@@ -319,13 +315,14 @@ const AdminPage = () => {
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">商品명</label>
+                <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
                 <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1">가격</label>
-                  <input required value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 25,000원" />
+                  {/* 💡 가격에 쉼표를 마음껏 써도 된다고 명시 */}
+                  <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
+                  <input required value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 13,000원" />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-400 ml-1">카테고리 선택</label>
@@ -336,9 +333,9 @@ const AdminPage = () => {
                   </select>
                 </div>
               </div>
-              {/* 💡 [옵션 기능 개조] 슬래시 분리 관련 플레이스홀더 수정 */}
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (슬래시 / 로 구분)</label>
+                {/* 💡 오직 슬래시(/)로만 구분하라고 확실히 강조 및 안내 */}
+                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
                 <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 기본맛 / 매운맛 / 치즈맛 (비워두면 기본선택)" />
               </div>
               <div>
@@ -406,7 +403,7 @@ const AdminPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1">가격</label>
+                  <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
                   <input required value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
                 </div>
                 <div>
@@ -418,9 +415,8 @@ const AdminPage = () => {
                   </select>
                 </div>
               </div>
-              {/* 💡 [옵션 기능 개조] 슬래시 분리 관련 플레이스홀더 수정 */}
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (슬래시 / 로 구분)</label>
+                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
                 <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 기본맛 / 매운맛 / 치즈맛" />
               </div>
               <div>
@@ -447,4 +443,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage; 
+export default AdminPage;
