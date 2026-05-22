@@ -423,8 +423,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                 <button
                   key={pageNum}
                   onClick={() => {
-                    navLinks
-                    setCurrentPage(pageNum);
+                    setCurrentPage(pageNum); // 👈 불필요한 navLinks 오타 완벽 제거!
                     document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${currentPage === pageNum ? 'bg-brand text-black font-black shadow-sm' : 'bg-white text-gray-400 hover:text-ink'}`}
@@ -448,7 +447,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
         </section>
       </main>
 
-      {/* 📬 인스타 감성의 단정하고 트렌디한 올인원 옵션 선택 & 주문 모달 */}
+      {/* 📬 옵션 선택 & 주문 모달 */}
       <AnimatePresence>
         {selectedProduct && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
@@ -470,13 +469,12 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
               {/* 하단 옵션선택 및 주문서 폼 콘텐츠 영역 */}
               <div className="p-6 overflow-y-auto flex-1">
                 {!isOrderView ? (
-                  /* 단계 1: 옵션 확인 및 수량 조절 무드 */
+                  /* 단계 1: 옵션 확인 및 수량 조절 */
                   <div className="flex flex-col h-full justify-between">
                     <div>
                       <h2 className="text-xl font-black text-ink mb-1">{selectedProduct.name}</h2>
                       <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct.description}</p>
                       
-                      {/* 옵션이 있을 경우에만 단정하게 드롭다운 표출 */}
                       {productOptions.length > 0 && (
                         <div className="space-y-1.5 mb-4">
                           <label className="text-[11px] font-bold text-gray-400 ml-1">구매 옵션 선택</label>
@@ -496,7 +494,6 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                         </div>
                       )}
 
-                      {/* 수량 설정 영역 패널화 */}
                       <div className="space-y-1.5 mb-6">
                         <label className="text-[11px] font-bold text-gray-400 ml-1">주문 수량</label>
                         <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl border border-gray-100">
@@ -509,7 +506,6 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                       </div>
                     </div>
                     
-                    {/* 과하지 않은 핏의 하단 최종 가격 및 구매하기 버튼 */}
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-bold text-gray-400">총 상품 금액</span>
@@ -518,7 +514,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                       <button 
                         onClick={() => {
                           if (productOptions.length > 0 && !selectedOption) {
-                            alert("상품 옵션을 선택해 주세요.");
+                            alert("商品 옵션을 선택해 주세요.");
                             return;
                           }
                           setIsOrderView(true);
@@ -531,13 +527,13 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
                     </div>
                   </div>
                 ) : (
-                  /* 단계 2: 주소 입력 주문 양식 무드 */
+                  /* 단계 2: 주소 입력 주문 양식 */
                   <div className="w-full">
                     <button onClick={() => setIsOrderView(false)} className="text-gray-400 text-xs font-bold mb-4 hover:text-ink flex items-center gap-1">← 선택 화면으로 돌아가기</button>
                     <h2 className="text-lg font-black mb-4">배송지 주문서 작성</h2>
                     
                     <form onSubmit={handleOrderSubmit} className="space-y-3.5">
-                      <input type="hidden" name="商品명" value={selectedProduct.name} />
+                      <input type="hidden" name="상품명" value={selectedProduct.name} />
                       <input type="hidden" name="구매수량" value={quantity} />
                       {productOptions.length > 0 && <input type="hidden" name="선택옵션" value={selectedOption} />}
 
