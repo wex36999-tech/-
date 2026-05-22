@@ -5,6 +5,18 @@ import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, 
 // 🔒 사장님이 요청하신 관리자 새 비밀번호!
 const ADMIN_PASSWORD = '0121';
 
+// 상품 인터페이스 정의 (타입 안전성 확보)
+interface Product {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  image: string;
+  category: string;
+  options: string;
+  isSoldOut: boolean;
+}
+
 const AdminPage = () => {
   // 👈 파이어베이스 실시간 구글 서버 기능 연동
   const { 
@@ -20,7 +32,7 @@ const AdminPage = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   
   // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터
-  const categories = config.categories || ['농산물', '수산물'];
+  const categories: string[] = config.categories || ['농산물', '수산물'];
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
@@ -46,7 +58,7 @@ const AdminPage = () => {
 
   // 상품 수정 모달 상태
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // 💡 미니 저장 알림창(Toast) 제어 상태
   const [showToast, setShowToast] = useState(false);
@@ -80,6 +92,11 @@ const AdminPage = () => {
     if (window.confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) {
       const updatedCategories = categories.filter(c => c !== catName);
       await updateConfig({ categories: updatedCategories });
+      
+      // 현재 선택된 필터가 삭제된 카테고리라면 '전체'로 되돌리기
+      if (selectedFilter === catName) {
+        setSelectedFilter('전체');
+      }
       if (newProduct.category === catName) {
         setNewProduct({ ...newProduct, category: updatedCategories[0] || '' });
       }
@@ -100,7 +117,7 @@ const AdminPage = () => {
     await updateConfig({ categories: updatedCategories });
   };
 
-  // 4. 새 상품 등록 함수 (★ 쉼표 변환 코드 삭제 -> 입력한 그대로 완벽 원상복구)
+  // 4. 새 상품 등록 함수 (★ 입력한 그대로 완벽 보존)
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = Date.now().toString();
@@ -123,9 +140,10 @@ const AdminPage = () => {
     alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
   };
 
-  // 5. 상품 수정 저장 함수 (★ 쉼표 변환 코드 삭제 -> 입력한 그대로 완벽 원상복구)
+  // 5. 상품 수정 저장 함수 (★ 입력한 그대로 완벽 보존)
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editingProduct) return;
     
     // 수정할 때도 가격의 쉼표를 방해하지 않고 그대로 깔끔하게 저장합니다.
     const finalOptions = (editingProduct.options || '').trim() || '기본선택';
@@ -136,7 +154,7 @@ const AdminPage = () => {
   };
 
   // 6. 품절 토글 함수
-  const toggleSoldOut = async (product: any) => {
+  const toggleSoldOut = async (product: Product) => {
     const updatedProduct = { ...product, isSoldOut: !product.isSoldOut };
     await updateProduct(product.id, updatedProduct);
   };
@@ -161,6 +179,13 @@ const AdminPage = () => {
       return () => clearTimeout(timer);
     }
   }, [showToast]);
+
+  // 카테고리 변경 시 등록 폼의 기본 카테고리 동기화
+  useEffect(() => {
+    if (categories.length > 0 && !categories.includes(newProduct.category)) {
+      setNewProduct(prev => ({ ...prev, category: categories[0] }));
+    }
+  }, [categories, newProduct.category]);
 
   const filteredProducts = products.filter((p: any) => {
     const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
@@ -244,7 +269,7 @@ const AdminPage = () => {
 
         {/* 상품 리스트 */}
         <div className="space-y-3 pr-1">
-          {filteredProducts.map((product: any) => (
+          {filteredProducts.map((product: Product) => (
             <div key={product.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/70 rounded-2xl transition-all border gap-4 ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-60' : 'border-transparent shadow-sm'}`}>
               <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
                 <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 border border-gray-100 flex-shrink-0">
@@ -260,7 +285,6 @@ const AdminPage = () => {
                     <p className="font-extrabold text-base text-ink">{product.name}</p>
                     <span className="text-[11px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 font-bold rounded-lg shadow-sm">{product.category}</span>
                   </div>
-                  {/* 💰 이제 여기에 13,000원처럼 쉼표가 깔끔하게 잘 나옵니다! */}
                   <p className="text-sm font-bold text-gray-500 mt-1">{product.price}</p>
                   {product.description && <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-xl">{product.description}</p>}
                   {product.options && product.options !== '기본선택' && (
@@ -270,13 +294,13 @@ const AdminPage = () => {
               </div>
 
               <div className="flex items-center justify-end gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200">
-                <button onClick={() => toggleSoldOut(product)} className={`p-2.5 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-600' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
+                <button onClick={(e) => { e.stopPropagation(); toggleSoldOut(product); }} className={`p-2.5 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-600' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
                   {product.isSoldOut ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-                <button onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="p-2.5 bg-white text-gray-400 hover:text-ink rounded-xl shadow-sm transition-all">
+                <button onClick={(e) => { e.stopPropagation(); setEditingProduct(product); setShowEditModal(true); }} className="p-2.5 bg-white text-gray-400 hover:text-ink rounded-xl shadow-sm transition-all">
                   <Edit3 size={18} />
                 </button>
-                <button onClick={() => handleDeleteProduct(product.id)} className="p-2.5 text-red-400 hover:bg-red-50 rounded-xl transition-all">
+                <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product.id); }} className="p-2.5 text-red-400 hover:bg-red-50 rounded-xl transition-all">
                   <Trash2 size={18} />
                 </button>
               </div>
@@ -313,12 +337,11 @@ const AdminPage = () => {
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
+                <label className="text-xs font-bold text-gray-400 ml-1">商品명</label>
                 <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  {/* 💡 가격에 쉼표를 마음껏 써도 된다고 명시 */}
                   <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
                   <input required value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 13,000원" />
                 </div>
@@ -332,7 +355,6 @@ const AdminPage = () => {
                 </div>
               </div>
               <div>
-                {/* 💡 오직 슬래시(/)로만 구분하라고 확실히 강조 및 안내 */}
                 <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
                 <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg - 14,000원 / 3kg - 19,000원 (비워두면 기본선택)" />
               </div>
@@ -377,7 +399,7 @@ const AdminPage = () => {
                     <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로">
                       <ArrowDown size={15} />
                     </button>
-                    <button onClick={() => handleDropCategory(cat)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
+                    <button type="button" onClick={() => handleDropCategory(cat)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
                   </div>
                 </div>
               ))}

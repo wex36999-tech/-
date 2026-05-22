@@ -245,7 +245,7 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
       <div className="absolute bottom-2 right-2 bg-brand text-ink text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-md border border-white shadow-sm opacity-90">무료배송</div>
     </div>
     
-    {/* 모바일 글자 크기와 카드 하단 여백 다듬기 */}
+    {/* md:p-4 */}
     <div className="p-3 md:p-4">
       <h3 className="text-[14px] md:text-[15px] font-bold mb-0.5 text-ink line-clamp-1 break-keep">{product.name}</h3>
       <div className="text-[12px] md:text-[14px] text-ink-muted mb-1.5 line-clamp-1 break-keep">{product.description}</div>
@@ -295,11 +295,11 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
-  // 상품에 등록된 옵션을 배열로 가공하는 헬퍼 함수
+  // 💡 상품에 등록된 옵션을 배열로 가공하는 헬퍼 함수 (슬래시 '/' 기준으로 쪼개도록 변경완료!)
   const productOptions = React.useMemo(() => {
     if (!selectedProduct || !selectedProduct.options) return [];
     if (Array.isArray(selectedProduct.options)) return selectedProduct.options;
-    return selectedProduct.options.split(',').map((opt: string) => opt.trim()).filter(Boolean);
+    return selectedProduct.options.split('/').map((opt: string) => opt.trim()).filter(Boolean);
   }, [selectedProduct]);
 
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
