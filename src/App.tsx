@@ -572,9 +572,9 @@ const totalPriceString = React.useMemo(() => {
 
                       <div>
                         <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
-                        <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
-                          {selectedProduct.name} / {quantity}개 {selectedOption ? `[옵션: ${selectedOption}]` : ''} ({totalPriceString})
-                        </div>
+<div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
+  {selectedProduct.name} / {quantity}개 {selectedOption ? `[${selectedOption}]` : ''} / 합계: {totalPriceString}
+</div>
                       </div>
 
                       <div className="space-y-1">
