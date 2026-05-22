@@ -311,32 +311,39 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   }, [selectedProduct]);
 
   // 💰 [완전 수정!] 옵션에 명시된 금액 자체를 총 단가로 꽂아 넣는 절대 가격 산정 방식
-  const totalPriceString = React.useMemo(() => {
-    if (!selectedProduct || !selectedProduct.price) return '0원';
-    
-    let currentUnitPrice = 0;
+// 💰 [최종 수정] 괄호 안의 금액을 우선 추출하는 정규식 로직
+const totalPriceString = React.useMemo(() => {
+  if (!selectedProduct || !selectedProduct.price) return '0원';
+  
+  let currentUnitPrice = 0;
 
-    // 옵션을 선택했고, 그 옵션명 안에 금액(숫자)이 적혀있다면 그 금액을 최종 단가로 취급
-    if (selectedOption) {
-      // 숫자와 쉼표만 다 긁어모으기 (예: "3kg 15,000원" -> "15000")
-      const rawNumbers = selectedOption.replace(/[^0-9]/g, '');
-      const parsedOptionPrice = parseInt(rawNumbers, 10);
-      
-      if (!isNaN(parsedOptionPrice) && parsedOptionPrice > 0) {
-        currentUnitPrice = parsedOptionPrice; // 파싱된 옵션 가격 그대로 최종 단가 처리
+  if (selectedOption) {
+    // 1. 괄호 () 안에 있는 숫자와 쉼표를 찾습니다. (예: (19,000원) -> 19,000)
+    const bracketMatch = selectedOption.match(/\(([^)]+)\)/);
+    
+    if (bracketMatch) {
+      // 괄호 내용물 안에서 숫자만 쏙 뺍니다.
+      const rawPrice = bracketMatch[1].replace(/[^0-9]/g, '');
+      currentUnitPrice = parseInt(rawPrice, 10) || 0;
+    } else {
+      // 2. 괄호가 없다면, 기존 방식대로 '원' 앞의 숫자 뭉치를 찾습니다.
+      const priceMatch = selectedOption.match(/([0-9,]+)\s*원/);
+      if (priceMatch) {
+        currentUnitPrice = parseInt(priceMatch[1].replace(/[^0-9]/g, ''), 10) || 0;
       } else {
-        // 옵션명에 숫자가 아예 없다면 기본 상품 가격 적용
+        // 3. 숫자나 괄호가 없으면 상품의 기본 가격을 사용합니다.
         currentUnitPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
       }
-    } else {
-      // 옵션 선택 전이면 기본 상품 가격 적용
-      currentUnitPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
     }
-    
-    // 최종 단가 * 구매 수량 계산
-    const calculatedTotal = currentUnitPrice * quantity;
-    return `${calculatedTotal.toLocaleString()}원`;
-  }, [selectedProduct, selectedOption, quantity]);
+  } else {
+    // 옵션 선택 전에는 기본 상품 가격 적용
+    currentUnitPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
+  }
+  
+  // 최종 단가 * 구매 수량 계산
+  const calculatedTotal = currentUnitPrice * quantity;
+  return `${calculatedTotal.toLocaleString()}원`;
+}, [selectedProduct, selectedOption, quantity]);
 
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
