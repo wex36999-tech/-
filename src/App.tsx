@@ -21,7 +21,7 @@ const MetadataManager = () => {
   const { config } = useConfig();
 
   React.useEffect(() => {
-    document.title = `${config.name} | ${config.slogan}`;
+   document.title = "TodayCost";
     const setMetaTag = (property: string, content: string, attr = 'property') => {
       let element = document.querySelector(`meta[${attr}="${property}"]`);
       if (!element) {
@@ -33,12 +33,12 @@ const MetadataManager = () => {
     };
 
     setMetaTag('description', config.description, 'name');
-    setMetaTag('og:title', config.name);
+    setMetaTag('og:title', 'TodayCost');
     setMetaTag('og:description', config.description);
     setMetaTag('og:image', config.heroImage);
     setMetaTag('og:type', 'website');
     setMetaTag('twitter:card', 'summary_large_image', 'name');
-    setMetaTag('twitter:title', config.name, 'name');
+    setMetaTag('twitter:title', 'TodayCost', 'name');
     setMetaTag('twitter:description', config.description, 'name');
     setMetaTag('twitter:image', config.heroImage, 'name');
   }, [config]);
