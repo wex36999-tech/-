@@ -348,10 +348,7 @@ const totalPriceString = React.useMemo(() => {
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (productOptions.length > 0 && !selectedOption) {
-      alert("상품 옵션을 선택해 주세요.");
-      return;
-    }
+    // 옵션 선택을 강제하던 조건문을 삭제했습니다.
 
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
@@ -600,7 +597,7 @@ const totalPriceString = React.useMemo(() => {
                         disabled={isSubmitting}
                         className={`w-full py-4 text-xs font-extrabold rounded-xl transition-all mt-2 shadow-sm ${isSubmitting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
                       >
-                        {isSubmitting ? "주문 데이터 전송 중..." : "최종 주문 완료하기"}
+                        {isSubmitting ? "주문 데이터 전송 중..." : "주문하기"}
                       </button>
                     </form>
                   </div>
