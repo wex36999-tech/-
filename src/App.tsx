@@ -310,35 +310,33 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
     return selectedProduct.options.split('/').map((opt: string) => opt.trim()).filter(Boolean);
   }, [selectedProduct]);
 
-  // 💰 [수정 완료] 옵션 선택 변경 시 실시간으로 가격 변동이 반영되도록 로직 튜닝
+  // 💰 [완전 수정!] 옵션에 명시된 금액 자체를 총 단가로 꽂아 넣는 절대 가격 산정 방식
   const totalPriceString = React.useMemo(() => {
     if (!selectedProduct || !selectedProduct.price) return '0원';
     
-    // 1. 기본 상품 가격 숫자 추출 (예: "15,000원" -> 15000)
-    let basePrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
-    
-    // 2. 만약 선택된 옵션이 있고, 그 옵션 텍스트 안에 가격 변동 내용(예: +5,000원 또는 -2,000원)이 있다면 파싱
+    let currentUnitPrice = 0;
+
+    // 옵션을 선택했고, 그 옵션명 안에 금액(숫자)이 적혀있다면 그 금액을 최종 단가로 취급
     if (selectedOption) {
-      // 괄호 안의 + 또는 - 부호와 숫자를 매칭 (예: (+5,000원) 이나 (+ 5000) 등)
-      const optionPriceMatch = selectedOption.match(/\(([-+])\s*([0-9,]+)\s*원?\)/);
-      if (optionPriceMatch) {
-        const sign = optionPriceMatch[1]; // "+" 또는 "-"
-        const amount = parseInt(optionPriceMatch[2].replace(/[^0-9]/g, ''), 10) || 0;
-        
-        if (sign === '+') {
-          basePrice += amount;
-        } else if (sign === '-') {
-          basePrice -= amount;
-        }
+      // 숫자와 쉼표만 다 긁어모으기 (예: "3kg 15,000원" -> "15000")
+      const rawNumbers = selectedOption.replace(/[^0-9]/g, '');
+      const parsedOptionPrice = parseInt(rawNumbers, 10);
+      
+      if (!isNaN(parsedOptionPrice) && parsedOptionPrice > 0) {
+        currentUnitPrice = parsedOptionPrice; // 파싱된 옵션 가격 그대로 최종 단가 처리
+      } else {
+        // 옵션명에 숫자가 아예 없다면 기본 상품 가격 적용
+        currentUnitPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
       }
+    } else {
+      // 옵션 선택 전이면 기본 상품 가격 적용
+      currentUnitPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
     }
     
-    // 3. 최종 연산된 가격에 수량을 곱함
-    const calculatedTotal = basePrice * quantity;
-    
-    // 4. 세 자리 콤마 포맷팅 후 반환
+    // 최종 단가 * 구매 수량 계산
+    const calculatedTotal = currentUnitPrice * quantity;
     return `${calculatedTotal.toLocaleString()}원`;
-  }, [selectedProduct, selectedOption, quantity]); // 👈 selectedOption 상태 감지 추가!
+  }, [selectedProduct, selectedOption, quantity]);
 
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
