@@ -100,14 +100,13 @@ const AdminPage = () => {
     await updateConfig({ categories: updatedCategories });
   };
 
-  // 4. 새 상품 등록 함수 (★ 가격의 쉼표 버그 완벽 방어)
+  // 4. 새 상품 등록 함수 (★ 쉼표 변환 코드 삭제 -> 입력한 그대로 완벽 원상복구)
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = Date.now().toString();
     
-    // 💡 혹시라도 옵션란에 쉼표(,)를 썼다면 슬래시(/)로 자동 변환하여 메인 화면 split(',') 버그를 원천 차단합니다.
-    const safeOptions = newProduct.options.replace(/,/g, ' / ');
-    const finalOptions = safeOptions.trim() || '기본선택';
+    // 쉼표를 건드리지 않고, 사장님이 입력하신 텍스트 형태 그대로 저장합니다.
+    const finalOptions = newProduct.options.trim() || '기본선택';
     
     await addProduct({ ...newProduct, id, options: finalOptions });
     
@@ -124,13 +123,12 @@ const AdminPage = () => {
     alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
   };
 
-  // 5. 상품 수정 저장 함수 (★ 가격의 쉼표 버그 완벽 방어)
+  // 5. 상품 수정 저장 함수 (★ 쉼표 변환 코드 삭제 -> 입력한 그대로 완벽 원상복구)
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 💡 수정할 때도 옵션란의 쉼표(,)를 슬래시(/)로 자동 치환해 안전하게 만듭니다.
-    const safeOptions = (editingProduct.options || '').replace(/,/g, ' / ');
-    const finalOptions = safeOptions.trim() || '기본선택';
+    // 수정할 때도 가격의 쉼표를 방해하지 않고 그대로 깔끔하게 저장합니다.
+    const finalOptions = (editingProduct.options || '').trim() || '기본선택';
     
     await updateProduct(editingProduct.id, { ...editingProduct, options: finalOptions });
     setShowEditModal(false);
@@ -336,7 +334,7 @@ const AdminPage = () => {
               <div>
                 {/* 💡 오직 슬래시(/)로만 구분하라고 확실히 강조 및 안내 */}
                 <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
-                <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 기본맛 / 매운맛 / 치즈맛 (비워두면 기본선택)" />
+                <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg - 14,000원 / 3kg - 19,000원 (비워두면 기본선택)" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
@@ -417,7 +415,7 @@ const AdminPage = () => {
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
-                <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 기본맛 / 매운맛 / 치즈맛" />
+                <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg - 14,000원 / 3kg - 19,000원" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
