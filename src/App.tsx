@@ -361,7 +361,7 @@ const totalPriceString = React.useMemo(() => {
       });
 
       if (response.ok) {
-        alert("감사합니다. 배송안내 문자를 확인해주세요 오늘도 가성비!");
+        alert("감사합니다. 입금 후 배송 안내문자를 확인해주세요 국민은행 063302-04-222993(이성현) 오늘도 가성비!");
         setSelectedProduct(null);
         setIsOrderView(false);
       } else {
