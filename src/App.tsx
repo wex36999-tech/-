@@ -568,23 +568,26 @@ const totalPriceString = React.useMemo(() => {
   >
     ← 선택 화면으로 돌아가기
   </button>
-  
   <h2 className="text-lg font-black mb-4">배송지 주문서 작성</h2>
   
-  <form onSubmit={handleOrderSubmit} className="space-y-3.5">
-    {/* 폼프리 전송용 데이터 (상태값이 변경되면 value도 실시간으로 반영됩니다) */}
-    <input type="hidden" name="상품명" value={selectedProduct.name} />
-    <input type="hidden" name="구매수량" value={`${quantity}개`} />
-    <input type="hidden" name="선택옵션" value={selectedOption || "옵션 없음"} />
-    <input type="hidden" name="결제금액" value={totalPriceString} />
+ <form onSubmit={handleOrderSubmit} className="space-y-3.5">
+  {/* 폼프리 전송용 데이터 */}
+  <input type="hidden" name="상품명" value={selectedProduct.name} />
+  <input type="hidden" name="구매수량" value={`${quantity}개`} />
+  <input type="hidden" name="선택옵션" value={selectedOption || "옵션 없음"} />
+  <input type="hidden" name="결제금액" value={totalPriceString} />
 
-    {/* 화면 표시용 정보 (상태값이 바뀌면 즉시 화면도 바뀝니다) */}
-    <div>
-      <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
-      <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
-        {selectedProduct.name} / {quantity}개 {selectedOption ? `[${selectedOption}]` : ''} / 합계: {totalPriceString}
-      </div>
+  {/* 화면 표시용 정보 */}
+  <div>
+    <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
+    <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
+      {selectedProduct.name}
+      <br />
+      수량: {quantity}개 {selectedOption ? `| 옵션: ${selectedOption}` : ''}
+      <br />
+      합계: {totalPriceString}
     </div>
+  </div>
       <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
       <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
         {selectedProduct.name} 
