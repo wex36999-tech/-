@@ -570,14 +570,14 @@ const totalPriceString = React.useMemo(() => {
   </button>
   <h2 className="text-lg font-black mb-4">배송지 주문서 작성</h2>
   
- <form onSubmit={handleOrderSubmit} className="space-y-3.5">
+<form onSubmit={handleOrderSubmit} className="space-y-3.5">
   {/* 폼프리 전송용 데이터 */}
   <input type="hidden" name="상품명" value={selectedProduct.name} />
   <input type="hidden" name="구매수량" value={`${quantity}개`} />
   <input type="hidden" name="선택옵션" value={selectedOption || "옵션 없음"} />
   <input type="hidden" name="결제금액" value={totalPriceString} />
 
-  {/* 화면 표시용 정보 */}
+  {/* 주문 상품 정보 (중복 제거하고 하나로 합쳤습니다) */}
   <div>
     <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
     <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
@@ -588,39 +588,31 @@ const totalPriceString = React.useMemo(() => {
       합계: {totalPriceString}
     </div>
   </div>
-      <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
-      <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
-        {selectedProduct.name} 
-        <br />
-        수량: {quantity}개 {selectedOption ? `| 옵션: ${selectedOption}` : ''} 
-        <br />
-        합계: {totalPriceString}
-      </div>
-    </div>
 
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-400 ml-1">주문자 성함</label>
-                        <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium" />
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-400 ml-1">연락처</label>
-                        <input name="연락처" required placeholder="예: 010-1234-5678" className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium" />
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-400 ml-1">배송 주소지</label>
-                        <textarea name="주소" required placeholder="상세 주소까지 정확하게 입력해 주세요." className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium h-20 resize-none"></textarea>
-                      </div>
-                      
-                      <button 
-                        type="submit" 
-                        disabled={isSubmitting}
-                        className={`w-full py-4 text-xs font-extrabold rounded-xl transition-all mt-2 shadow-sm ${isSubmitting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
-                      >
-                        {isSubmitting ? "주문 데이터 전송 중..." : "주문하기"}
-                      </button>
-                    </form>
+  {/* 사용자 입력 필드 */}
+  <div className="space-y-1">
+    <label className="text-[11px] font-bold text-gray-400 ml-1">주문자 성함</label>
+    <input name="성함" required placeholder="받으시는 분 성함" className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium" />
+  </div>
+  
+  <div className="space-y-1">
+    <label className="text-[11px] font-bold text-gray-400 ml-1">연락처</label>
+    <input name="연락처" required placeholder="예: 010-1234-5678" className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium" />
+  </div>
+  
+  <div className="space-y-1">
+    <label className="text-[11px] font-bold text-gray-400 ml-1">배송 주소지</label>
+    <textarea name="주소" required placeholder="상세 주소까지 정확하게 입력해 주세요." className="w-full p-3.5 bg-gray-50 border border-transparent focus:border-brand rounded-xl outline-none text-xs font-medium h-20 resize-none"></textarea>
+  </div>
+  
+  <button 
+    type="submit" 
+    disabled={isSubmitting}
+    className={`w-full py-4 text-xs font-extrabold rounded-xl transition-all mt-2 shadow-sm ${isSubmitting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-ink text-white hover:bg-brand hover:text-ink'}`}
+  >
+    {isSubmitting ? "주문 데이터 전송 중..." : "주문하기"}
+  </button>
+</form>
                   </div>
                 )}
               </div>
