@@ -568,6 +568,7 @@ const totalPriceString = React.useMemo(() => {
   >
     ← 선택 화면으로 돌아가기
   </button>
+  
   <h2 className="text-lg font-black mb-4">배송지 주문서 작성</h2>
   
   <form onSubmit={handleOrderSubmit} className="space-y-3.5">
@@ -579,6 +580,11 @@ const totalPriceString = React.useMemo(() => {
 
     {/* 화면 표시용 정보 (상태값이 바뀌면 즉시 화면도 바뀝니다) */}
     <div>
+      <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
+      <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
+        {selectedProduct.name} / {quantity}개 {selectedOption ? `[${selectedOption}]` : ''} / 합계: {totalPriceString}
+      </div>
+    </div>
       <label className="text-[11px] font-bold text-gray-400 ml-1">주문 상품 정보</label>
       <div className="p-3 bg-brand/5 border border-brand/20 rounded-xl text-xs font-bold text-ink-muted">
         {selectedProduct.name} 
