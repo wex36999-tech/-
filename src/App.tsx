@@ -262,6 +262,16 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const { config, products } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isOrderView, setIsOrderView] = React.useState(false);
+  React.useEffect(() => {
+  if (isOrderView) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'unset';
+  }
+  return () => {
+    document.body.style.overflow = 'unset';
+  };
+}, [isOrderView]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // --- 🔍 검색 바 상태 추가 ---
