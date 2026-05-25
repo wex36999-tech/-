@@ -264,12 +264,18 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const [isOrderView, setIsOrderView] = React.useState(false);
   React.useEffect(() => {
   if (isOrderView) {
+    // body와 html 모두 스크롤 막기
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
   } else {
+    // body와 html 모두 스크롤 복구
     document.body.style.overflow = 'unset';
+    document.documentElement.style.overflow = 'unset';
   }
   return () => {
+    // 혹시 모를 상황을 대비해 정리
     document.body.style.overflow = 'unset';
+    document.documentElement.style.overflow = 'unset';
   };
 }, [isOrderView]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
