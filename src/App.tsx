@@ -245,8 +245,8 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
     </div>
     
     <div className="p-3 md:p-4">
-      <h3 className="text-[14px] md:text-[15px] font-bold mb-0.5 text-ink line-clamp-1 break-keep">{product.name}</h3>
-      <div className="text-[12px] md:text-[14px] text-ink-muted mb-1.5 line-clamp-1 break-keep">{product.description}</div>
+      <h3 className="text-[14px] md:text-[15px] font-bold mb-0.5 text-ink line-clamp-2 break-keep">{product.name}</h3>
+      <div className="text-[12px] md:text-[14px] text-ink-muted mb-1.5 line-clamp-2 break-keep">{product.description}</div>
       <div className="text-[14px] md:text-[16px] text-brand-dark font-black">{product.price}</div>
     </div>
   </div>
