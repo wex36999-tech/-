@@ -234,9 +234,9 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
   <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
     <div className="w-full aspect-square bg-gray-50/50 rounded-t-[16px] overflow-hidden relative">
       
-      {/* 🌟 왼쪽 위 특가할인 배지 */}
+      {/* 🌟 왼쪽 위 고급스러운 다크 레드 특가할인 배지 */}
       {product.name.includes("특가할인") && (
-        <div className="absolute top-2 left-2 z-20 bg-rose-500 text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm">
+        <div className="absolute top-2 left-2 z-20 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
           특가할인
         </div>
       )}
