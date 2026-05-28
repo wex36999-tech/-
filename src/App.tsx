@@ -233,7 +233,16 @@ const Footer = () => {
 const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (p: any) => void }) => (
   <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
     <div className="w-full aspect-square bg-gray-50/50 rounded-t-[16px] overflow-hidden relative">
+      
+      {/* 🌟 왼쪽 위 특가할인 배지 */}
+      {product.name.includes("특가할인") && (
+        <div className="absolute top-2 left-2 z-20 bg-rose-500 text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm">
+          특가할인
+        </div>
+      )}
+
       <img src={product.image} alt={product.name} loading="lazy" className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isSoldOut ? 'grayscale-[0.5] blur-[1px]' : ''}`} referrerPolicy="no-referrer" />
+      
       {product.isSoldOut && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
           <div className="bg-white/95 px-4 py-2 rounded-full border border-gray-200 shadow-2xl scale-100 md:scale-110">
