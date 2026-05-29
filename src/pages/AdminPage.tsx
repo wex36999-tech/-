@@ -12,6 +12,7 @@ interface Product {
   price: string;
   description: string;
   image: string;
+  detailImages?: string; // 👈 여기 추가
   category: string;
   options: string;
   isSoldOut: boolean;
@@ -46,13 +47,15 @@ const AdminPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
   // 상품 등록 폼 상태
+// 상품 등록 폼 상태 (수정 완료!)
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     description: '',
     image: '',
+    detailImages: '', // 👈 이거 하나만 추가!
     category: categories[0] || '농산물',
-    options: '', // 💡 구매 옵션 글자 상태
+    options: '', 
     isSoldOut: false
   });
 
@@ -325,7 +328,7 @@ const AdminPage = () => {
       </button>
 
       {/* 📬 팝업 1: 새 상품 등록 모달 */}
-      {showAddModal && (
+{showAddModal && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between mb-6">
@@ -337,7 +340,7 @@ const AdminPage = () => {
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">商品명</label>
+                <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
                 <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -356,12 +359,16 @@ const AdminPage = () => {
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
-                {/* ⭐ [수정] 사장님의 새로운 옵션 기입 규칙에 맞춰 placeholder 문구 업그레이드! */}
                 <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg 10,000원 / 3kg 15,000원 / 5kg 23,500원" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
                 <input required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="https://res.cloudinary.com/..." />
+              </div>
+              {/* 👈 상세 이미지 입력 필드 추가 */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
+                <input value={newProduct.detailImages} onChange={e => setNewProduct({...newProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
