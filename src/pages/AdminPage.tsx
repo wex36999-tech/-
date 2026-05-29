@@ -445,12 +445,16 @@ const AdminPage = () => {
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
-                {/* ⭐ [수정] 수정 모달창 안의 옵션 기입 가이드도 일관성 있게 변경! */}
                 <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg 10,000원 / 3kg 15,000원 / 5kg 23,500원" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
                 <input required value={editingProduct.image} onChange={e => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
+              </div>
+              {/* 👈 상세 이미지 수정 필드 추가 */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
+                <input value={editingProduct.detailImages || ''} onChange={e => setEditingProduct({...editingProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
