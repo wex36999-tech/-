@@ -327,11 +327,11 @@ const AdminPage = () => {
         저장하기
       </button>
 
+
       {/* 📬 팝업 1: 새 상품 등록 모달 */}
-{/* 📬 팝업 1: 새 상품 등록 모달 */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 pt-10 overflow-y-auto">
-          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl">
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl mt-4 mb-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-black text-xl flex items-center gap-2">
                 <Plus size={22} className="text-brand-dark" /> 새 상품 등록
@@ -385,8 +385,8 @@ const AdminPage = () => {
 
       {/* 📬 팝업 2: 카테고리 편집 모달 */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 pt-10 overflow-y-auto">
-          <div className="bg-white rounded-[32px] p-6 max-w-sm w-full border border-border shadow-2xl">
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-[32px] p-6 max-w-sm w-full border border-border shadow-2xl mt-4 mb-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-black text-lg">카테고리 편집</h3>
               <button onClick={() => setShowCategoryModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
@@ -413,8 +413,8 @@ const AdminPage = () => {
 
       {/* 팝업 3: 상품 상세 수정 모달 */}
       {showEditModal && editingProduct && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 pt-10 overflow-y-auto">
-          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl">
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl mt-4 mb-4">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-black text-xl">상품 정보 수정</h3>
               <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
