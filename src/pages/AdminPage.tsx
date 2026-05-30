@@ -328,9 +328,10 @@ const AdminPage = () => {
       </button>
 
       {/* 📬 팝업 1: 새 상품 등록 모달 */}
-{showAddModal && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
+{/* 📬 팝업 1: 새 상품 등록 모달 */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 pt-10 overflow-y-auto">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-black text-xl flex items-center gap-2">
                 <Plus size={22} className="text-brand-dark" /> 새 상품 등록
@@ -365,7 +366,6 @@ const AdminPage = () => {
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
                 <input required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="https://res.cloudinary.com/..." />
               </div>
-              {/* 👈 상세 이미지 입력 필드 추가 */}
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
                 <input value={newProduct.detailImages} onChange={e => setNewProduct({...newProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
@@ -385,7 +385,7 @@ const AdminPage = () => {
 
       {/* 📬 팝업 2: 카테고리 편집 모달 */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 pt-10 overflow-y-auto">
           <div className="bg-white rounded-[32px] p-6 max-w-sm w-full border border-border shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-black text-lg">카테고리 편집</h3>
@@ -399,14 +399,9 @@ const AdminPage = () => {
               {categories.map((cat, index) => (
                 <div key={cat} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
                   <span className="truncate max-w-[140px]">{cat}</span>
-                  
                   <div className="flex items-center gap-1">
-                    <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로">
-                      <ArrowUp size={15} />
-                    </button>
-                    <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로">
-                      <ArrowDown size={15} />
-                    </button>
+                    <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로"><ArrowUp size={15} /></button>
+                    <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로"><ArrowDown size={15} /></button>
                     <button type="button" onClick={() => handleDropCategory(cat)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
                   </div>
                 </div>
@@ -418,8 +413,8 @@ const AdminPage = () => {
 
       {/* 팝업 3: 상품 상세 수정 모달 */}
       {showEditModal && editingProduct && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-start justify-center p-4 z-50 pt-10 overflow-y-auto">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-black text-xl">상품 정보 수정</h3>
               <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
@@ -451,7 +446,6 @@ const AdminPage = () => {
                 <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
                 <input required value={editingProduct.image} onChange={e => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
               </div>
-              {/* 👈 상세 이미지 수정 필드 추가 */}
               <div>
                 <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
                 <input value={editingProduct.detailImages || ''} onChange={e => setEditingProduct({...editingProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
