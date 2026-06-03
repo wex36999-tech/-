@@ -273,44 +273,49 @@ const AdminPage = () => {
         {/* 상품 리스트 */}
         <div className="space-y-3 pr-1">
           {[...filteredProducts]
-            .sort((a, b) => categories.indexOf(a.category) - categories.indexOf(b.category))
+            .sort((a, b) => {
+              const indexA = categories.indexOf(a.category);
+              const indexB = categories.indexOf(b.category);
+              // 카테고리가 매칭되지 않으면(index가 -1이면) 999번으로 처리하여 맨 뒤로 보냄
+              return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+            })
             .map((product: Product) => (
-            <div key={product.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/70 rounded-2xl transition-all border gap-4 ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-60' : 'border-transparent shadow-sm'}`}>
-              <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
-                <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 border border-gray-100 flex-shrink-0">
-                  <img src={product.image} className="w-full h-full object-cover" alt="" />
-                  {product.isSoldOut && (
-                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-[1px] flex items-center justify-center">
-                      <span className="text-xs text-white font-black tracking-wider">품절</span>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-extrabold text-base text-ink">{product.name}</p>
-                    <span className="text-[11px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 font-bold rounded-lg shadow-sm">{product.category}</span>
+              <div key={product.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/70 rounded-2xl transition-all border gap-4 ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-60' : 'border-transparent shadow-sm'}`}>
+                <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
+                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 border border-gray-100 flex-shrink-0">
+                    <img src={product.image} className="w-full h-full object-cover" alt="" />
+                    {product.isSoldOut && (
+                      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-[1px] flex items-center justify-center">
+                        <span className="text-xs text-white font-black tracking-wider">품절</span>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm font-bold text-gray-500 mt-1">{product.price}</p>
-                  {product.description && <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-xl">{product.description}</p>}
-                  {product.options && product.options !== '기본선택' && (
-                    <p className="text-[11px] text-brand-dark font-semibold mt-1">옵션: {product.options}</p>
-                  )}
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-extrabold text-base text-ink">{product.name}</p>
+                      <span className="text-[11px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 font-bold rounded-lg shadow-sm">{product.category}</span>
+                    </div>
+                    <p className="text-sm font-bold text-gray-500 mt-1">{product.price}</p>
+                    {product.description && <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-xl">{product.description}</p>}
+                    {product.options && product.options !== '기본선택' && (
+                      <p className="text-[11px] text-brand-dark font-semibold mt-1">옵션: {product.options}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200">
+                  <button onClick={(e) => { e.stopPropagation(); toggleSoldOut(product); }} className={`p-2.5 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-600' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
+                    {product.isSoldOut ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); setEditingProduct(product); setShowEditModal(true); }} className="p-2.5 bg-white text-gray-400 hover:text-ink rounded-xl shadow-sm transition-all">
+                    <Edit3 size={18} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product.id); }} className="p-2.5 text-red-400 hover:bg-red-50 rounded-xl transition-all">
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center justify-end gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200">
-                <button onClick={(e) => { e.stopPropagation(); toggleSoldOut(product); }} className={`p-2.5 rounded-xl transition-all ${product.isSoldOut ? 'bg-gray-200 text-gray-600' : 'bg-white text-gray-400 hover:text-ink shadow-sm'}`} title={product.isSoldOut ? "판매중으로 변경" : "품절처리"}>
-                  {product.isSoldOut ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); setEditingProduct(product); setShowEditModal(true); }} className="p-2.5 bg-white text-gray-400 hover:text-ink rounded-xl shadow-sm transition-all">
-                  <Edit3 size={18} />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product.id); }} className="p-2.5 text-red-400 hover:bg-red-50 rounded-xl transition-all">
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
           {filteredProducts.length === 0 && (
             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200 px-4">
               <Package size={40} className="mx-auto text-gray-300 mb-4" />
