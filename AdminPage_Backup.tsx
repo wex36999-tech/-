@@ -272,7 +272,9 @@ const AdminPage = () => {
 
         {/* 상품 리스트 */}
         <div className="space-y-3 pr-1">
-          {filteredProducts.map((product: Product) => (
+          {[...filteredProducts]
+            .sort((a, b) => categories.indexOf(a.category) - categories.indexOf(b.category))
+            .map((product: Product) => (
             <div key={product.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/70 rounded-2xl transition-all border gap-4 ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-60' : 'border-transparent shadow-sm'}`}>
               <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
                 <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 border border-gray-100 flex-shrink-0">
