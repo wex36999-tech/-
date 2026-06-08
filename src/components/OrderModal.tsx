@@ -25,17 +25,23 @@ export const OrderModal = ({
           className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative" 
           onClick={e => e.stopPropagation()}
         >
-          <div className="w-full h-56 overflow-hidden relative flex-shrink-0">
-            <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
-            <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
-              <X size={20} />
-            </button>
-          </div>
+          {/* 상세 뷰가 아닐 때만 이미지 영역 표시 */}
+          {!isDetailView && (
+            <div className="w-full h-56 overflow-hidden relative flex-shrink-0">
+              <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
+              <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
+                <X size={20} />
+              </button>
+            </div>
+          )}
 
-          <div className="p-6 overflow-y-auto flex-1">
+          <div className="p-6 overflow-y-auto flex-1 relative">
             {isDetailView ? (
               <div className="w-full">
-                <button type="button" onClick={() => setIsDetailView(false)} className="mb-4 text-xs font-bold text-gray-400 hover:text-ink flex items-center gap-1">← 돌아가기</button>
+                {/* 돌아가기 버튼 고정 (sticky) */}
+                <div className="sticky top-0 bg-white/95 z-10 pt-2 pb-4 border-b border-gray-50">
+                  <button type="button" onClick={() => setIsDetailView(false)} className="text-xs font-bold text-gray-400 hover:text-ink flex items-center gap-1">← 돌아가기</button>
+                </div>
                 {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
                   <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm" referrerPolicy="no-referrer" />
                 )) : <p className="text-center text-gray-400 py-10 text-xs">상세 이미지가 없습니다.</p>}
