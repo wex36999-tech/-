@@ -38,9 +38,15 @@ export const OrderModal = ({
           <div className="p-6 overflow-y-auto flex-1 relative">
             {isDetailView ? (
               <div className="w-full">
-                {/* 돌아가기 버튼 고정 (sticky) */}
-                <div className="sticky top-0 bg-white/95 z-10 pt-2 pb-4 border-b border-gray-50">
-                  <button type="button" onClick={() => setIsDetailView(false)} className="text-xs font-bold text-gray-400 hover:text-ink flex items-center gap-1">← 돌아가기</button>
+                {/* 인스타 감성 고정 버튼 */}
+                <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 pt-2 pb-4">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsDetailView(false)} 
+                    className="px-4 py-1.5 bg-gray-100/80 hover:bg-gray-200 text-ink text-[11px] font-bold rounded-full transition-all flex items-center gap-1 shadow-sm"
+                  >
+                    <span className="text-[14px]">←</span> 닫기
+                  </button>
                 </div>
                 {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
                   <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm" referrerPolicy="no-referrer" />
