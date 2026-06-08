@@ -163,6 +163,7 @@ const Footer = () => {
   const { config } = useConfig();
   
   const handleFooterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    // ... 기존과 동일 (handleFooterSubmit 로직 유지) ...
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -185,6 +186,7 @@ const Footer = () => {
   return (
     <footer id="contact" className="bg-[#fafafa] border-t border-border py-20 px-10">
       <div className="max-w-7xl mx-auto">
+        {/* ... (중략: 기존 Contact Us 및 폼 영역 유지) ... */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-20">
           <div>
             <h2 className="text-3xl font-bold mb-8 tracking-tight">Contact Us</h2>
@@ -216,10 +218,15 @@ const Footer = () => {
             </form>
           </div>
         </div>
+
+        {/* 🌟 수정된 하단 영역: 이용약관 링크 추가 */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-10 border-t border-border">
           <div className="text-[11px] text-[#888] leading-relaxed">
             상호명: {config.name} | 사업자등록번호: {config.businessNumber} | 대표: {config.representative}<br />
             주소: {config.address} | Copyright © {new Date().getFullYear()} ValueToday All rights reserved.
+            <div className="mt-2">
+               <Link to="/terms" className="hover:underline font-bold text-ink">이용약관</Link>
+            </div>
           </div>
           <div className="flex gap-4">
             <a href={config.sns?.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">IG</a>
