@@ -38,14 +38,14 @@ export const OrderModal = ({
           <div className="p-6 overflow-y-auto flex-1 relative">
             {isDetailView ? (
               <div className="w-full">
-                {/* 인스타 감성 고정 버튼 */}
-                <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 pt-2 pb-4">
+                {/* 인스타 감성 고정 버튼 (브랜드 컬러 적용) */}
+                <div className="sticky top-0 bg-white/90 backdrop-blur-md z-10 pt-2 pb-4">
                   <button 
                     type="button" 
                     onClick={() => setIsDetailView(false)} 
-                    className="px-4 py-1.5 bg-gray-100/80 hover:bg-gray-200 text-ink text-[11px] font-bold rounded-full transition-all flex items-center gap-1 shadow-sm"
+                    className="px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand-dark text-[11px] font-bold rounded-full transition-all flex items-center gap-1 border border-brand/20"
                   >
-                    <span className="text-[14px]">←</span> 닫기
+                    ← 돌아가기
                   </button>
                 </div>
                 {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
