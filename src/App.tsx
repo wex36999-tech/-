@@ -4,6 +4,7 @@ import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown } from 'lucide-react';
 import { OrderModal } from './components/OrderModal';
+import { Terms } from './pages/Terms';
 
 // --- 관리자 페이지 임포트 ---
 import AdminPage from './pages/AdminPage';
@@ -555,6 +556,8 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
         <Route path="/admin" element={<AdminPage />} />
+        {/* 이용약관 페이지 경로 추가 */}
+        <Route path="/terms" element={<Terms />} />
       </Routes>
       <Footer />
     </div>
