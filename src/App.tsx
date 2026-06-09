@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown } from 'lucide-react';
 import { OrderModal } from './components/OrderModal';
 import { Terms } from './pages/Terms';
+import { BannerModal } from './components/BannerModal';
 
 // --- 관리자 페이지 임포트 ---
 import AdminPage from './pages/AdminPage';
@@ -557,6 +558,7 @@ const AppContent = () => {
   const [activeCategory, setActiveCategory] = React.useState('전체');
   return (
     <div className="min-h-screen bg-white font-pretendard text-ink">
+      <BannerModal />
       <MetadataManager />
       <ScrollToTop />
       <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
