@@ -26,22 +26,25 @@ export const BannerModal = () => {
           initial={{ opacity: 0, x: 100 }} 
           animate={{ opacity: 1, x: 0 }} 
           exit={{ opacity: 0, x: 100 }}
-          className="fixed bottom-6 right-6 z-[100] w-[280px] bg-white rounded-2xl shadow-xl border border-gray-100 p-4"
+          // PC에서는 더 크게(md:w-[360px]), 패딩도 더 여유롭게(md:p-6) 수정했습니다
+          className="fixed bottom-6 right-6 z-[100] w-[280px] md:w-[360px] bg-white rounded-2xl shadow-xl border border-gray-100 p-5 md:p-6"
         >
           <button 
             onClick={() => closeBanner(1)} 
-            className="absolute -top-2 -right-2 bg-gray-200 rounded-full p-1 hover:bg-gray-300 text-gray-600"
+            className="absolute -top-2 -right-2 bg-gray-200 rounded-full p-1.5 hover:bg-gray-300 text-gray-600"
           >
-            <X size={14} />
+            <X size={16} />
           </button>
           
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand/10 rounded-full flex items-center justify-center text-brand-dark shrink-0">
-              <Truck size={20} />
+          <div className="flex items-center gap-4">
+            {/* 아이콘 크기도 조금 더 키웠습니다 */}
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-brand/10 rounded-full flex items-center justify-center text-brand-dark shrink-0">
+              <Truck size={28} />
             </div>
             <div>
-              <h3 className="text-xs font-black text-ink mb-0.5">전 품목 무료배송</h3>
-              <p className="text-[10px] text-gray-500 leading-tight">
+              {/* 글씨 크기를 시원하게 키웠습니다 */}
+              <h3 className="text-sm md:text-base font-black text-ink mb-1">전 품목 무료배송</h3>
+              <p className="text-[11px] md:text-[13px] text-gray-500 leading-relaxed">
                 배송비 걱정 마세요.<br/>
                 오늘도 가성비는 무료입니다!
               </p>
