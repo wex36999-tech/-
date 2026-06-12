@@ -317,6 +317,11 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 8;
 
+  // 🌟 [안전장치] 데이터 로딩 체크 (데이터가 없으면 로딩 중 표시)
+  if (!products || products.length === 0) {
+    return <div className="text-center py-24 text-sm text-gray-400">가성비 상품을 불러오는 중입니다...</div>;
+  }
+
   // 카테고리가 변경되면 검색바 및 현재 페이지 초기화
   React.useEffect(() => {
     setCurrentPage(1);
@@ -325,9 +330,9 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
 
   // 모달이 닫히거나 바뀔 때 수량 및 옵션 초기화
   React.useEffect(() => {
-  setQuantity(1);
-  setSelectedOption('');
-  }, [selectedProduct]); // isOrderView를 지우고 상품이 바뀔 때만 초기화되게 변경
+    setQuantity(1);
+    setSelectedOption('');
+  }, [selectedProduct]);
 
   // 🔍 [카테고리 + 실시간 검색] 결합된 필터링 로직
   const filteredProducts = React.useMemo(() => {
