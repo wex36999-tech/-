@@ -57,7 +57,7 @@ const AdminPage = () => {
     detailImages: '', // 👈 이거 하나만 추가!
     category: categories[0] || '농산물',
     options: '', 
-    isSoldOut: false
+    isSoldOut: false,
     order: 0
   });
 
