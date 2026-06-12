@@ -435,20 +435,6 @@ const AdminPage = () => {
       )}
 
       {/* 팝업 3: 상품 상세 수정 모달 */}
-{showEditModal && editingProduct && (
-  <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-    <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl my-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-black text-xl">상품 정보 수정</h3>
-        <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
-      </div>
-      <form onSubmit={handleUpdateProduct} className="space-y-4">
-        <div>
-          <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
-          <input required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
-        </div>
-
-        {/* 팝업 3: 상품 상세 수정 모달 */}
         {showEditModal && editingProduct && (
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
             <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl my-auto">
@@ -461,12 +447,10 @@ const AdminPage = () => {
                   <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
                   <input required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
                 </div>
-
                 <div>
                   <label className="text-xs font-bold text-gray-400 ml-1">우선순위 (숫자가 작을수록 우선 노출)</label>
                   <input type="number" value={editingProduct.order || 0} onChange={e => setEditingProduct({...editingProduct, order: parseInt(e.target.value) || 0})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
