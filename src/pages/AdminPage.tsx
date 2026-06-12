@@ -16,6 +16,7 @@ interface Product {
   category: string;
   options: string;
   isSoldOut: boolean;
+  order?: number;
 }
 
 const AdminPage = () => {
@@ -57,6 +58,7 @@ const AdminPage = () => {
     category: categories[0] || '농산물',
     options: '', 
     isSoldOut: false
+    order: 0
   });
 
   // 상품 수정 모달 상태
@@ -128,16 +130,24 @@ const AdminPage = () => {
     // 쉼표를 건드리지 않고, 사장님이 입력하신 텍스트 형태 그대로 저장합니다.
     const finalOptions = newProduct.options.trim() || '기본선택';
     
-    await addProduct({ ...newProduct, id, options: finalOptions });
+    // order 값을 포함하여 데이터 저장 (숫자형으로 변환)
+    await addProduct({ 
+      ...newProduct, 
+      id, 
+      options: finalOptions, 
+      order: Number(newProduct.order) 
+    });
     
     setNewProduct({ 
       name: '', 
       price: '', 
       description: '', 
       image: '', 
+      detailImages: '', // detailImages도 초기화 추가
       category: categories[0] || '농산물', 
       options: '',
-      isSoldOut: false 
+      isSoldOut: false,
+      order: 0 // order 초기화 추가
     });
     setShowAddModal(false);
     alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
@@ -151,7 +161,13 @@ const AdminPage = () => {
     // 수정할 때도 가격의 쉼표를 방해하지 않고 그대로 깔끔하게 저장합니다.
     const finalOptions = (editingProduct.options || '').trim() || '기본선택';
     
-    await updateProduct(editingProduct.id, { ...editingProduct, options: finalOptions });
+    // order 값을 포함하여 데이터 업데이트 (숫자형으로 변환)
+    await updateProduct(editingProduct.id, { 
+      ...editingProduct, 
+      options: finalOptions, 
+      order: Number(editingProduct.order) 
+    });
+    
     setShowEditModal(false);
     alert('상품 정보가 실시간으로 수정되었습니다!');
   };
@@ -329,59 +345,66 @@ const AdminPage = () => {
 
 
       {/* 📬 팝업 1: 새 상품 등록 모달 */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl my-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-black text-xl flex items-center gap-2">
-                <Plus size={22} className="text-brand-dark" /> 새 상품 등록
-              </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
-            </div>
+{showAddModal && (
+  <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl my-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-black text-xl flex items-center gap-2">
+          <Plus size={22} className="text-brand-dark" /> 새 상품 등록
+        </h3>
+        <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
+      </div>
 
-            <form onSubmit={handleAddProduct} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
-                <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
-                  <input required value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 13,000원" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1">카테고리 선택</label>
-                  <select value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand">
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
-                <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg 10,000원 / 3kg 15,000원 / 5kg 23,500원" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
-                <input required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="https://res.cloudinary.com/..." />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
-                <input value={newProduct.detailImages} onChange={e => setNewProduct({...newProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
-                <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24" placeholder="상품 설명을 적어주세요."></textarea>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
-                <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">등록하기</button>
-              </div>
-            </form>
+      <form onSubmit={handleAddProduct} className="space-y-4">
+        <div>
+          <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
+          <input required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 꿀사과 5kg" />
+        </div>
+        
+        {/* 👈 우선순위 입력창 추가 */}
+        <div>
+          <label className="text-xs font-bold text-gray-400 ml-1">우선순위 (숫자가 작을수록 먼저 노출)</label>
+          <input type="number" value={newProduct.order || 0} onChange={e => setNewProduct({...newProduct, order: parseInt(e.target.value) || 0})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
+            <input required value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 13,000원" />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-400 ml-1">카테고리 선택</label>
+            <select value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand">
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
           </div>
         </div>
-      )}
+        <div>
+          <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
+          <input value={newProduct.options} onChange={e => setNewProduct({...newProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg 10,000원 / 3kg 15,000원 / 5kg 23,500원" />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
+          <input required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="https://res.cloudinary.com/..." />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
+          <input value={newProduct.detailImages} onChange={e => setNewProduct({...newProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
+          <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24" placeholder="상품 설명을 적어주세요."></textarea>
+        </div>
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
+          <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">등록하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
 
       {/* 📬 팝업 2: 카테고리 편집 모달 */}
       {showCategoryModal && (
