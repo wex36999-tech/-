@@ -281,18 +281,16 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
   const { config, products } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isOrderView, setIsOrderView] = React.useState(false);
-  const [isDetailView, setIsDetailView] = React.useState(false); // 🌟 상세페이지 상태 추가
 
   // 모달이 닫히거나 상품이 바뀔 때 초기화
   React.useEffect(() => {
-    setIsDetailView(false); // 상세페이지 닫기
     setQuantity(1);
     setSelectedOption('');
   }, [selectedProduct]);
 
-  // 스크롤 제어 로직 (주문창이나 상세페이지가 열리면 스크롤 막기)
+  // 스크롤 제어 로직 (주문창이 열리면 스크롤 막기)
   React.useEffect(() => {
-    if (isOrderView || isDetailView) {
+    if (isOrderView) {
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -303,7 +301,7 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
       document.body.style.overflow = 'unset';
       document.documentElement.style.overflow = 'unset';
     };
-  }, [isOrderView, isDetailView]);
+  }, [isOrderView]);
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -540,21 +538,19 @@ const totalPriceString = React.useMemo(() => {
 
       {/* 📬 옵션 선택 & 주문 모달 */}
       <OrderModal 
-  selectedProduct={selectedProduct}
-  setSelectedProduct={setSelectedProduct}
-  totalPriceString={totalPriceString}
-  quantity={quantity}
-  setQuantity={setQuantity}
-  selectedOption={selectedOption}
-  setSelectedOption={setSelectedOption}
-  productOptions={productOptions}
-  handleOrderSubmit={handleOrderSubmit}
-  isSubmitting={isSubmitting}
-  isOrderView={isOrderView}
-  setIsOrderView={setIsOrderView}
-  isDetailView={isDetailView}
-  setIsDetailView={setIsDetailView}
-/>
+        selectedProduct={selectedProduct}
+        setSelectedProduct={setSelectedProduct}
+        totalPriceString={totalPriceString}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        selectedOption={selectedOption}
+        setSelectedOption={setSelectedOption}
+        productOptions={productOptions}
+        handleOrderSubmit={handleOrderSubmit}
+        isSubmitting={isSubmitting}
+        isOrderView={isOrderView}
+        setIsOrderView={setIsOrderView}
+      />
     </div>
   );
 };
