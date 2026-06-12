@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Minus, Plus, ShoppingBag, ArrowLeft } from 'lucide-react'; // ArrowLeft 추가
+import { X, ChevronDown, Minus, Plus, ShoppingBag, ArrowLeft } from 'lucide-react'; 
 
 export const OrderModal = ({ 
   selectedProduct, setSelectedProduct, totalPriceString, quantity, 
@@ -38,7 +38,7 @@ export const OrderModal = ({
           <div className="p-6 overflow-y-auto flex-1 relative">
             {isDetailView ? (
               <div className="w-full">
-                {/* 🌟 수정된 고정 뒤로가기 버튼 (상단 흰 줄 없이 깔끔하게) */}
+                {/* 🌟 고정 뒤로가기 버튼 */}
                 <button 
                   type="button" 
                   onClick={() => setIsDetailView(false)} 
@@ -54,10 +54,9 @@ export const OrderModal = ({
               <div className="flex flex-col h-full justify-between">
                 <div>
                   <h2 className="text-xl font-black text-ink mb-1">{selectedProduct.name}</h2>
-                  {selectedProduct.detailImages && (
-                    <button type="button" onClick={() => setIsDetailView(true)} className="w-full py-2.5 mb-4 bg-brand/10 text-brand-dark text-xs font-bold rounded-xl hover:bg-brand/20 transition-all border border-brand/20">상세 상품 이미지 더 보기</button>
-                  )}
                   <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct.description}</p>
+                  
+                  {/* 옵션 및 수량 */}
                   {productOptions.length > 0 && (
                     <div className="space-y-1.5 mb-4">
                       <label className="text-[11px] font-bold text-gray-400 ml-1">구매 옵션 선택</label>
@@ -80,7 +79,15 @@ export const OrderModal = ({
                       </div>
                     </div>
                   </div>
+
+                  {/* 🌟 [위치 이동 완료] 상세 이미지 버튼을 옵션/수량 아래로 */}
+                  {selectedProduct.detailImages && (
+                    <button type="button" onClick={() => setIsDetailView(true)} className="w-full py-3 mb-6 bg-brand/10 text-brand-dark text-xs font-bold rounded-xl hover:bg-brand/20 transition-all border border-brand/20 flex justify-center items-center gap-2">
+                      상품 상세 이미지 더 보기 <ChevronDown size={14} />
+                    </button>
+                  )}
                 </div>
+
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
                   <div className="flex flex-col"><span className="text-[10px] font-bold text-gray-400">총 상품 금액</span><span className="text-lg font-black text-ink">{totalPriceString}</span></div>
                   <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white text-xs font-extrabold px-6 py-3.5 rounded-xl hover:bg-brand hover:text-black shadow-md flex items-center gap-1.5 transition-all"><ShoppingBag size={14} />구매하기</button>
