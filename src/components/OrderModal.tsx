@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { X, ChevronDown, Minus, Plus, ShoppingBag, ArrowLeft } from 'lucide-react'; // ArrowLeft 추가
 
 export const OrderModal = ({ 
   selectedProduct, setSelectedProduct, totalPriceString, quantity, 
@@ -38,16 +38,14 @@ export const OrderModal = ({
           <div className="p-6 overflow-y-auto flex-1 relative">
             {isDetailView ? (
               <div className="w-full">
-                {/* 인스타 감성 고정 버튼 (브랜드 컬러 적용) */}
-                <div className="sticky top-0 bg-white/90 backdrop-blur-md z-10 pt-2 pb-4">
-                  <button 
-                    type="button" 
-                    onClick={() => setIsDetailView(false)} 
-                    className="px-4 py-2 bg-brand/10 hover:bg-brand/20 text-brand-dark text-[11px] font-bold rounded-full transition-all flex items-center gap-1 border border-brand/20"
-                  >
-                    ← 돌아가기
-                  </button>
-                </div>
+                {/* 🌟 수정된 고정 뒤로가기 버튼 (상단 흰 줄 없이 깔끔하게) */}
+                <button 
+                  type="button" 
+                  onClick={() => setIsDetailView(false)} 
+                  className="sticky top-0 z-20 flex items-center gap-1.5 px-4 py-2 bg-white/90 backdrop-blur-md border border-gray-100 rounded-full text-[12px] font-bold shadow-sm mb-4"
+                >
+                  <ArrowLeft size={14} /> 돌아가기
+                </button>
                 {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
                   <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm" referrerPolicy="no-referrer" />
                 )) : <p className="text-center text-gray-400 py-10 text-xs">상세 이미지가 없습니다.</p>}
@@ -109,4 +107,4 @@ export const OrderModal = ({
       </motion.div>
     </AnimatePresence>
   );
-}; 
+};
