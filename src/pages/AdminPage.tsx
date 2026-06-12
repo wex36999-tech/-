@@ -448,58 +448,69 @@ const AdminPage = () => {
           <input required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
         </div>
 
-        {/* 👈 우선순위 입력창 추가 */}
-        <div>
-          <label className="text-xs font-bold text-gray-400 ml-1">우선순위 (숫자가 작을수록 우선 노출)</label>
-          <input 
-            type="number" 
-            value={editingProduct.order || 0} 
-            onChange={e => setEditingProduct({...editingProduct, order: parseInt(e.target.value) || 0})} 
-            className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" 
-          />
-        </div>
+        {/* 팝업 3: 상품 상세 수정 모달 */}
+        {showEditModal && editingProduct && (
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-[32px] p-8 max-w-md w-full border border-border shadow-2xl my-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-black text-xl">상품 정보 수정</h3>
+                <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-ink"><X size={20} /></button>
+              </div>
+              <form onSubmit={handleUpdateProduct} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-400 ml-1">상품명</label>
+                  <input required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
+                </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
-            <input required value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
+                <div>
+                  <label className="text-xs font-bold text-gray-400 ml-1">우선순위 (숫자가 작을수록 우선 노출)</label>
+                  <input type="number" value={editingProduct.order || 0} onChange={e => setEditingProduct({...editingProduct, order: parseInt(e.target.value) || 0})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-400 ml-1">가격 (쉼표 사용 가능)</label>
+                    <input required value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-400 ml-1">카테고리</label>
+                    <select value={editingProduct.category} onChange={e => setEditingProduct({...editingProduct, category: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand">
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
+                  <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg 10,000원 / 3kg 15,000원 / 5kg 23,500원" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
+                  <input required value={editingProduct.image} onChange={e => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
+                  <input value={editingProduct.detailImages || ''} onChange={e => setEditingProduct({...editingProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
+                  <textarea required value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24"></textarea>
+                </div>
+                <div className="flex items-center gap-2 p-1">
+                  <input type="checkbox" id="editSoldOut" checked={editingProduct.isSoldOut || false} onChange={e => setEditingProduct({...editingProduct, isSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+                  <label htmlFor="editSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">이 상품 품절 처리하기</label>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
+                  <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">수정 완료</button>
+                </div>
+              </form>
+            </div>
           </div>
-          <div>
-            <label className="text-xs font-bold text-gray-400 ml-1">카테고리</label>
-            <select value={editingProduct.category} onChange={e => setEditingProduct({...editingProduct, category: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand">
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="text-xs font-bold text-gray-400 ml-1">구매 옵션 (오직 슬래시 / 로만 구분)</label>
-          <input value={editingProduct.options || ''} onChange={e => setEditingProduct({...editingProduct, options: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: 2kg 10,000원 / 3kg 15,000원 / 5kg 23,500원" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-gray-400 ml-1">이미지 URL (Cloudinary)</label>
-          <input required value={editingProduct.image} onChange={e => setEditingProduct({...editingProduct, image: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-gray-400 ml-1">상세 이미지 URL (쉼표로 구분)</label>
-          <input value={editingProduct.detailImages || ''} onChange={e => setEditingProduct({...editingProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
-          <textarea required value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24"></textarea>
-        </div>
-        <div className="flex items-center gap-2 p-1">
-          <input type="checkbox" id="editSoldOut" checked={editingProduct.isSoldOut || false} onChange={e => setEditingProduct({...editingProduct, isSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
-          <label htmlFor="editSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">이 상품 품절 처리하기</label>
-        </div>
-        <div className="flex gap-3 pt-2">
-          <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
-          <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">수정 완료</button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
- 
-export default AdminPage;
+        )}
+      </div>
+    );
+  };
+
+  export default AdminPage;
