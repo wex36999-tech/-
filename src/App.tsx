@@ -481,9 +481,16 @@ const totalPriceString = React.useMemo(() => {
           <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
 
           {/* 상품 리스트 */}
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {currentProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onClick={(p) => { setSelectedProduct(p); setIsOrderView(false); }} />
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onClick={(p) => { 
+                  setSelectedProduct(p); 
+                  setIsOrderView(false); 
+                }} 
+              />
             ))}
           </div>
 
