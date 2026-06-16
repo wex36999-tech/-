@@ -7,7 +7,6 @@ export const OrderModal = ({
   setQuantity, selectedOption, setSelectedOption, productOptions, 
   handleOrderSubmit, isSubmitting, isOrderView, setIsOrderView
 }: any) => {
-  // 🌟 외부 연결 없이 여기서만 상태 관리 (에러 원천 차단)
   const [isDetailView, setIsDetailView] = React.useState(false);
 
   if (!selectedProduct) return null;
@@ -27,7 +26,6 @@ export const OrderModal = ({
           className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative" 
           onClick={e => e.stopPropagation()}
         >
-          {/* 상세 뷰가 아닐 때만 상단 이미지 표시 */}
           {!isDetailView && (
             <div className="w-full h-56 overflow-hidden relative flex-shrink-0">
               <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
@@ -40,11 +38,7 @@ export const OrderModal = ({
           <div className="p-6 overflow-y-auto flex-1 relative">
             {isDetailView ? (
               <div className="w-full">
-                <button 
-                  type="button" 
-                  onClick={() => setIsDetailView(false)} 
-                  className="sticky top-0 z-20 flex items-center gap-1.5 px-4 py-2 bg-white/90 backdrop-blur-md border border-gray-100 rounded-full text-[12px] font-bold shadow-sm mb-4"
-                >
+                <button type="button" onClick={() => setIsDetailView(false)} className="sticky top-0 z-20 flex items-center gap-1.5 px-4 py-2 bg-white/90 backdrop-blur-md border border-gray-100 rounded-full text-[12px] font-bold shadow-sm mb-4">
                   <ArrowLeft size={14} /> 돌아가기
                 </button>
                 {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
@@ -57,6 +51,7 @@ export const OrderModal = ({
                   <h2 className="text-xl font-black text-ink mb-1">{selectedProduct.name}</h2>
                   <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct.description}</p>
                   
+                  {/* 옵션 선택 */}
                   {productOptions.length > 0 && (
                     <div className="space-y-1.5 mb-4">
                       <label className="text-[11px] font-bold text-gray-400 ml-1">구매 옵션 선택</label>
@@ -67,7 +62,19 @@ export const OrderModal = ({
                     </div>
                   )}
 
-                  {/* 🌟 이제 여기서 setIsDetailView를 직접 호출하므로 에러가 날 수 없습니다 */}
+                  {/* 🌟 수량 선택 영역 복구 완료 */}
+                  <div className="space-y-1.5 mb-6">
+                    <label className="text-[11px] font-bold text-gray-400 ml-1">주문 수량</label>
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-xs font-bold text-ink pl-2">{quantity}개</span>
+                      <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => setQuantity((prev: number) => Math.max(1, prev - 1))} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100"><Minus size={14} /></button>
+                        <button type="button" onClick={() => setQuantity((prev: number) => prev + 1)} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center border border-gray-100 text-gray-500 hover:bg-gray-100"><Plus size={14} /></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 상세 보기 버튼 */}
                   {selectedProduct.detailImages && (
                     <button type="button" onClick={() => setIsDetailView(true)} className="w-full py-3 mb-6 bg-brand/10 text-brand-dark text-xs font-bold rounded-xl hover:bg-brand/20 transition-all border border-brand/20 flex justify-center items-center gap-2">
                       상품 상세 이미지 더 보기 <ChevronDown size={14} />
@@ -87,7 +94,7 @@ export const OrderModal = ({
                   <input name="성함" required placeholder="성함" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <input name="연락처" required placeholder="연락처" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <textarea name="주소" required placeholder="배송지" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs h-20"></textarea>
-                  <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-xl">{isSubmitting ? "전송 중..." : "주문하기"}</button>
+                  <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-xl">주문하기</button>
                 </form>
               </div>
             )}
