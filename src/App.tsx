@@ -6,6 +6,7 @@ import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Sear
 import { OrderModal } from './components/OrderModal';
 import { Terms } from './pages/Terms';
 import { BannerModal } from './components/BannerModal';
+import { FloatingMenu } from './components/FloatingMenu';
 
 // --- 관리자 페이지 임포트 ---
 import AdminPage from './pages/AdminPage';
@@ -574,19 +575,40 @@ const totalPriceString = React.useMemo(() => {
 
 const AppContent = () => {
   const [activeCategory, setActiveCategory] = React.useState('전체');
+  // 💳 계좌 안내 팝업 상태 추가
+  const [showAccountModal, setShowAccountModal] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-white font-pretendard text-ink">
       <BannerModal />
       <MetadataManager />
       <ScrollToTop />
       <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+      
+      {/* 🚀 플로팅 메뉴 추가 */}
+      <FloatingMenu onOpenAccount={() => setShowAccountModal(true)} />
+
       <Routes>
         <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
         <Route path="/admin" element={<AdminPage />} />
-        {/* 이용약관 페이지 경로 추가 */}
         <Route path="/terms" element={<Terms />} />
       </Routes>
       <Footer />
+
+      {/* 💳 계좌 안내 팝업 */}
+      {showAccountModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAccountModal(false)}>
+          <div className="bg-white p-6 rounded-3xl w-full max-w-xs shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="font-black text-lg mb-4 text-center">입금 계좌 안내</h3>
+            <div className="p-4 bg-gray-50 rounded-2xl text-center">
+              <p className="text-sm font-bold text-gray-600">카카오뱅크</p>
+              <p className="text-xl font-black mt-1">3333-37-4727798</p>
+              <p className="text-sm font-bold text-gray-600 mt-1">예금주: 이성현(동그란마켓)</p>
+            </div>
+            <button onClick={() => setShowAccountModal(false)} className="w-full mt-6 py-3 bg-ink text-white font-bold rounded-xl">확인</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
