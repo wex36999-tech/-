@@ -186,9 +186,32 @@ const Footer = () => {
   };
 
   return (
+    const Footer = () => {
+  const { config } = useConfig();
+  
+  const handleFooterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    
+    try {
+      const response = await fetch("https://formspree.io/f/xaqaervl", {
+        method: "POST",
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (response.ok) {
+        alert("문의가 성공적으로 전달되었습니다.");
+        form.reset();
+      }
+    } catch (error) {
+      alert("전송 중 오류가 발생했습니다.");
+    }
+  };
+
+  return (
     <footer id="contact" className="bg-[#fafafa] border-t border-border py-20 px-10">
       <div className="max-w-7xl mx-auto">
-        {/* ... (중략: 기존 Contact Us 및 폼 영역 유지) ... */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-20">
           <div>
             <h2 className="text-3xl font-bold mb-8 tracking-tight">Contact Us</h2>
@@ -213,6 +236,15 @@ const Footer = () => {
                 <div className="w-5 flex justify-center text-[10px] font-bold text-brand-dark border border-brand-dark rounded px-0.5 leading-none py-1">계좌</div>
                 <span className="text-ink-muted leading-none">카카오뱅크 3333374727798 이성현(동그란마켓)</span>
               </div>
+              {/* 🌟 QR코드 추가 영역 */}
+              <div className="pt-4">
+                <p className="text-[11px] font-bold text-gray-500 mb-2">QR을 찍어 1:1 상담하세요!</p>
+                <img 
+                  src="https://res.cloudinary.com/dzehtppiz/image/upload/v1781679901/%EC%98%A4%EA%B0%80%EB%AC%B8%EC%9D%98%ED%81%90%EC%95%8C_prezlq.png" 
+                  alt="카카오톡 문의 QR" 
+                  className="w-20 h-20 border border-gray-200 rounded-lg" 
+                />
+              </div>
             </div>
           </div>
           <div className="bg-white p-8 rounded-[24px] border border-border mt-10 md:mt-0">
@@ -225,24 +257,17 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* 🌟 수정된 하단 영역: 이용약관 링크 및 계좌정보 추가 */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-10 border-t border-border">
           <div className="text-[11px] text-[#888] leading-relaxed">
             상호명: {config.name} | 사업자등록번호: {config.businessNumber} | 대표: {config.representative}<br />
             주소: {config.address} | Copyright © {new Date().getFullYear()} ValueToday All rights reserved.
-            
-            {/* 👈 계좌정보 추가 영역 */}
-            <div className="mt-2 font-bold text-ink">
-              입금계좌: 입금계좌 카카오뱅크 3333374727798 이성현(동그란마켓)
-            </div>
-
-            <div className="mt-2">
-               <Link to="/terms" className="hover:underline font-bold text-ink">이용약관</Link>
-            </div>
+            <div className="mt-2 font-bold text-ink">입금계좌: 카카오뱅크 3333374727798 이성현(동그란마켓)</div>
+            <div className="mt-2"><Link to="/terms" className="hover:underline font-bold text-ink">이용약관</Link></div>
           </div>
           <div className="flex gap-4">
-            <a href={config.sns?.instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">IG</a>
-            <a href={config.sns?.kakao} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">KT</a>
+            {/* 🌟 SNS 링크 연결 완료 */}
+            <a href={config.sns?.instagram || "#"} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">IG</a>
+            <a href="https://open.kakao.com/o/s8rZCYzi" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">KT</a>
           </div>
         </div>
       </div>
