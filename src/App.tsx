@@ -236,7 +236,7 @@ const Footer = () => {
           <div className="text-[11px] text-[#888] leading-relaxed">
             상호명: {config.name} | 사업자등록번호: {config.businessNumber} | 대표: {config.representative}<br />
             주소: {config.address} | Copyright © {new Date().getFullYear()} ValueToday All rights reserved.
-            <div className="mt-2 font-bold text-ink">입금계좌: 카카오뱅크 3333374727798 이성현(동그란마켓)</div>
+            <div className="mt-2 font-bold text-ink">입금계좌: 카카오뱅크 3333-37-4727798 이성현(동그란마켓)</div>
             <div className="mt-2"><Link to="/terms" className="hover:underline font-bold text-ink">이용약관</Link></div>
           </div>
           <div className="flex gap-4">
@@ -442,7 +442,7 @@ const totalPriceString = React.useMemo(() => {
       });
 
       if (response.ok) {
-        alert("감사합니다.오늘도 가성비!\n입금계좌 카카오뱅크 3333374727798 이성현(동그란마켓)\n입금 후 배송 안내문자를 확인해주세요.");
+        alert("감사합니다.오늘도 가성비!\n입금계좌 카카오뱅크 3333-37-4727798 이성현(동그란마켓)\n입금 후 배송 안내문자를 확인해주세요.");
         setSelectedProduct(null);
         setIsOrderView(false);
       } else {
