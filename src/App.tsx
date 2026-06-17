@@ -265,30 +265,27 @@ const Footer = () => {
             <div className="mt-2"><Link to="/terms" className="hover:underline font-bold text-ink">이용약관</Link></div>
           </div>
           <div className="flex gap-4">
-            {/* 🌟 SNS 링크 연결 완료 */}
-          <a 
-            href="https://www.instagram.com/omarket___/" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
-          >
-            IG
-          </a>
-          <a 
-            href="https://open.kakao.com/o/s8rZCYzi" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
-          >
-            KT
-          </a>
+            <a 
+              href="https://www.instagram.com/omarket___/" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
+            >
+              IG
+            </a>
+            <a 
+              href="https://open.kakao.com/o/s8rZCYzi" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
+            >
+              KT
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-  </footer>
-);
-};
-
+    </footer>
+  );
 {/* 🔍 2열 최적화가 적용된 상품 카드 컴포넌트 */}
 const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (p: any) => void }) => (
   <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
