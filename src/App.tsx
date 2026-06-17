@@ -266,13 +266,27 @@ const Footer = () => {
           </div>
           <div className="flex gap-4">
             {/* 🌟 SNS 링크 연결 완료 */}
-            <a href={config.sns?.instagram || "#"} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">IG</a>
-            <a href="https://open.kakao.com/o/s8rZCYzi" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all">KT</a>
-          </div>
+          <a 
+            href="https://www.instagram.com/omarket___/" 
+            target="_blank" 
+            rel="noreferrer" 
+            className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
+          >
+            IG
+          </a>
+          <a 
+            href="https://open.kakao.com/o/s8rZCYzi" 
+            target="_blank" 
+            rel="noreferrer" 
+            className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
+          >
+            KT
+          </a>
         </div>
       </div>
-    </footer>
-  );
+    </div>
+  </footer>
+);
 };
 
 {/* 🔍 2열 최적화가 적용된 상품 카드 컴포넌트 */}
