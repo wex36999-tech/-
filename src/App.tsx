@@ -165,31 +165,6 @@ const Footer = () => {
   const { config } = useConfig();
   
   const handleFooterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // ... 기존과 동일 (handleFooterSubmit 로직 유지) ...
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    
-    try {
-      const response = await fetch("https://formspree.io/f/xaqaervl", {
-        method: "POST",
-        body: formData,
-        headers: { 'Accept': 'application/json' }
-      });
-      if (response.ok) {
-        alert("문의가 성공적으로 전달되었습니다.");
-        form.reset();
-      }
-    } catch (error) {
-      alert("전송 중 오류가 발생했습니다.");
-    }
-  };
-
-  return (
-    const Footer = () => {
-  const { config } = useConfig();
-  
-  const handleFooterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -286,6 +261,8 @@ const Footer = () => {
       </div>
     </footer>
   );
+};
+
 {/* 🔍 2열 최적화가 적용된 상품 카드 컴포넌트 */}
 const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (p: any) => void }) => (
   <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
