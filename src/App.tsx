@@ -220,11 +220,17 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* 🌟 수정된 하단 영역: 이용약관 링크 추가 */}
+        {/* 🌟 수정된 하단 영역: 이용약관 링크 및 계좌정보 추가 */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-10 border-t border-border">
           <div className="text-[11px] text-[#888] leading-relaxed">
             상호명: {config.name} | 사업자등록번호: {config.businessNumber} | 대표: {config.representative}<br />
             주소: {config.address} | Copyright © {new Date().getFullYear()} ValueToday All rights reserved.
+            
+            {/* 👈 계좌정보 추가 영역 */}
+            <div className="mt-2 font-bold text-ink">
+              입금계좌: 입금계좌 카카오뱅크 3333374727798 이성현(동그란마켓)
+            </div>
+
             <div className="mt-2">
                <Link to="/terms" className="hover:underline font-bold text-ink">이용약관</Link>
             </div>
