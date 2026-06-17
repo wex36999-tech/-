@@ -208,6 +208,10 @@ const Footer = () => {
                 <div className="w-5 flex justify-center text-[10px] font-bold text-brand-dark border border-brand-dark rounded px-0.5 leading-none py-1">사업</div>
                 <span className="text-ink-muted leading-none">사업자등록번호: {config.businessNumber}</span>
               </div>
+              <div className="flex items-center gap-4">
+                <div className="w-5 flex justify-center text-[10px] font-bold text-brand-dark border border-brand-dark rounded px-0.5 leading-none py-1">계좌</div>
+                <span className="text-ink-muted leading-none">카카오뱅크 3333374727798 이성현(동그란마켓)</span>
+              </div>
             </div>
           </div>
           <div className="bg-white p-8 rounded-[24px] border border-border mt-10 md:mt-0">
@@ -424,7 +428,7 @@ const totalPriceString = React.useMemo(() => {
       });
 
       if (response.ok) {
-        alert("감사합니다.오늘도 가성비!\n국민은행 063302-04-222993(이성현)\n입금 후 배송 안내문자를 확인해주세요.");
+        alert("감사합니다.오늘도 가성비!\n입금계좌 카카오뱅크 3333374727798 이성현(동그란마켓)\n입금 후 배송 안내문자를 확인해주세요.");
         setSelectedProduct(null);
         setIsOrderView(false);
       } else {
