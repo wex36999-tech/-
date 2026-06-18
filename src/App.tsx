@@ -505,18 +505,23 @@ const totalPriceString = React.useMemo(() => {
           <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
 
           {/* 상품 리스트 */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-            {currentProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onClick={(p) => { 
-                  setSelectedProduct(p); 
-                  setIsOrderView(false); 
-                }} 
-              />
-            ))}
-          </div>
+<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+  {currentProducts.map((product) => (
+    <ProductCard 
+      key={product.id} 
+      product={product} 
+      onClick={(p) => { 
+        // 품절 시 상세창을 띄우지 않고 알림만 출력
+        if (p.isSoldOut) {
+          alert("죄송합니다. 현재 품절된 상품입니다.");
+          return;
+        }
+        setSelectedProduct(p); 
+        setIsOrderView(false); 
+      }} 
+    />
+  ))}
+</div>
 
           {/* 검색결과 및 상품 없을 때 예외처리 */}
           {filteredProducts.length === 0 && (
