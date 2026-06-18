@@ -356,25 +356,26 @@ const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: strin
     setSelectedOption('');
   }, [selectedProduct]);
 
-  // 🔍 [카테고리 + 실시간 검색] 결합된 필터링 로직
+  // 🔍 [카테고리 + 실시간 검색 + 품절상품 숨기기] 결합된 필터링 로직
   const filteredProducts = React.useMemo(() => {
-  // 1. 먼저 카테고리와 검색어로 필터링합니다.
-  const filtered = products.filter(p => {
-    const matchesCategory = activeCategory === '전체' || p.category === activeCategory;
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+    // 1. 먼저 카테고리와 검색어, 그리고 품절 여부로 필터링합니다.
+    const filtered = products.filter(p => {
+      const matchesCategory = activeCategory === '전체' || p.category === activeCategory;
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const isNotSoldOut = !p.isSoldOut; // 🌟 품절 상품은 여기서 제외합니다.
+      return matchesCategory && matchesSearch && isNotSoldOut;
+    });
 
-  // 2. 필터링된 결과물 내에서 "특가할인" 포함 여부에 따라 정렬합니다.
-  return filtered.sort((a, b) => {
-    const isAEvent = a.name.includes("특가할인");
-    const isBEvent = b.name.includes("특가할인");
-    
-    if (isAEvent && !isBEvent) return -1; // "특가할인"이 있는 상품을 앞으로
-    if (!isAEvent && isBEvent) return 1;  // 없는 상품은 뒤로
-    return 0; // 나머지는 기존 순서 유지
-  });
-}, [products, activeCategory, searchQuery]);
+    // 2. 필터링된 결과물 내에서 "특가할인" 포함 여부에 따라 정렬합니다.
+    return filtered.sort((a, b) => {
+      const isAEvent = a.name.includes("특가할인");
+      const isBEvent = b.name.includes("특가할인");
+      
+      if (isAEvent && !isBEvent) return -1; // "특가할인"이 있는 상품을 앞으로
+      if (!isAEvent && isBEvent) return 1;  // 없는 상품은 뒤로
+      return 0; // 나머지는 기존 순서 유지
+    });
+  }, [products, activeCategory, searchQuery]);
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
