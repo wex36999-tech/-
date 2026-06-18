@@ -34,9 +34,13 @@ const AdminPage = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   
   // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터
-  const categories: string[] = config.categories || ['농산물', '수산물'];
+  const categories: { name: string; order: number }[] = config.categories || [
+    { name: '농산물', order: 1 }, 
+    { name: '수산물', order: 2 }
+  ];
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryOrder, setNewCategoryOrder] = useState<number>(categories.length + 1);
 
   // 🔍 상품 실시간 검색어 상태
   const [searchQuery, setSearchQuery] = useState('');
@@ -84,13 +88,14 @@ const AdminPage = () => {
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
-    if (categories.includes(newCategoryName.trim())) {
+    if (categories.some(cat => cat.name === newCategoryName.trim())) {
       alert('이미 존재하는 카테고리입니다.');
       return;
     }
-    const updatedCategories = [...categories, newCategoryName.trim()];
+    const updatedCategories = [...categories, { name: newCategoryName.trim(), order: Number(newCategoryOrder) }];
     await updateConfig({ categories: updatedCategories });
     setNewCategoryName('');
+    setNewCategoryOrder(updatedCategories.length + 1);
   };
 
   // 2. 카테고리 삭제 함수
@@ -116,11 +121,18 @@ const AdminPage = () => {
 
     if (targetIndex < 0 || targetIndex >= updatedCategories.length) return;
 
+    // 위치 맞교환
     const temp = updatedCategories[index];
     updatedCategories[index] = updatedCategories[targetIndex];
     updatedCategories[targetIndex] = temp;
 
-    await updateConfig({ categories: updatedCategories });
+    // 순서 번호(order)를 인덱스 기준으로 새로 갱신 (1부터 시작)
+    const reorderedCategories = updatedCategories.map((cat, i) => ({
+      ...cat,
+      order: i + 1
+    }));
+
+    await updateConfig({ categories: reorderedCategories });
   };
 
   // 4. 새 상품 등록 함수 (★ 입력한 그대로 완벽 보존)
@@ -284,7 +296,9 @@ const AdminPage = () => {
         <div className="flex gap-1.5 bg-gray-50 p-1.5 rounded-2xl mb-4 overflow-x-auto border border-gray-100">
           <button onClick={() => setSelectedFilter('전체')} className={`px-4 py-2 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${selectedFilter === '전체' ? 'bg-white shadow-sm text-ink font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}>전체</button>
           {categories.map(cat => (
-            <button key={cat} onClick={() => setSelectedFilter(cat)} className={`px-4 py-2 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${selectedFilter === cat ? 'bg-white shadow-sm text-ink font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}>{cat}</button>
+            <button key={cat.name} onClick={() => setSelectedFilter(cat.name)} className={`px-4 py-2 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${selectedFilter === cat.name ? 'bg-white shadow-sm text-ink font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}>
+              {cat.name}
+            </button>
           ))}
         </div>
 
@@ -432,16 +446,17 @@ const AdminPage = () => {
             </div>
             <form onSubmit={handleAddCategory} className="flex gap-2 mb-4">
               <input required value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} className="flex-1 p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-brand text-sm" placeholder="예: 축산물, 과일류" />
+              <input type="number" value={newCategoryOrder} onChange={e => setNewCategoryOrder(Number(e.target.value))} className="w-16 p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-brand text-sm" placeholder="순서" />
               <button type="submit" className="px-4 bg-brand text-black font-bold text-sm rounded-xl transition-all">추가</button>
             </form>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {categories.map((cat, index) => (
-                <div key={cat} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
-                  <span className="truncate max-w-[140px]">{cat}</span>
+                <div key={cat.name} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
+                  <span className="truncate max-w-[140px]">{cat.name} <span className="text-gray-400 font-normal">({cat.order}번)</span></span>
                   <div className="flex items-center gap-1">
                     <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로"><ArrowUp size={15} /></button>
                     <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로"><ArrowDown size={15} /></button>
-                    <button type="button" onClick={() => handleDropCategory(cat)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
+                    <button type="button" onClick={() => handleDropCategory(cat.name)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
                   </div>
                 </div>
               ))}
@@ -476,7 +491,7 @@ const AdminPage = () => {
                     <label className="text-xs font-bold text-gray-400 ml-1">카테고리</label>
                     <select value={editingProduct.category} onChange={e => setEditingProduct({...editingProduct, category: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand">
                       {categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat.name} value={cat.name}>{cat.name}</option>
                       ))}
                     </select>
                   </div>
@@ -513,4 +528,4 @@ const AdminPage = () => {
     );
   };
 
-  export default AdminPage; 
+  export default AdminPage;
