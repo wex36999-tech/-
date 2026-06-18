@@ -43,6 +43,7 @@ const AdminPage = () => {
 
   // 상품 목록 필터링용 상태
   const [selectedFilter, setSelectedFilter] = useState<string>('전체');
+  const [showOnlySoldOut, setShowOnlySoldOut] = useState(false);
 
   // 상품 등록 팝업(모달) 제어 상태
   const [showAddModal, setShowAddModal] = useState(false);
@@ -207,10 +208,11 @@ const AdminPage = () => {
   }, [categories, newProduct.category]);
 
   const filteredProducts = products.filter((p: any) => {
-    const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
+  const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const matchesSoldOut = !showOnlySoldOut || p.isSoldOut; // 🌟 체크하면 품절만, 아니면 전체
+  return matchesCategory && matchesSearch && matchesSoldOut;
+});
 
   if (!isAuthorized) {
     return (
@@ -279,11 +281,25 @@ const AdminPage = () => {
         </div>
 
         {/* 카테고리 필터 탭 */}
-        <div className="flex gap-1.5 bg-gray-50 p-1.5 rounded-2xl mb-6 overflow-x-auto border border-gray-100">
+        <div className="flex gap-1.5 bg-gray-50 p-1.5 rounded-2xl mb-4 overflow-x-auto border border-gray-100">
           <button onClick={() => setSelectedFilter('전체')} className={`px-4 py-2 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${selectedFilter === '전체' ? 'bg-white shadow-sm text-ink font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}>전체</button>
           {categories.map(cat => (
             <button key={cat} onClick={() => setSelectedFilter(cat)} className={`px-4 py-2 text-sm font-bold rounded-xl transition-all whitespace-nowrap ${selectedFilter === cat ? 'bg-white shadow-sm text-ink font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}>{cat}</button>
           ))}
+        </div>
+
+        {/* 🌟 품절 상품 모아보기 체크박스 추가 */}
+        <div className="flex items-center gap-2 mb-6 ml-1">
+          <input 
+            type="checkbox" 
+            id="showSoldOut" 
+            checked={showOnlySoldOut} 
+            onChange={(e) => setShowOnlySoldOut(e.target.checked)} 
+            className="w-5 h-5 rounded-md border-gray-300 text-brand focus:ring-brand cursor-pointer"
+          />
+          <label htmlFor="showSoldOut" className="text-sm font-bold text-ink cursor-pointer select-none hover:text-brand transition-colors">
+            품절 상품만 모아보기
+          </label>
         </div>
 
         {/* 상품 리스트 */}
