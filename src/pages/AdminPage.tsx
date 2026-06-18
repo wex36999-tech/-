@@ -33,10 +33,14 @@ const AdminPage = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   
-  // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터
-  const categories: string[] = config.categories || ['농산물', '수산물'];
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
+  // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터를 안전하게 처리
+const rawCategories = config.categories || ['농산물', '수산물'];
+const categories: string[] = Array.isArray(rawCategories) 
+  ? rawCategories.map((cat: any) => (typeof cat === 'string' ? cat : cat.name))
+  : [];
+
+const [showCategoryModal, setShowCategoryModal] = useState(false);
+const [newCategoryName, setNewCategoryName] = useState('');
 
   // 🔍 상품 실시간 검색어 상태
   const [searchQuery, setSearchQuery] = useState('');
