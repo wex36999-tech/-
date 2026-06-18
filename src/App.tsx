@@ -209,7 +209,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-5 flex justify-center text-[10px] font-bold text-brand-dark border border-brand-dark rounded px-0.5 leading-none py-1">계좌</div>
-                <span className="text-ink-muted leading-none">카카오뱅크 3333374727798 이성현(동그란마켓)</span>
+                <span className="text-ink-muted leading-none">카카오뱅크 33333-74-727798 이성현(동그란마켓)</span>
               </div>
               {/* 🌟 QR코드 추가 영역 */}
               <div className="pt-4">
