@@ -10,6 +10,8 @@ import { FloatingMenu } from './components/FloatingMenu';
 
 // --- 관리자 페이지 임포트 ---
 import AdminPage from './pages/AdminPage';
+import { Guide } from './pages/Guide';
+import { Privacy } from './pages/Privacy';
 
 // --- Components ---
 
@@ -599,6 +601,8 @@ const AppContent = () => {
         <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/guide" element={<Guide />} />
+        <Route path="/privacy" element={<Privacy />} />
       </Routes>
       <Footer />
 
