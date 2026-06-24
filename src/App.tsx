@@ -50,7 +50,15 @@ const MetadataManager = () => {
   return null;
 };
 
-const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string, setActiveCategory: (c: string) => void }) => {
+const Navbar = ({ 
+  activeCategory, 
+  setActiveCategory,
+  onOpenContact // 👈 문의 모달을 열어주는 함수를 프롭스로 받습니다.
+}: { 
+  activeCategory: string, 
+  setActiveCategory: (c: string) => void,
+  onOpenContact: () => void 
+}) => {
   const { config } = useConfig();
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
@@ -60,7 +68,7 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
     { name: '농산물', path: '#products', category: '농산물' },
     { name: '수산물', path: '#products', category: '수산물' },
     { name: '전체상품', path: '#products', category: '전체' },
-    { name: '고객센터', path: '#contact' },
+    { name: '고객문의', path: '#contact' }, // 👈 이름도 직관적으로 변경했습니다.
   ];
 
   const handleNavLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link: typeof navLinks[0]) => {
@@ -79,11 +87,9 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
         const element = document.getElementById('products');
         if (element) element.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    } else if (link.path.startsWith('#')) {
+    } else if (link.name === '고객문의') { // 👈 스크롤 대신 모달을 띄우도록 연결합니다.
       e.preventDefault();
-      const id = link.path.replace('#', '');
-      const element = document.getElementById(id);
-      if (element) element.scrollIntoView({ behavior: 'smooth' });
+      onOpenContact(); // 모달 오픈 함수 실행
     }
   };
 
@@ -163,88 +169,41 @@ const Navbar = ({ activeCategory, setActiveCategory }: { activeCategory: string,
 
 const Footer = () => {
   const { config } = useConfig();
-  
-  const handleFooterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    
-    try {
-      const response = await fetch("https://formspree.io/f/xaqaervl", {
-        method: "POST",
-        body: formData,
-        headers: { 'Accept': 'application/json' }
-      });
-      if (response.ok) {
-        alert("문의가 성공적으로 전달되었습니다.");
-        form.reset();
-      }
-    } catch (error) {
-      alert("전송 중 오류가 발생했습니다.");
-    }
-  };
 
   return (
-    <footer id="contact" className="bg-[#fafafa] border-t border-border py-20 px-10">
+    <footer id="contact" className="bg-[#fafafa] border-t border-border py-10 px-10">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-20">
-          <div>
-            <h2 className="text-3xl font-bold mb-8 tracking-tight">Contact Us</h2>
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <Mail size={20} className="text-brand-dark" />
-                <span className="text-ink-muted">{config.contactEmail}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <Phone size={20} className="text-brand-dark" />
-                <span className="text-ink-muted">{config.phone}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <MapPin size={20} className="text-brand-dark" />
-                <span className="text-ink-muted">{config.address}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-5 flex justify-center text-[10px] font-bold text-brand-dark border border-brand-dark rounded px-0.5 leading-none py-1">사업</div>
-                <span className="text-ink-muted leading-none">사업자등록번호: {config.businessNumber}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-5 flex justify-center text-[10px] font-bold text-brand-dark border border-brand-dark rounded px-0.5 leading-none py-1">계좌</div>
-                <span className="text-ink-muted leading-none">카카오뱅크 33333-74-727798 이성현(동그란마켓)</span>
-              </div>
-              {/* 🌟 QR코드 추가 영역 */}
-              <div className="pt-4">
-                <p className="text-[11px] font-bold text-gray-500 mb-2">QR을 찍어 1:1 상담하세요!</p>
-                <img 
-                  src="https://res.cloudinary.com/dzehtppiz/image/upload/v1781679901/%EC%98%A4%EA%B0%80%EB%AC%B8%EC%9D%98%ED%81%90%EC%95%8C_prezlq.png" 
-                  alt="카카오톡 문의 QR" 
-                  className="w-20 h-20 border border-gray-200 rounded-lg" 
-                />
-              </div>
+        <div className="flex flex-col md:flex-row justify-between gap-10 text-[11px] text-[#555]">
+          {/* 1. 좌측: 사업자 정보 및 계좌 안내, 약관 링크 */}
+          <div className="flex flex-col gap-1.5 leading-relaxed">
+            <div>
+              <span className="font-bold text-ink">상호명:</span> {config.name} &nbsp;|&nbsp; 
+              <span className="font-bold text-ink">대표:</span> {config.representative} &nbsp;|&nbsp; 
+              <span className="font-bold text-ink">사업자등록번호:</span> {config.businessNumber}
+            </div>
+            <div>
+              <span className="font-bold text-ink">주소:</span> {config.address}
+            </div>
+            <div className="font-bold text-brand-dark mt-1">
+              입금계좌: 카카오뱅크 3333-37-4727798 이성현(동그란마켓)
+            </div>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 font-bold text-ink underline underline-offset-4">
+              <Link to="/guide" className="hover:text-brand">이용안내</Link>
+              <Link to="/terms" className="hover:text-brand">이용약관</Link>
+              <Link to="/privacy" className="hover:text-brand">개인정보처리방침</Link>
+            </div>
+            <div className="mt-4 text-[#999]">
+              Copyright © {new Date().getFullYear()} {config.name} All rights reserved.
             </div>
           </div>
-          <div className="bg-white p-8 rounded-[24px] border border-border mt-10 md:mt-0">
-            <form onSubmit={handleFooterSubmit} className="space-y-4">
-              <input name="name" required type="text" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" placeholder="성함" />
-              <input name="email" required type="email" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand" placeholder="이메일" />
-              <textarea name="message" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand h-32" placeholder="문의 내용"></textarea>
-              <button type="submit" className="w-full py-4 bg-ink text-white font-bold rounded-xl hover:bg-brand hover:text-ink transition-all">문의 보내기</button>
-            </form>
-          </div>
-        </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8 pt-10 border-t border-border">
-          <div className="text-[11px] text-[#888] leading-relaxed">
-            상호명: {config.name} | 사업자등록번호: {config.businessNumber} | 대표: {config.representative}<br />
-            주소: {config.address} | Copyright © {new Date().getFullYear()} ValueToday All rights reserved.
-            <div className="mt-2 font-bold text-ink">입금계좌: 카카오뱅크 3333-37-4727798 이성현(동그란마켓)</div>
-            <div className="mt-2"><Link to="/terms" className="hover:underline font-bold text-ink">이용약관</Link></div>
-          </div>
-          <div className="flex gap-4">
+          {/* 2. 우측 하단: SNS(인스타그램, 카카오톡) 아이콘 버튼 */}
+          <div className="flex items-end gap-3 shrink-0">
             <a 
               href="https://www.instagram.com/omarket___/" 
               target="_blank" 
               rel="noreferrer" 
-              className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
+              className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[11px] font-bold text-ink-muted hover:border-ink hover:text-ink transition-all bg-white"
             >
               IG
             </a>
@@ -252,7 +211,7 @@ const Footer = () => {
               href="https://open.kakao.com/o/s8rZCYzi" 
               target="_blank" 
               rel="noreferrer" 
-              className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[12px] text-ink-muted hover:border-ink hover:text-ink transition-all"
+              className="w-8 h-8 rounded-full border border-[#ddd] flex items-center justify-center text-[11px] font-bold text-ink-muted hover:border-ink hover:text-ink transition-all bg-white"
             >
               KT
             </a>
@@ -596,13 +555,42 @@ const AppContent = () => {
   const [activeCategory, setActiveCategory] = React.useState('전체');
   // 💳 계좌 안내 팝업 상태 추가
   const [showAccountModal, setShowAccountModal] = React.useState(false);
+  // ✉️ 고객문의 팝업 상태 추가
+  const [showContactModal, setShowContactModal] = React.useState(false);
+
+  // ✉️ 모달창 안에서 문의 제출 처리하는 함수 (기존 Footer에 있던 로직)
+  const handleModalSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    
+    try {
+      const response = await fetch("https://formspree.io/f/xaqaervl", {
+        method: "POST",
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (response.ok) {
+        alert("문의가 성공적으로 전달되었습니다.");
+        form.reset();
+        setShowContactModal(false); // 전송 완료 후 모달 닫기
+      }
+    } catch (error) {
+      alert("전송 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white font-pretendard text-ink">
       <BannerModal />
       <MetadataManager />
       <ScrollToTop />
-      <Navbar activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+      {/* 🌟 Navbar에 고객문의 모달을 여는 함수를 전달합니다 */}
+      <Navbar 
+        activeCategory={activeCategory} 
+        setActiveCategory={setActiveCategory} 
+        onOpenContact={() => setShowContactModal(true)} 
+      />
       
       {/* 🚀 플로팅 메뉴 추가 */}
       <FloatingMenu onOpenAccount={() => setShowAccountModal(true)} />
@@ -628,6 +616,27 @@ const AppContent = () => {
           </div>
         </div>
       )}
+
+      {/* ✉️ 우측 상단 버튼으로 호출되는 [고객문의 모달 팝업] */}
+      {showContactModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowContactModal(false)}>
+          <div className="bg-white p-8 rounded-[24px] w-full max-w-md border border-border shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setShowContactModal(false)}
+              className="absolute top-5 right-5 text-gray-400 hover:text-ink"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-2xl font-black mb-6 tracking-tight text-center">Contact Us</h3>
+            <form onSubmit={handleModalSubmit} className="space-y-4">
+              <input name="name" required type="text" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand text-sm" placeholder="성함" />
+              <input name="email" required type="email" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand text-sm" placeholder="이메일" />
+              <textarea name="message" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand h-32 text-sm" placeholder="문의 내용"></textarea>
+              <button type="submit" className="w-full py-4 bg-ink text-white font-bold rounded-xl hover:bg-brand hover:text-ink transition-all">문의 보내기</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -640,4 +649,4 @@ export default function App() {
       </Router>
     </ConfigProvider>
   );
-} 
+}
