@@ -127,9 +127,7 @@ const Navbar = ({
               />
             </Link>
           ))}
-          <Link to="/admin" className="bg-ink text-white px-5 py-2.5 rounded-full text-[12px] font-bold hover:bg-brand hover:text-ink transition-all shadow-lg shadow-black/5">
-            관리자
-          </Link>
+          {/* 🌟 일반 고객에게 노출되던 관리자 버튼이 깔끔하게 제거되었습니다. */}
         </div>
         <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X /> : <Menu />}
@@ -159,9 +157,7 @@ const Navbar = ({
                 <ChevronRight size={20} className={`${(link.category && activeCategory === link.category) ? 'text-brand' : 'text-gray-300'} group-hover:text-brand transition-colors`} />
               </Link>
             ))}
-            <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 text-gray-500 py-2">
-              <Settings size={20} /> 관리자 설정
-            </Link>
+            {/* 🌟 모바일 메뉴의 관리자 설정 링크도 함께 제거되었습니다. */}
           </motion.div>
         )}
       </AnimatePresence>
