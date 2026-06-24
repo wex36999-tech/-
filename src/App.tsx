@@ -65,7 +65,7 @@ const Navbar = ({
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
 
-  // 🌟 메뉴 구성을 [메인, 상품목록,고객문의] 3개로 심플하게 압축했습니다.
+  // 🌟 메뉴 구성을 [메인, 상품목록, 고객문의] 3개로 심플하게 압축했습니다.
   const navLinks = [
     { name: '메인', path: '#', category: '전체' },
     { name: '상품목록', path: '#products', category: '전체' },
@@ -114,16 +114,16 @@ const Navbar = ({
               }`}
             >
               {link.name}
-              {/* 🌟 마우스 커서를 올렸을 때(whileHover)에만 밑줄이 나타나도록 수정했습니다 */}
+              {/* 🌟 평소엔 숨어있다 마우스 오버 시 스르륵 나타나는 밑줄 */}
               <motion.div 
                 className="absolute -bottom-1 left-0 right-0 h-[3px] bg-brand rounded-full origin-left"
                 initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 0, opacity: 0 }}
                 whileHover={{ scaleX: 1, opacity: 1 }}
                 transition={{ duration: 0.2, ease: "circOut" }}
               />
             </Link>
           ))}
+          {/* 🌟 일반 고객에게 노출되던 관리자 버튼이 깔끔하게 제거되었습니다. */}
         </div>
         <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X /> : <Menu />}
