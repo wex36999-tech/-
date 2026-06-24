@@ -179,6 +179,10 @@ const Footer = () => {
             <div>
               <span className="font-bold text-ink">주소:</span> {config.address}
             </div>
+            {/* 🌟 사업자 정보에 유선번호(고객센터) 항목을 추가했습니다 */}
+            <div className="text-[#555] mt-0.5">
+              <span className="font-bold text-ink">고객센터:</span> 010-8007-3039
+            </div>
             <div className="font-bold text-brand-dark mt-1">
               입금계좌: 카카오뱅크 3333-37-4727798 이성현(동그란마켓)
             </div>
