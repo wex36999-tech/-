@@ -65,12 +65,11 @@ const Navbar = ({
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
 
+  // 🌟 메뉴 구성을 [메인, 상품목록,고객문의] 3개로 심플하게 압축했습니다.
   const navLinks = [
     { name: '메인', path: '#', category: '전체' },
-    { name: '농산물', path: '#products', category: '농산물' },
-    { name: '수산물', path: '#products', category: '수산물' },
-    { name: '전체상품', path: '#products', category: '전체' },
-    { name: '고객문의', path: '#contact' }, // 👈 이름도 직관적으로 변경했습니다.
+    { name: '상품목록', path: '#products', category: '전체' },
+    { name: '고객문의', path: '#contact' },
   ];
 
   const handleNavLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link: typeof navLinks[0]) => {
@@ -82,16 +81,16 @@ const Navbar = ({
       e.preventDefault();
       setActiveCategory('전체');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (link.category) {
+    } else if (link.name === '상품목록') {
       e.preventDefault();
-      setActiveCategory(link.category);
+      setActiveCategory('전체');
       setTimeout(() => {
         const element = document.getElementById('products');
         if (element) element.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    } else if (link.name === '고객문의') { // 👈 스크롤 대신 모달을 띄우도록 연결합니다.
+    } else if (link.name === '고객문의') {
       e.preventDefault();
-      onOpenContact(); // 모달 오픈 함수 실행
+      onOpenContact();
     }
   };
 
@@ -109,25 +108,22 @@ const Navbar = ({
               to={link.path.startsWith('#') ? `/${link.path}` : '/'}
               onClick={(e) => handleNavLinkClick(e, link)}
               className={`group relative py-2 text-[14px] font-bold transition-colors ${
-                (link.category && activeCategory === link.category) ? 'text-ink' : 'text-ink-muted hover:text-ink'
+                (link.name === '메인' && activeCategory === '전체') || (link.name === '상품목록' && activeCategory !== '전체') 
+                  ? 'text-ink' 
+                  : 'text-ink-muted hover:text-ink'
               }`}
             >
               {link.name}
+              {/* 🌟 마우스 커서를 올렸을 때(whileHover)에만 밑줄이 나타나도록 수정했습니다 */}
               <motion.div 
-                className={`absolute -bottom-1 left-0 right-0 h-[3px] bg-brand rounded-full origin-left ${
-                  (link.category && activeCategory === link.category) ? 'scale-x-100 opacity-100' : ''
-                }`}
+                className="absolute -bottom-1 left-0 right-0 h-[3px] bg-brand rounded-full origin-left"
                 initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ 
-                  scaleX: link.category && activeCategory === link.category ? 1 : 0, 
-                  opacity: link.category && activeCategory === link.category ? 1 : 0 
-                }}
+                animate={{ scaleX: 0, opacity: 0 }}
                 whileHover={{ scaleX: 1, opacity: 1 }}
                 transition={{ duration: 0.2, ease: "circOut" }}
               />
             </Link>
           ))}
-          {/* 🌟 일반 고객에게 노출되던 관리자 버튼이 깔끔하게 제거되었습니다. */}
         </div>
         <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X /> : <Menu />}
@@ -150,14 +146,15 @@ const Navbar = ({
                   setIsOpen(false);
                 }}
                 className={`text-lg font-black py-4 border-b border-gray-50 flex items-center justify-between group ${
-                  (link.category && activeCategory === link.category) ? 'text-brand' : 'text-ink'
+                  (link.name === '메인' && activeCategory === '전체') || (link.name === '상품목록' && activeCategory !== '전체') 
+                    ? 'text-brand' 
+                    : 'text-ink'
                 }`}
               >
                 {link.name}
-                <ChevronRight size={20} className={`${(link.category && activeCategory === link.category) ? 'text-brand' : 'text-gray-300'} group-hover:text-brand transition-colors`} />
+                <ChevronRight size={20} className={`${(link.name === '메인' && activeCategory === '전체') || (link.name === '상품목록' && activeCategory !== '전체')  ? 'text-brand' : 'text-gray-300'} group-hover:text-brand transition-colors`} />
               </Link>
             ))}
-            {/* 🌟 모바일 메뉴의 관리자 설정 링크도 함께 제거되었습니다. */}
           </motion.div>
         )}
       </AnimatePresence>
