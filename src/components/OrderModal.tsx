@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Minus, Plus, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { X, ChevronDown, Minus, Plus, ArrowLeft } from 'lucide-react';
 
 export const OrderModal = ({ 
   selectedProduct, setSelectedProduct, totalPriceString, quantity, 
@@ -9,13 +9,28 @@ export const OrderModal = ({
 }: any) => {
   const [isDetailView, setIsDetailView] = React.useState(false);
 
+  // 🌟 [핵심 보완] 모달창이 열려있는 동안 뒷배경(body)의 스크롤을 완전히 강제 차단합니다
+  React.useEffect(() => {
+    if (selectedProduct) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none'; // 모바일 터치 스크롤 방지
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'unset';
+    };
+  }, [selectedProduct]);
+
   if (!selectedProduct) return null;
 
   return (
     <AnimatePresence>
       <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }} 
+        // 🌟 [수정] pointer-events-none을 추가하여 모달 배경 클릭만 감지하고 스크롤은 통과시키지 않습니다.
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto" 
         onClick={() => setSelectedProduct(null)}
       >
         <motion.div 
@@ -23,7 +38,9 @@ export const OrderModal = ({
           animate={{ scale: 1, opacity: 1 }} 
           exit={{ scale: 0.9, opacity: 0 }} 
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative" 
+          // 🌟 [수정] pointer-events-auto로 모달 내부 클릭은 정상 작동하게 하고, 
+          // 🌟 overscroll-contain 및 overflow-hidden을 주어 스크롤이 뒷배경으로 새어나가지 않도록 격리합니다.
+          className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative pointer-events-auto overscroll-contain" 
           onClick={e => e.stopPropagation()}
         >
           {!isDetailView && (
@@ -35,7 +52,8 @@ export const OrderModal = ({
             </div>
           )}
 
-          <div className="p-6 overflow-y-auto flex-1 relative">
+          {/* 🌟 [수정] 스크롤 영역에 overscroll-contain을 추가하여 내부 스크롤이 끝에 닿아도 부모로 전파되지 않게 막았습니다 */}
+          <div className="p-6 overflow-y-auto flex-1 relative overscroll-contain touch-pan-y">
             {isDetailView ? (
               <div className="w-full">
                 <button type="button" onClick={() => setIsDetailView(false)} className="sticky top-0 z-20 flex items-center gap-1.5 px-4 py-2 bg-white/90 backdrop-blur-md border border-gray-100 rounded-full text-[12px] font-bold shadow-sm mb-4">
@@ -62,7 +80,7 @@ export const OrderModal = ({
                     </div>
                   )}
 
-                  {/* 🌟 수량 선택 영역 복구 완료 */}
+                  {/* 수량 선택 영역 */}
                   <div className="space-y-1.5 mb-6">
                     <label className="text-[11px] font-bold text-gray-400 ml-1">주문 수량</label>
                     <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl border border-gray-100">
@@ -94,7 +112,9 @@ export const OrderModal = ({
                   <input name="성함" required placeholder="성함" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <input name="연락처" required placeholder="연락처" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <textarea name="주소" required placeholder="배송지" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs h-20"></textarea>
-                  <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-xl">주문하기</button>
+                  <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-xl" disabled={isSubmitting}>
+                    {isSubmitting ? '주문 전송 중...' : '주문하기'}
+                  </button>
                 </form>
               </div>
             )}
