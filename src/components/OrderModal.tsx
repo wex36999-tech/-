@@ -18,6 +18,7 @@ export const OrderModal = ({
     return () => {
       document.body.style.overflow = 'unset';
       document.body.style.touchAction = 'unset';
+      setIsDetailView(false); // 🌟 [핵심 보완] 상품이 바뀌거나 모달이 닫힐 때 상세 보기 모드를 무조건 해제합니다.
     };
   }, [selectedProduct]);
 
