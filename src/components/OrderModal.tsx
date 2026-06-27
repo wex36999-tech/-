@@ -21,6 +21,42 @@ export const OrderModal = ({
     };
   }, [selectedProduct]);
 
+  // 🌟 네이버페이 심사 통과를 위한 전용 결제 호출 함수 (포트원 연동 규격)
+  const handleNPayCheckout = () => {
+    if (productOptions.length > 0 && !selectedOption) {
+      alert("옵션을 선택해 주세요."); 
+      return;
+    }
+    
+    // 💡 [주의] 포트원(PortOne) 네이버페이 결제 연동 함수 연결부
+    // 실제 운영 중이신 포트원 상점아이디(imp...) 및 설정에 맞게 세팅되어야 합니다.
+    if (window.IMP) {
+      const IMP = window.IMP;
+      IMP.init("imp49871191"); // 사장님 포트원 가맹점 식별코드 입력란 (안전장치)
+      
+      IMP.request_pay({
+        pg: 'naverpay',
+        pay_method: 'card',
+        merchant_uid: `mid_${new Date().getTime()}`,
+        name: selectedProduct.name,
+        amount: parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000,
+        buyer_name: '',
+        buyer_tel: '',
+        buyer_addr: '',
+        naverPayUseCid: 'NAVERPAY_CID', // 네이버페이 연동 시 발급받은 CID
+      }, (rsp: any) => {
+        if (rsp.success) {
+          alert('네이버페이 결제 테스트가 성공적으로 완료되었습니다.');
+          // 결제 성공 후 추가적인 주문 처리 로직 연결 가능
+        } else {
+          alert(`결제 실패: ${rsp.error_msg}`);
+        }
+      });
+    } else {
+      alert("포트원 모듈이 로드되지 않았습니다. 관리자에게 문의하세요.");
+    }
+  };
+
   if (!selectedProduct) return null;
 
   return (
@@ -29,7 +65,7 @@ export const OrderModal = ({
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }} 
-        // 🌟 [수정] pointer-events-none을 추가하여 모달 배경 클릭만 감지하고 스크롤은 통과시키지 않습니다.
+        // 🌟 pointer-events-none을 추가하여 모달 배경 클릭만 감지하고 스크롤은 통과시키지 않습니다.
         className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto" 
         onClick={() => setSelectedProduct(null)}
       >
@@ -38,8 +74,7 @@ export const OrderModal = ({
           animate={{ scale: 1, opacity: 1 }} 
           exit={{ scale: 0.9, opacity: 0 }} 
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          // 🌟 [수정] pointer-events-auto로 모달 내부 클릭은 정상 작동하게 하고, 
-          // 🌟 overscroll-contain 및 overflow-hidden을 주어 스크롤이 뒷배경으로 새어나가지 않도록 격리합니다.
+          // 🌟 pointer-events-auto로 모달 내부 클릭은 정상 작동하게 하고 오버스크롤 방지
           className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative pointer-events-auto overscroll-contain" 
           onClick={e => e.stopPropagation()}
         >
@@ -52,7 +87,7 @@ export const OrderModal = ({
             </div>
           )}
 
-          {/* 🌟 [수정] 스크롤 영역에 overscroll-contain을 추가하여 내부 스크롤이 끝에 닿아도 부모로 전파되지 않게 막았습니다 */}
+          {/* 🌟 스크롤 영역에 overscroll-contain 추가하여 부모로 스크롤 전파 방지 */}
           <div className="p-6 overflow-y-auto flex-1 relative overscroll-contain touch-pan-y">
             {isDetailView ? (
               <div className="w-full">
@@ -60,7 +95,7 @@ export const OrderModal = ({
                   <ArrowLeft size={14} /> 돌아가기
                 </button>
                 {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
-                  <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm" referrerPolicy="no-referrer" />
+                  <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm image-rendering-crisp-edges" referrerPolicy="no-referrer" />
                 )) : <p className="text-center text-gray-400 py-10 text-xs">상세 이미지가 없습니다.</p>}
               </div>
             ) : !isOrderView ? (
@@ -100,9 +135,21 @@ export const OrderModal = ({
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
-                  <span className="text-lg font-black text-ink">{totalPriceString}</span>
-                  <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white px-6 py-3.5 rounded-xl font-extrabold text-xs">구매하기</button>
+                {/* 🌟 가격 및 구매/네이버페이 결제 버튼 영역 */}
+                <div className="space-y-3 pt-4 border-t border-gray-100 mt-auto">
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-black text-ink">{totalPriceString}</span>
+                    <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white px-6 py-3.5 rounded-xl font-extrabold text-xs">구매하기</button>
+                  </div>
+                  
+                  {/* 🌟 [핵심 추가] 네이버페이 심사 통과를 위한 네이버페이 결제 전용 버튼 */}
+                  <button 
+                    type="button" 
+                    onClick={handleNPayCheckout}
+                    className="w-full bg-[#03c75a] text-white py-3.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-[#02b348] transition-colors shadow-sm"
+                  >
+                    <span className="font-black text-sm tracking-tighter">N PAY</span> 네이버페이 결제
+                  </button>
                 </div>
               </div>
             ) : (
