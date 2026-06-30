@@ -172,18 +172,9 @@ export const OrderModal = ({
                     <span className="text-lg font-black text-ink">{totalPriceString}</span>
                     <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white px-6 py-3.5 rounded-xl font-extrabold text-xs">구매하기</button>
                   </div>
-                  
-                  {/* 🌟 카카오페이 심사 혼선 방지를 위해 첫 화면 네이버페이 버튼 임시 주석 처리 */}
-                  {/* <button 
-                    type="button" 
-                    onClick={handleNPayCheckout}
-                    className="w-full bg-[#03c75a] text-white py-3.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-[#02b348] transition-colors shadow-sm"
-                  >
-                    <span className="font-black text-sm tracking-tighter">N PAY</span> 네이버페이 결제
-                  </button>
-                  */}
                 </div>
-              ) : (
+              </div>
+            ) : (
               <div className="w-full">
                 <button type="button" onClick={() => setIsOrderView(false)} className="text-gray-400 text-xs font-bold mb-4">← 돌아가기</button>
                 {/* 🌟 수정: form 제출을 포트원 결제창 호출 함수로 연결 */}
