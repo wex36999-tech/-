@@ -163,6 +163,7 @@ const Navbar = ({
 };
 
 const Footer = () => {
+  // useConfig는 유지하되, 하단 정보는 심사를 위해 텍스트로 직접 입력합니다.
   const { config } = useConfig();
 
   return (
@@ -172,17 +173,18 @@ const Footer = () => {
           {/* 1. 좌측: 사업자 정보 및 계좌 안내, 약관 링크 */}
           <div className="flex flex-col gap-1.5 leading-relaxed">
             <div>
-              <span className="font-bold text-ink">상호명:</span> {config.name} &nbsp;|&nbsp; 
-              <span className="font-bold text-ink">대표:</span> {config.representative} &nbsp;|&nbsp; 
-              <span className="font-bold text-ink">사업자등록번호:</span> {config.businessNumber}
+              <span className="font-bold text-ink">상호명:</span> 오늘도가성비 &nbsp;|&nbsp; 
+              <span className="font-bold text-ink">대표:</span> 이성현 &nbsp;|&nbsp; 
+              <span className="font-bold text-ink">사업자등록번호:</span> 236-11-02791
             </div>
             <div>
-              <span className="font-bold text-ink">주소:</span> {config.address}
+              {/* ⚠️ 중요: 아래 '오늘도가성비' 대신 실제 사업장 주소(도로명 주소)를 꼭 적어주세요! */}
+              <span className="font-bold text-ink">주소:</span> 서울특별시 중랑구 중랑천로 200
             </div>
-            {/* 🌟 통신판매업 신고번호와 고객센터 유선번호 라인을 함께 구성했습니다 */}
+            {/* 🌟 네이버/카카오 심사 필수: 통신판매업 신고번호와 고객센터 정보 */}
             <div className="text-[#555] mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
               <div><span className="font-bold text-ink">고객센터:</span> 010-8007-3039</div>
-              <div><span className="font-bold text-ink">통신판매업신고번호:</span> 제 2024-서울노원-0354 호</div>
+              <div><span className="font-bold text-ink">통신판매업신고번호:</span> 제 2024-서울노원-0354호</div>
             </div>
             <div className="font-bold text-brand-dark mt-1">
               입금계좌: 카카오뱅크 3333-37-4727798 이성현(동그란마켓)
@@ -193,11 +195,11 @@ const Footer = () => {
               <Link to="/privacy" className="hover:text-brand">개인정보처리방침</Link>
             </div>
             <div className="mt-4 text-[#999]">
-              Copyright © {new Date().getFullYear()} {config.name} All rights reserved.
+              Copyright © {new Date().getFullYear()} 오늘도가성비 All rights reserved.
             </div>
           </div>
 
-          {/* 2. 우측 하단: SNS(인스타그램, 카카오톡) 아이콘 버튼 */}
+          {/* 2. 우측 하단: SNS 아이콘 버튼 */}
           <div className="flex items-end gap-3 shrink-0">
             <a 
               href="https://www.instagram.com/omarket___/" 
