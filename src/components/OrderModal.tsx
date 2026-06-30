@@ -177,13 +177,13 @@ export const OrderModal = ({
             ) : (
               <div className="w-full">
                 <button type="button" onClick={() => setIsOrderView(false)} className="text-gray-400 text-xs font-bold mb-4">← 돌아가기</button>
-                {/* 🌟 수정: form 제출을 포트원 결제창 호출 함수로 연결 */}
+                {/* form 제출을 포트원 결제창 호출 함수로 연결 */}
                 <form onSubmit={handlePortOnePay} className="space-y-3.5">
                   <input name="성함" required placeholder="성함" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <input name="연락처" required placeholder="연락처" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <textarea name="주소" required placeholder="배송지" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs h-20"></textarea>
                   
-                  {/* 🌟 수정: 버튼 텍스트를 '결제하기'로 변경하여 명확성 확보 */}
+                  {/* 버튼 텍스트를 '결제하기'로 변경 */}
                   <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-xl" disabled={isSubmitting}>
                     {isSubmitting ? '결제 및 주문 전송 중...' : '결제하기'}
                   </button>
