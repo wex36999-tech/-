@@ -12,7 +12,7 @@ export const OrderModal = ({
   // 모달창이 열려있는 동안 뒷배경(body)의 스크롤을 완전히 강제 차단합니다
   React.useEffect(() => {
     if (selectedProduct) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden'; 
       document.body.style.touchAction = 'none'; // 모바일 터치 스크롤 방지
     }
     return () => {
