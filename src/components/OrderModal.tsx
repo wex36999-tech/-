@@ -55,42 +55,47 @@ export const OrderModal = ({
     }
   };
 
-  // 🌟 [핵심] 포트원 일반결제 (신용카드, 카카오페이, 네이버페이 선택창) 호출 함수
-  const handlePortOnePay = (e: React.FormEvent) => {
-    e.preventDefault(); 
+  // 🌟 [수정된 핵심] 포트원 일반결제 호출 함수
+const handlePortOnePay = (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // 브라우저의 전역 객체에서 IMP를 가져옵니다.
-    const { IMP } = window as any;
-    
-    if (IMP) {
-      // 포트원 초기화 - 가맹점 식별코드가 올바르게 전달되었는지 확인
-      IMP.init("imp49871191"); 
+  // window 객체에서 IMP를 가져옵니다.
+  const { IMP } = window as any;
 
-      const calculatedAmount = parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000;
+  if (!IMP) {
+    alert("결제 모듈이 아직 로딩되지 않았습니다. 잠시만 기다린 후 다시 시도해 주세요.");
+    return;
+  }
 
-      IMP.request_pay({
-        pg: 'html5_inicis', 
-        pay_method: 'card', 
-        merchant_uid: `ord_${new Date().getTime()}`,
-        name: selectedProduct.name,
-        amount: calculatedAmount,
-        buyer_name: '', 
-        buyer_tel: '',
-        buyer_addr: '',
-        escrow: false, 
-      }, (rsp: any) => {
-        if (rsp.success) {
-          handleOrderSubmit(e);
-        } else {
-          // 결제 실패 시 사용자가 상황을 이해할 수 있도록 명확한 메시지 노출
-          alert(`결제 처리 중 문제가 발생했습니다: ${rsp.error_msg}`);
-        }
-      });
+  // 포트원 초기화
+  IMP.init("imp49871191");
+
+  // 가격 산정 (숫자만 추출하여 안전하게 처리)
+  const calculatedAmount = parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000;
+
+  // 결제창 호출
+  IMP.request_pay({
+    pg: 'html5_inicis',
+    pay_method: 'card',
+    merchant_uid: `ord_${new Date().getTime()}`,
+    name: selectedProduct?.name || "상품 결제",
+    amount: calculatedAmount,
+    buyer_email: '',
+    buyer_name: '',
+    buyer_tel: '',
+    buyer_addr: '',
+    buyer_postcode: '',
+    escrow: false,
+  }, (rsp: any) => {
+    if (rsp.success) {
+      // 결제 성공 시 주문 제출 로직 실행
+      handleOrderSubmit(e);
     } else {
-      // 모듈 로딩 지연 시 사용자에게 다시 시도하도록 유도
-      alert("결제 네트워크 연결이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
+      // 결제 실패 시 상세 사유 출력
+      alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
     }
-  };
+  });
+};
 
   if (!selectedProduct) return null;
 
@@ -188,9 +193,17 @@ export const OrderModal = ({
                   <input name="연락처" required placeholder="연락처" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <textarea name="주소" required placeholder="배송지" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs h-20"></textarea>
                   
-                  {/* 버튼 텍스트를 '결제하기'로 변경 */}
-                  <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-xl" disabled={isSubmitting}>
-                    {isSubmitting ? '결제 및 주문 전송 중...' : '결제하기'}
+                  {/* 버튼 텍스트를 '결제하기'로 변경 및 모듈 로딩 상태 연동 */}
+                  <button 
+                    type="submit" 
+                    className={`w-full py-4 font-extrabold rounded-xl transition-all ${!window.IMP ? 'bg-gray-400' : 'bg-ink'} text-white`} 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting 
+                      ? '결제 및 주문 전송 중...' 
+                      : (window as any).IMP 
+                        ? '결제하기' 
+                        : '결제 모듈 로딩 중...'}
                   </button>
                 </form>
               </div>
