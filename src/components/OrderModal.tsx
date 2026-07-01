@@ -55,35 +55,39 @@ export const OrderModal = ({
     }
   };
 
-  // 🌟 [핵심] 포트원 일반결제 (신용카드, 카카오페이 선택창) 호출 함수
+  // 🌟 [핵심] 포트원 일반결제 (신용카드, 카카오페이, 네이버페이 선택창) 호출 함수
   const handlePortOnePay = (e: React.FormEvent) => {
     e.preventDefault(); // 폼 자동 제출 방지
 
-    if (window.IMP) {
-      const IMP = window.IMP;
+    // window.IMP가 준비되었는지 확인
+    const IMP = (window as any).IMP;
+    
+    if (IMP) {
       IMP.init("imp49871191"); // 사장님 포트원 가맹점 식별코드
 
       const calculatedAmount = parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000;
 
       IMP.request_pay({
-        pg: 'html5_inicis', // KG이니시스 등 PG 연동 (카카오페이/신용카드 기본 포함 PG사)
+        pg: 'html5_inicis', // KG이니시스 등 PG 연동
         pay_method: 'card', // 카드 결제 선택 시 카카오페이 등 간편결제 선택지 노출
         merchant_uid: `ord_${new Date().getTime()}`,
         name: selectedProduct.name,
         amount: calculatedAmount,
-        buyer_name: '', // 폼 데이터 연동 가능 영역
+        buyer_name: '', // 실제 구현 시 폼 입력값 연동
         buyer_tel: '',
         buyer_addr: '',
+        escrow: false, // 🌟 심사 시 결제창 내 간편결제 항목이 더 명확히 노출되도록 설정
       }, (rsp: any) => {
         if (rsp.success) {
-          // 💡 포트원 결제 성공 시, 기존 폼 제출 함수 실행 (이메일 전송 등)
+          // 💡 포트원 결제 성공 시, 기존 폼 제출 함수 실행
           handleOrderSubmit(e);
         } else {
           alert(`결제 실패: ${rsp.error_msg}`);
         }
       });
     } else {
-      alert("포트원 결제 모듈이 로드되지 않았습니다. 페이지를 새로고침 해보세요.");
+      // 모듈이 즉시 로드되지 않았을 경우에 대한 안내
+      alert("결제 모듈을 불러오는 중입니다. 잠시만 기다렸다가 다시 시도해 주세요.");
     }
   };
 
