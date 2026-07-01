@@ -57,37 +57,38 @@ export const OrderModal = ({
 
   // 🌟 [핵심] 포트원 일반결제 (신용카드, 카카오페이, 네이버페이 선택창) 호출 함수
   const handlePortOnePay = (e: React.FormEvent) => {
-    e.preventDefault(); // 폼 자동 제출 방지
+    e.preventDefault(); 
 
-    // window.IMP가 준비되었는지 확인
-    const IMP = (window as any).IMP;
+    // 브라우저의 전역 객체에서 IMP를 가져옵니다.
+    const { IMP } = window as any;
     
     if (IMP) {
-      IMP.init("imp49871191"); // 사장님 포트원 가맹점 식별코드
+      // 포트원 초기화 - 가맹점 식별코드가 올바르게 전달되었는지 확인
+      IMP.init("imp49871191"); 
 
       const calculatedAmount = parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000;
 
       IMP.request_pay({
-        pg: 'html5_inicis', // KG이니시스 등 PG 연동
-        pay_method: 'card', // 카드 결제 선택 시 카카오페이 등 간편결제 선택지 노출
+        pg: 'html5_inicis', 
+        pay_method: 'card', 
         merchant_uid: `ord_${new Date().getTime()}`,
         name: selectedProduct.name,
         amount: calculatedAmount,
-        buyer_name: '', // 실제 구현 시 폼 입력값 연동
+        buyer_name: '', 
         buyer_tel: '',
         buyer_addr: '',
-        escrow: false, // 🌟 심사 시 결제창 내 간편결제 항목이 더 명확히 노출되도록 설정
+        escrow: false, 
       }, (rsp: any) => {
         if (rsp.success) {
-          // 💡 포트원 결제 성공 시, 기존 폼 제출 함수 실행
           handleOrderSubmit(e);
         } else {
-          alert(`결제 실패: ${rsp.error_msg}`);
+          // 결제 실패 시 사용자가 상황을 이해할 수 있도록 명확한 메시지 노출
+          alert(`결제 처리 중 문제가 발생했습니다: ${rsp.error_msg}`);
         }
       });
     } else {
-      // 모듈이 즉시 로드되지 않았을 경우에 대한 안내
-      alert("결제 모듈을 불러오는 중입니다. 잠시만 기다렸다가 다시 시도해 주세요.");
+      // 모듈 로딩 지연 시 사용자에게 다시 시도하도록 유도
+      alert("결제 네트워크 연결이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
     }
   };
 
