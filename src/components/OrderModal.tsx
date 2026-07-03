@@ -31,7 +31,7 @@ export const OrderModal = ({
     
     if (window.IMP) {
       const IMP = window.IMP;
-      IMP.init("imp49871191"); // 가맹점 식별코드
+      IMP.init("channel-key-e139f702-6d19-4e7f-b837-c9452429a737"); // 가맹점 식별코드
       
       IMP.request_pay({
         pg: 'naverpay',
@@ -67,25 +67,20 @@ const handlePortOnePay = (e: React.FormEvent) => {
     return;
   }
 
-  // 포트원 초기화
-  IMP.init("imp49871191");
+  // 포트원 초기화 (채널 키 설정)
+  IMP.init("channel-key-e139f702-6d19-4e7f-b837-c9452429a737");
 
   // 가격 산정 (숫자만 추출하여 안전하게 처리)
   const calculatedAmount = parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000;
 
   // 결제창 호출
   IMP.request_pay({
-    pg: 'html5_inicis',
+    pg: 'kakaopay', // 카카오페이 채널 연동을 위해 지정
     pay_method: 'card',
     merchant_uid: `ord_${new Date().getTime()}`,
     name: selectedProduct?.name || "상품 결제",
     amount: calculatedAmount,
-    buyer_email: '',
-    buyer_name: '',
-    buyer_tel: '',
-    buyer_addr: '',
-    buyer_postcode: '',
-    escrow: false,
+    currency: 'KRW', // 포트원 필수 항목
   }, (rsp: any) => {
     if (rsp.success) {
       // 결제 성공 시 주문 제출 로직 실행
