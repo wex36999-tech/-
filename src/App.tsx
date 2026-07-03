@@ -190,7 +190,7 @@ const Footer = () => {
               입금계좌: 카카오뱅크 3333-37-4727798 이성현(동그란마켓)
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 font-bold text-ink underline underline-offset-4">
-              <Link to="/guide" className="hover:text-brand">이용안내</Link>
+              <Link to="/guide" className="hover:text-brand">이용안내</Link> 
               <Link to="/terms" className="hover:text-brand">이용약관</Link> 
               <Link to="/privacy" className="hover:text-brand">개인정보처리방침</Link>
             </div>
