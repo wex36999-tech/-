@@ -136,7 +136,7 @@ const handlePortOnePay = (e: React.FormEvent) => {
                   <h2 className="text-xl font-black text-ink mb-1">{selectedProduct.name}</h2>
                   <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct.description}</p>
                   
-                  {/* 🌟 카카오페이 심사 필수: 배송 기간 안내 텍스트 추가 */}
+                  {/* 🌟 카카오페이 심사 필수: 배송 기간 안내 텍스트 추가 */} 
                   <p className="text-[11px] font-bold text-brand-dark bg-brand/10 p-3 rounded-xl border border-brand/20 mb-5 leading-relaxed break-keep">
                     🚚 배송 안내: 결제 완료 후 배송 완료까지 영업일 기준 2~5일 소요됩니다. (주말/공휴일 제외)
                   </p> 
