@@ -12,7 +12,7 @@ interface Product {
   price: string;
   description: string;
   image: string;
-  detailImages?: string; // 👈 여기 추가
+  detailImages?: string; 
   category: string;
   options: string;
   isSoldOut: boolean;
@@ -33,12 +33,16 @@ const AdminPage = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   
-<<<<<<< HEAD
-  // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터
-  const categories: { name: string; order: number }[] = config.categories || [
-    { name: '농산물', order: 1 }, 
-    { name: '수산물', order: 2 }
-  ];
+  // ConfigContext에서 카테고리 데이터를 안전하게 가져오고 객체 배열 구조로 통일
+  const categories: { name: string; order: number }[] = Array.isArray(config.categories)
+    ? config.categories.map((cat: any) => 
+        typeof cat === 'string' ? { name: cat, order: 0 } : cat
+      )
+    : [
+        { name: '농산물', order: 1 }, 
+        { name: '수산물', order: 2 }
+      ];
+
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryOrder, setNewCategoryOrder] = useState<number>(categories.length + 1);
