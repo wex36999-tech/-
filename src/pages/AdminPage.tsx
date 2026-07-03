@@ -33,6 +33,7 @@ const AdminPage = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   
+<<<<<<< HEAD
   // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터
   const categories: { name: string; order: number }[] = config.categories || [
     { name: '농산물', order: 1 }, 
@@ -41,6 +42,16 @@ const AdminPage = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryOrder, setNewCategoryOrder] = useState<number>(categories.length + 1);
+=======
+  // ConfigContext(구글 서버)에서 보관하는 카테고리 데이터를 안전하게 처리
+const rawCategories = config.categories || ['농산물', '수산물'];
+const categories: string[] = Array.isArray(rawCategories) 
+  ? rawCategories.map((cat: any) => (typeof cat === 'string' ? cat : cat.name))
+  : [];
+
+const [showCategoryModal, setShowCategoryModal] = useState(false);
+const [newCategoryName, setNewCategoryName] = useState('');
+>>>>>>> a9733c6af92f0cfd7b48925857ac1256d2111a54
 
   // 🔍 상품 실시간 검색어 상태
   const [searchQuery, setSearchQuery] = useState('');

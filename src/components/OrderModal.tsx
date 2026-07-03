@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Minus, Plus, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { X, ChevronDown, Minus, Plus, ArrowLeft } from 'lucide-react';
 
 export const OrderModal = ({ 
   selectedProduct, setSelectedProduct, totalPriceString, quantity, 
@@ -9,13 +9,103 @@ export const OrderModal = ({
 }: any) => {
   const [isDetailView, setIsDetailView] = React.useState(false);
 
+  // 모달창이 열려있는 동안 뒷배경(body)의 스크롤을 완전히 강제 차단합니다
+  React.useEffect(() => {
+    if (selectedProduct) {
+      document.body.style.overflow = 'hidden'; 
+      document.body.style.touchAction = 'none'; // 모바일 터치 스크롤 방지
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'unset';
+      setIsDetailView(false); // 🌟 [핵심 보완] 상품이 바뀌거나 모달이 닫힐 때 상세 보기 모드를 무조건 해제합니다.
+    };
+  }, [selectedProduct]);
+
+  // 🌟 네이버페이 심사 통과를 위한 전용 결제 호출 함수 (주문형 규격)
+  const handleNPayCheckout = () => {
+    if (productOptions.length > 0 && !selectedOption) {
+      alert("옵션을 선택해 주세요."); 
+      return;
+    }
+    
+    if (window.IMP) {
+      const IMP = window.IMP;
+      IMP.init("imp49871191"); // 가맹점 식별코드
+      
+      IMP.request_pay({
+        pg: 'naverpay',
+        pay_method: 'card',
+        merchant_uid: `mid_${new Date().getTime()}`,
+        name: selectedProduct.name,
+        amount: parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000,
+        buyer_name: '',
+        buyer_tel: '',
+        buyer_addr: '',
+        naverPayUseCid: 'NAVERPAY_CID', 
+      }, (rsp: any) => {
+        if (rsp.success) {
+          alert('네이버페이 결제 테스트가 성공적으로 완료되었습니다.');
+        } else {
+          alert(`결제 실패: ${rsp.error_msg}`);
+        }
+      });
+    } else {
+      alert("포트원 모듈이 로드되지 않았습니다. 관리자에게 문의하세요.");
+    }
+  };
+
+  // 🌟 [수정된 핵심] 포트원 일반결제 호출 함수
+const handlePortOnePay = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // window 객체에서 안전하게 IMP를 가져옵니다.
+  const IMP = (window as any).IMP;
+
+  if (!IMP) {
+    alert("결제 모듈이 아직 로딩되지 않았습니다. 잠시만 기다린 후 다시 시도해 주세요.");
+    return;
+  }
+
+  // 포트원 초기화
+  IMP.init("imp49871191");
+
+  // 가격 산정 (숫자만 추출하여 안전하게 처리)
+  const calculatedAmount = parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000;
+
+  // 결제창 호출
+  IMP.request_pay({
+    pg: 'html5_inicis',
+    pay_method: 'card',
+    merchant_uid: `ord_${new Date().getTime()}`,
+    name: selectedProduct?.name || "상품 결제",
+    amount: calculatedAmount,
+    buyer_email: '',
+    buyer_name: '',
+    buyer_tel: '',
+    buyer_addr: '',
+    buyer_postcode: '',
+    escrow: false,
+  }, (rsp: any) => {
+    if (rsp.success) {
+      // 결제 성공 시 주문 제출 로직 실행
+      handleOrderSubmit(e);
+    } else {
+      // 결제 실패 시 상세 사유 출력
+      alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
+    }
+  });
+};
+
   if (!selectedProduct) return null;
 
   return (
     <AnimatePresence>
       <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }} 
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm pointer-events-auto" 
         onClick={() => setSelectedProduct(null)}
       >
         <motion.div 
@@ -23,7 +113,7 @@ export const OrderModal = ({
           animate={{ scale: 1, opacity: 1 }} 
           exit={{ scale: 0.9, opacity: 0 }} 
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative" 
+          className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative pointer-events-auto overscroll-contain" 
           onClick={e => e.stopPropagation()}
         >
           {!isDetailView && (
@@ -35,14 +125,14 @@ export const OrderModal = ({
             </div>
           )}
 
-          <div className="p-6 overflow-y-auto flex-1 relative">
+          <div className="p-6 overflow-y-auto flex-1 relative overscroll-contain touch-pan-y">
             {isDetailView ? (
               <div className="w-full">
                 <button type="button" onClick={() => setIsDetailView(false)} className="sticky top-0 z-20 flex items-center gap-1.5 px-4 py-2 bg-white/90 backdrop-blur-md border border-gray-100 rounded-full text-[12px] font-bold shadow-sm mb-4">
                   <ArrowLeft size={14} /> 돌아가기
                 </button>
                 {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
-                  <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm" referrerPolicy="no-referrer" />
+                  <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm image-rendering-crisp-edges" referrerPolicy="no-referrer" />
                 )) : <p className="text-center text-gray-400 py-10 text-xs">상세 이미지가 없습니다.</p>}
               </div>
             ) : !isOrderView ? (
@@ -51,6 +141,10 @@ export const OrderModal = ({
                   <h2 className="text-xl font-black text-ink mb-1">{selectedProduct.name}</h2>
                   <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct.description}</p>
                   
+                  {/* 🌟 카카오페이 심사 필수: 배송 기간 안내 텍스트 추가 */}
+                  <p className="text-[11px] font-bold text-brand-dark bg-brand/10 p-3 rounded-xl border border-brand/20 mb-5 leading-relaxed break-keep">
+                    🚚 배송 안내: 결제 완료 후 배송 완료까지 영업일 기준 2~5일 소요됩니다. (주말/공휴일 제외)
+                  </p> 
                   {/* 옵션 선택 */}
                   {productOptions.length > 0 && (
                     <div className="space-y-1.5 mb-4">
@@ -62,7 +156,7 @@ export const OrderModal = ({
                     </div>
                   )}
 
-                  {/* 🌟 수량 선택 영역 복구 완료 */}
+                  {/* 수량 선택 영역 */}
                   <div className="space-y-1.5 mb-6">
                     <label className="text-[11px] font-bold text-gray-400 ml-1">주문 수량</label>
                     <div className="flex items-center justify-between p-2 bg-gray-50 rounded-xl border border-gray-100">
@@ -82,19 +176,35 @@ export const OrderModal = ({
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
-                  <span className="text-lg font-black text-ink">{totalPriceString}</span>
-                  <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white px-6 py-3.5 rounded-xl font-extrabold text-xs">구매하기</button>
+                {/* 가격 및 구매/네이버페이 결제 버튼 영역 */}
+                <div className="space-y-3 pt-4 border-t border-gray-100 mt-auto">
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-black text-ink">{totalPriceString}</span>
+                    <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white px-6 py-3.5 rounded-xl font-extrabold text-xs">구매하기</button>
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="w-full">
                 <button type="button" onClick={() => setIsOrderView(false)} className="text-gray-400 text-xs font-bold mb-4">← 돌아가기</button>
-                <form onSubmit={handleOrderSubmit} className="space-y-3.5">
+                {/* form 제출을 포트원 결제창 호출 함수로 연결 */}
+                <form onSubmit={handlePortOnePay} className="space-y-3.5">
                   <input name="성함" required placeholder="성함" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <input name="연락처" required placeholder="연락처" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs" />
                   <textarea name="주소" required placeholder="배송지" className="w-full p-3.5 bg-gray-50 rounded-xl text-xs h-20"></textarea>
-                  <button type="submit" className="w-full py-4 bg-ink text-white font-extrabold rounded-xl">주문하기</button>
+                  
+                  {/* 버튼 텍스트를 '결제하기'로 변경 및 모듈 로딩 상태 연동 */}
+                  <button 
+                    type="submit" 
+                    className={`w-full py-4 font-extrabold rounded-xl transition-all ${!window.IMP ? 'bg-gray-400' : 'bg-ink'} text-white`} 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting 
+                      ? '결제 및 주문 전송 중...' 
+                      : (window as any).IMP 
+                        ? '결제하기' 
+                        : '결제 모듈 로딩 중...'}
+                  </button>
                 </form>
               </div>
             )}

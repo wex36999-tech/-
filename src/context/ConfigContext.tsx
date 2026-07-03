@@ -194,31 +194,41 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   // Sync Site Config
-  useEffect(() => {
-    const unsub = onSnapshot(doc(db, 'config', 'site'), (snapshot) => {
-      if (snapshot.exists()) {
-        setConfig(prev => ({ ...prev, ...snapshot.data() } as SiteConfig));
-      } else {
-        // Migration or Initialize
-        const saved = localStorage.getItem('siteConfig');
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved);
-            setDoc(doc(db, 'config', 'site'), { ...defaultConfig, ...parsed });
-          } catch(e) {
-            setDoc(doc(db, 'config', 'site'), defaultConfig);
-          }
-        } else {
-          setDoc(doc(db, 'config', 'site'), defaultConfig);
-        }
-      }
-      setLoading(false);
-    }, (error) => {
-      console.error('Firestore Error (Config): ', error);
-      setLoading(false); // Ensure loading is disabled on error
-    });
-    return unsub;
-  }, []);
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'config', 'site'), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        // 데이터가 객체 배열 형태여도 항상 문자열 배열로 변환
+        const formattedCategories = Array.isArray(data.categories) 
+          ? data.categories.map((c: any) => (typeof c === 'string' ? c : c.name || ''))
+          : defaultConfig.categories;
+
+        setConfig(prev => ({ 
+          ...prev, 
+          ...data, 
+          categories: formattedCategories 
+        } as SiteConfig));
+      } else {
+        // Migration or Initialize
+        const saved = localStorage.getItem('siteConfig');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setDoc(doc(db, 'config', 'site'), { ...defaultConfig, ...parsed });
+          } catch(e) {
+            setDoc(doc(db, 'config', 'site'), defaultConfig);
+          }
+        } else {
+          setDoc(doc(db, 'config', 'site'), defaultConfig);
+        }
+      }
+      setLoading(false);
+    }, (error) => {
+      console.error('Firestore Error (Config): ', error);
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
 
   // Sync Products
   useEffect(() => {
