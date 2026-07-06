@@ -22,42 +22,33 @@ export const OrderModal = ({
     };
   }, [selectedProduct]);
 
-  // 🌟 [수정된 핵심] 포트원 일반결제 호출 함수
-const handlePortOnePay = (e: React.FormEvent) => {
-  e.preventDefault();
-
-  // window 객체에서 안전하게 IMP를 가져옵니다.
-  const IMP = (window as any).IMP;
-
-  if (!IMP) {
-    alert("결제 모듈이 아직 로딩되지 않았습니다. 잠시만 기다린 후 다시 시도해 주세요.");
-    return;
-  }
-
-  // 포트원 초기화 (채널 키 설정)
-  IMP.init("channel-key-e139f702-6d19-4e7f-b837-c9452429a737");
-
-  // 가격 산정 (숫자만 추출하여 안전하게 처리)
-  const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
-
-  // 결제창 호출
-  IMP.request_pay({
-    pg: 'kakaopay.TC0ONETIME', // 카카오페이 심사를 위한 정확한 채널 설정
-    pay_method: 'card',
-    merchant_uid: `ord_${new Date().getTime()}`,
-    name: selectedProduct?.name || "상품 결제",
-    amount: calculatedAmount,
-    currency: 'KRW', // 포트원 필수 항목
-  }, (rsp: any) => {
-    if (rsp.success) {
-      // 결제 성공 시 주문 제출 로직 실행
-      handleOrderSubmit(e);
-    } else {
-      // 결제 실패 시 상세 사유 출력
-      alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
+  const handlePortOnePay = (e: React.FormEvent) => {
+    e.preventDefault();
+    const IMP = (window as any).IMP;
+    
+    if (!IMP) {
+      alert("결제 모듈이 로딩 중입니다. 잠시 후 다시 시도해 주세요.");
+      return;
     }
-  });
-};
+
+    IMP.init("imp49871191");
+
+    const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
+
+    IMP.request_pay({
+      // PG사 설정을 제거하여 포트원 결제 선택창이 뜨도록 변경
+      pay_method: 'card',
+      merchant_uid: `ord_${new Date().getTime()}`,
+      name: selectedProduct?.name || "상품 결제",
+      amount: calculatedAmount,
+    }, (rsp: any) => {
+      if (rsp.success) {
+        handleOrderSubmit(e);
+      } else {
+        alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
+      }
+    });
+  };
 
   if (!selectedProduct) return null;
 
@@ -158,14 +149,10 @@ const handlePortOnePay = (e: React.FormEvent) => {
                   {/* 버튼 텍스트를 '결제하기'로 변경 및 모듈 로딩 상태 연동 */}
                   <button 
                     type="submit" 
-                    className={`w-full py-4 font-extrabold rounded-xl transition-all ${!window.IMP ? 'bg-gray-400' : 'bg-ink'} text-white`} 
+                    className="w-full py-4 font-extrabold rounded-xl transition-all bg-ink text-white" 
                     disabled={isSubmitting}
                   >
-                    {isSubmitting 
-                      ? '결제 및 주문 전송 중...' 
-                      : (window as any).IMP 
-                        ? '결제하기' 
-                        : '결제 모듈 로딩 중...'}
+                    {isSubmitting ? '결제 및 주문 전송 중...' : '결제하기'}
                   </button>
                 </form>
               </div>
