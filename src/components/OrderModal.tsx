@@ -22,39 +22,6 @@ export const OrderModal = ({
     };
   }, [selectedProduct]);
 
-  // 🌟 네이버페이 심사 통과를 위한 전용 결제 호출 함수 (주문형 규격)
-  const handleNPayCheckout = () => {
-    if (productOptions.length > 0 && !selectedOption) {
-      alert("옵션을 선택해 주세요."); 
-      return;
-    }
-    
-    if (window.IMP) {
-      const IMP = window.IMP;
-      IMP.init("channel-key-e139f702-6d19-4e7f-b837-c9452429a737"); // 가맹점 식별코드
-      
-      IMP.request_pay({
-        pg: 'naverpay',
-        pay_method: 'card',
-        merchant_uid: `mid_${new Date().getTime()}`,
-        name: selectedProduct.name,
-        amount: parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000,
-        buyer_name: '',
-        buyer_tel: '',
-        buyer_addr: '',
-        naverPayUseCid: 'NAVERPAY_CID', 
-      }, (rsp: any) => {
-        if (rsp.success) {
-          alert('네이버페이 결제 테스트가 성공적으로 완료되었습니다.');
-        } else {
-          alert(`결제 실패: ${rsp.error_msg}`);
-        }
-      });
-    } else {
-      alert("포트원 모듈이 로드되지 않았습니다. 관리자에게 문의하세요.");
-    }
-  };
-
   // 🌟 [수정된 핵심] 포트원 일반결제 호출 함수
 const handlePortOnePay = (e: React.FormEvent) => {
   e.preventDefault();
@@ -71,11 +38,11 @@ const handlePortOnePay = (e: React.FormEvent) => {
   IMP.init("channel-key-e139f702-6d19-4e7f-b837-c9452429a737");
 
   // 가격 산정 (숫자만 추출하여 안전하게 처리)
-  const calculatedAmount = parseInt(totalPriceString.replace(/[^0-9]/g, ''), 10) || 10000;
+  const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
 
   // 결제창 호출
   IMP.request_pay({
-    pg: 'kakaopay', // 카카오페이 채널 연동을 위해 지정
+    pg: 'kakaopay.TC0ONETIME', // 카카오페이 심사를 위한 정확한 채널 설정
     pay_method: 'card',
     merchant_uid: `ord_${new Date().getTime()}`,
     name: selectedProduct?.name || "상품 결제",
@@ -113,7 +80,7 @@ const handlePortOnePay = (e: React.FormEvent) => {
         >
           {!isDetailView && (
             <div className="w-full h-56 overflow-hidden relative flex-shrink-0">
-              <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
+              <img src={selectedProduct?.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
                 <X size={20} />
               </button>
@@ -126,7 +93,7 @@ const handlePortOnePay = (e: React.FormEvent) => {
                 <button type="button" onClick={() => setIsDetailView(false)} className="sticky top-0 z-20 flex items-center gap-1.5 px-4 py-2 bg-white/90 backdrop-blur-md border border-gray-100 rounded-full text-[12px] font-bold shadow-sm mb-4">
                   <ArrowLeft size={14} /> 돌아가기
                 </button>
-                {selectedProduct.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
+                {selectedProduct?.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
                   <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm image-rendering-crisp-edges" referrerPolicy="no-referrer" />
                 )) : <p className="text-center text-gray-400 py-10 text-xs">상세 이미지가 없습니다.</p>}
               </div>
@@ -134,7 +101,7 @@ const handlePortOnePay = (e: React.FormEvent) => {
               <div className="flex flex-col h-full justify-between">
                 <div>
                   <h2 className="text-xl font-black text-ink mb-1">{selectedProduct.name}</h2>
-                  <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct.description}</p>
+                  <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-line mb-5">{selectedProduct?.description}</p>
                   
                   {/* 🌟 카카오페이 심사 필수: 배송 기간 안내 텍스트 추가 */} 
                   <p className="text-[11px] font-bold text-brand-dark bg-brand/10 p-3 rounded-xl border border-brand/20 mb-5 leading-relaxed break-keep">
@@ -164,7 +131,7 @@ const handlePortOnePay = (e: React.FormEvent) => {
                   </div>
 
                   {/* 상세 보기 버튼 */}
-                  {selectedProduct.detailImages && (
+                  {selectedProduct?.detailImages && (
                     <button type="button" onClick={() => setIsDetailView(true)} className="w-full py-3 mb-6 bg-brand/10 text-brand-dark text-xs font-bold rounded-xl hover:bg-brand/20 transition-all border border-brand/20 flex justify-center items-center gap-2">
                       상품 상세 이미지 더 보기 <ChevronDown size={14} />
                     </button>
