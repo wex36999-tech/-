@@ -173,7 +173,7 @@ const Footer = () => {
           {/* 1. 좌측: 사업자 정보 및 계좌 안내, 약관 링크 */}
           <div className="flex flex-col gap-1.5 leading-relaxed">
             <div>
-              <span className="font-bold text-ink">상호명:</span> 오늘도가성비 &nbsp;|&nbsp; 
+              <span className="font-bold text-ink">상호명:</span> 동그란마켓 &nbsp;|&nbsp; 
               <span className="font-bold text-ink">대표:</span> 이성현 &nbsp;|&nbsp; 
               <span className="font-bold text-ink">사업자등록번호:</span> 236-11-02791
             </div>
