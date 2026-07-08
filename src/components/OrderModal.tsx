@@ -46,7 +46,7 @@ export const OrderModal = ({
       } else {
         console.error("포트원 결제 상세 에러:", rsp);
         alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
-      }
+      } 
     });
   };
 
