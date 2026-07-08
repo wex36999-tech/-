@@ -36,7 +36,7 @@ export const OrderModal = ({
     const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
 
     IMP.request_pay({
-  pg: 'kakaopay.TC0ONETIME', // 🌟 이 값은 유지하세요.
+  pg: 'kakaopay',
   pay_method: 'card',
   merchant_uid: `ord_${new Date().getTime()}`,
   name: selectedProduct?.name || "상품 결제",
