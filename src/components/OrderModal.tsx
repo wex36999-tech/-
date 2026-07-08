@@ -36,7 +36,7 @@ export const OrderModal = ({
     const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
 
     IMP.request_pay({
-      // PG사 설정을 제거하여 포트원 결제 선택창이 뜨도록 변경
+      pg: 'kakaopay', // 🌟 설정화면의 PG Provider에 맞춰 강제 지정
       pay_method: 'card',
       merchant_uid: `ord_${new Date().getTime()}`,
       name: selectedProduct?.name || "상품 결제",
