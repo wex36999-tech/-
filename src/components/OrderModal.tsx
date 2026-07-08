@@ -31,17 +31,20 @@ export const OrderModal = ({
       return;
     }
 
-    IMP.init("imp49871191");
+    IMP.init("channel-key-e139f702-6d19-4e7f-b837-c9452429a737");
 
     const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
 
     IMP.request_pay({
-      pg: 'kakaopay', // 🌟 설정화면의 PG Provider에 맞춰 강제 지정
-      pay_method: 'card',
-      merchant_uid: `ord_${new Date().getTime()}`,
-      name: selectedProduct?.name || "상품 결제",
-      amount: calculatedAmount,
-    }, (rsp: any) => {
+  pg: 'kakaopay.TC0ONETIME', // 🌟 이 값은 유지하세요.
+  pay_method: 'card',
+  merchant_uid: `ord_${new Date().getTime()}`,
+  name: selectedProduct?.name || "상품 결제",
+  amount: calculatedAmount,
+  // V2에서는 필수인 항목입니다.
+  // pg 정보가 채널 키에 이미 포함되어 있지만, 
+  // 포트원 V2 가이드에 따라 명시적으로 호출하는 것이 좋습니다.
+}, (rsp: any) => {
       if (rsp.success) {
         handleOrderSubmit(e);
       } else {
