@@ -36,17 +36,19 @@ export const OrderModal = ({
     const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
 
     IMP.request_pay({
-      pay_method: 'card',
+      pg: 'kakaopay', // 🌟 간편결제 채널 호출을 위한 필수 PG사 명시
+      pay_method: 'kakaopay', // 🌟 pay_method를 kakaopay로 설정
       merchant_uid: `ord_${new Date().getTime()}`,
       name: selectedProduct?.name || "상품 결제",
       amount: calculatedAmount,
+      kakaopayUseCid: true, // 🌟 테스트 CID(TC0ONETIME) 사용을 위한 핵심 옵션
     }, (rsp: any) => {
       if (rsp.success) {
         handleOrderSubmit(e);
       } else {
         console.error("포트원 결제 상세 에러:", rsp);
         alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
-      } 
+      }
     });
   };
 
