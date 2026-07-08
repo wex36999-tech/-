@@ -36,18 +36,15 @@ export const OrderModal = ({
     const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
 
     IMP.request_pay({
-  pg: 'kakaopay',
-  pay_method: 'card',
-  merchant_uid: `ord_${new Date().getTime()}`,
-  name: selectedProduct?.name || "상품 결제",
-  amount: calculatedAmount,
-  // V2에서는 필수인 항목입니다.
-  // pg 정보가 채널 키에 이미 포함되어 있지만, 
-  // 포트원 V2 가이드에 따라 명시적으로 호출하는 것이 좋습니다.
-}, (rsp: any) => {
+      pay_method: 'card',
+      merchant_uid: `ord_${new Date().getTime()}`,
+      name: selectedProduct?.name || "상품 결제",
+      amount: calculatedAmount,
+    }, (rsp: any) => {
       if (rsp.success) {
         handleOrderSubmit(e);
       } else {
+        console.error("포트원 결제 상세 에러:", rsp);
         alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
       }
     });
