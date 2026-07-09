@@ -22,34 +22,40 @@ export const OrderModal = ({
     };
   }, [selectedProduct]);
 
-  const handlePortOnePay = (e: React.FormEvent) => {
+  const handlePortOnePay = async (e: React.FormEvent) => {
     e.preventDefault();
-    const IMP = (window as any).IMP;
-    
-    if (!IMP) {
+
+    const PortOne = (window as any).PortOne;
+
+    if (!PortOne) {
       alert("결제 모듈이 로딩 중입니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
 
-    IMP.init("channel-key-e139f702-6d19-4e7f-b837-c9452429a737");
-
     const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
 
-    IMP.request_pay({
-      pg: 'kakaopay', // 🌟 간편결제 채널 호출을 위한 필수 PG사 명시
-      pay_method: 'kakaopay', // 🌟 pay_method를 kakaopay로 설정
-      merchant_uid: `ord_${new Date().getTime()}`,
-      name: selectedProduct?.name || "상품 결제",
-      amount: calculatedAmount,
-      kakaopayUseCid: true, // 🌟 테스트 CID(TC0ONETIME) 사용을 위한 핵심 옵션
-    }, (rsp: any) => {
-      if (rsp.success) {
-        handleOrderSubmit(e);
-      } else {
-        console.error("포트원 결제 상세 에러:", rsp);
-        alert(`결제 실패: ${rsp.error_msg || "알 수 없는 오류가 발생했습니다."}`);
-      }
+    const response = await PortOne.requestPayment({
+      storeId: "store-bbb8e621-99c0-4a9f-b62c-8e7670dcb6a6",
+      channelKey: "channel-key-96a2003d-b553-4afd-924c-f3d3cef99bf6",
+      paymentId: `ord_${new Date().getTime()}`,
+      orderName: selectedProduct?.name || "상품 결제",
+      totalAmount: calculatedAmount,
+      currency: "CURRENCY_KRW",
+      payMethod: "EASY_PAY",
+      easyPay: {
+        easyPayProvider: "EASY_PAY_PROVIDER_KAKAOPAY", // 🌟 카카오페이 지정
+      },
     });
+
+    if (response.code !== undefined) {
+      // 결제 실패 (또는 사용자 취소)
+      console.error("포트원 결제 상세 에러:", response);
+      alert(`결제 실패: ${response.message || "알 수 없는 오류가 발생했습니다."}`);
+      return;
+    }
+
+    // 결제 성공 -> 기존 주문 전송 로직 실행
+    handleOrderSubmit(e);
   };
 
   if (!selectedProduct) return null;
