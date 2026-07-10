@@ -22,8 +22,9 @@ export const OrderModal = ({
     };
   }, [selectedProduct]);
 
-  const handlePortOnePay = async (e: React.FormEvent) => {
+  const handlePortOnePay = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget; // 🌟 결제창 대기 중 이벤트가 만료되기 전에 폼을 미리 저장
 
     const PortOne = (window as any).PortOne;
 
@@ -54,8 +55,8 @@ export const OrderModal = ({
       return;
     }
 
-    // 결제 성공 -> 기존 주문 전송 로직 실행
-    handleOrderSubmit(e);
+    // 결제 성공 -> 기존 주문 전송 로직 실행 (이벤트 대신 form을 넘김)
+    handleOrderSubmit(form);
   };
 
   if (!selectedProduct) return null;
