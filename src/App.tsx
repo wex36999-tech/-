@@ -262,7 +262,7 @@ const CategoryButton = React.memo(({ cat, isActive, onClick }: { cat: string, is
   </button>
 ));
 
-const HomePage = ({ activeCategory, setActiveCategory }: { activeCategory: string, setActiveCategory: (c: string) => void }) => {
+const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: { activeCategory: string, setActiveCategory: (c: string) => void, setShowCompleteModal: (v: boolean) => void }) => {
   const { config, products } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isOrderView, setIsOrderView] = React.useState(false);
@@ -458,13 +458,9 @@ const totalPriceString = React.useMemo(() => {
   return `${calculatedTotal.toLocaleString()}원`;
 }, [selectedProduct, selectedOption, quantity]);
 
-  const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    // 옵션 선택을 강제하던 조건문을 삭제했습니다.
-
+  const handleOrderSubmit = async (form: HTMLFormElement) => {
     setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData(form);
     
     try {
       const response = await fetch("https://formspree.io/f/xaqaervl", {
@@ -472,11 +468,10 @@ const totalPriceString = React.useMemo(() => {
         body: formData,
         headers: { 'Accept': 'application/json' }
       });
-
       if (response.ok) {
-        alert("감사합니다.오늘도 가성비!\n입금계좌 카카오뱅크 3333-37-4727798 이성현(동그란마켓)\n입금 후 배송 안내문자를 확인해주세요.");
         setSelectedProduct(null);
         setIsOrderView(false);
+        setShowCompleteModal(true); // 🌟 alert 대신 완료 모달 열기
       } else {
         alert("주문 전송에 실패했습니다. 다시 시도해주세요.");
       }
@@ -629,6 +624,8 @@ const AppContent = () => {
   const [showAccountModal, setShowAccountModal] = React.useState(false);
   // ✉️ 고객문의 팝업 상태 추가
   const [showContactModal, setShowContactModal] = React.useState(false);
+  // ✅ 결제완료 팝업 상태 추가
+  const [showCompleteModal, setShowCompleteModal] = React.useState(false);
 
   // ✉️ 모달창 안에서 문의 제출 처리하는 함수 (기존 Footer에 있던 로직)
   const handleModalSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -668,7 +665,7 @@ const AppContent = () => {
       <FloatingMenu onOpenAccount={() => setShowAccountModal(true)} />
 
       <Routes>
-        <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} />} />
+        <Route path="/" element={<HomePage activeCategory={activeCategory} setActiveCategory={setActiveCategory} setShowCompleteModal={setShowCompleteModal} />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/guide" element={<Guide />} />
@@ -708,6 +705,69 @@ const AppContent = () => {
               <textarea name="message" required className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-border outline-none focus:border-brand h-32 text-sm" placeholder="문의 내용"></textarea>
               <button type="submit" className="w-full py-4 bg-ink text-white font-bold rounded-xl hover:bg-brand hover:text-ink transition-all">문의 보내기</button>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ✅ 결제 완료 모달 */}
+      {showCompleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowCompleteModal(false)}>
+          <div className="bg-white p-8 rounded-[24px] w-full max-w-xs shadow-2xl text-center max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-brand/20 flex items-center justify-center">
+              <span className="text-2xl">✅</span>
+            </div>
+            <h3 className="font-black text-lg mb-2">주문완료</h3>
+            <p className="text-xs text-ink-muted mb-5 leading-relaxed">
+              오늘도 가성비를 이용해주셔서 감사합니다.
+            </p>
+            <p className="text-[11px] font-bold text-brand-dark bg-brand/10 p-3 rounded-xl border border-brand/20 mb-5 leading-relaxed break-keep">
+              🚚 배송 안내: 결제 완료 후 배송 완료까지 영업일 기준 2~5일 소요됩니다. (주말/공휴일 제외)
+            </p>
+
+            {/* 🌟 CS(환불/교환) 안내 아코디언 */}
+            <details className="text-left mb-5 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+              <summary className="cursor-pointer select-none px-4 py-3 text-[11px] font-bold text-ink-muted flex items-center justify-between">
+                교환/환불(CS) 안내 보기
+                <ChevronDown size={14} />
+              </summary>
+              <div className="px-4 pb-4 pt-1 text-[10.5px] text-ink-muted leading-relaxed space-y-3 break-keep">
+                <div>
+                  <p className="font-bold text-ink mb-1">[CS 접수방법]</p>
+                  <p>사진증빙이 필요하여 고객수령자명과 함께 카톡접수로 부탁드립니다.</p>
+                </div>
+                <div>
+                  <p className="font-bold text-ink mb-1">[CS 처리방안]</p>
+                  <p>1. 부분환불&nbsp;&nbsp;2. 재발송&nbsp;&nbsp;3. 환불</p>
+                </div>
+                <div>
+                  <p className="font-bold text-ink mb-1">[CS 불가한 경우]</p>
+                  <p>1. 고객님의 주관적인 단순 변심<br/>(사진과 다르다, 맛이 없다, 크기가 작다, 모양이 일정하지 않다 등)</p>
+                  <p className="mt-1">2. 고객님의 귀책 사유<br/>(수령주소·수령인 번호 오류로 오도착한 경우)</p>
+                  <p className="mt-1">3. 기간이 경과한 경우<br/>(제품 수령 후 1~2일 경과 시 보관환경 확인 불가로 처리 어려움)</p>
+                </div>
+                <div>
+                  <p className="font-bold text-ink mb-1">Q. 제품이 파손되어 왔어요.</p>
+                  <p>간혹 배송 중 제품이 험하게 다뤄지는 경우가 있습니다. 상품 특성상 사진이 필요하여 1:1 문의를 통해 부분환불·환불·재발송 중 원하시는 방향으로 도와드립니다.</p>
+                </div>
+              </div>
+            </details>
+
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setShowCompleteModal(false);
+                  document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="w-full py-3 bg-ink text-white font-bold rounded-xl text-sm"
+              >
+                상품 더 보기
+              </button>
+              <button
+                onClick={() => setShowCompleteModal(false)}
+                className="w-full py-3 bg-gray-100 text-ink-muted font-bold rounded-xl text-sm"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}
