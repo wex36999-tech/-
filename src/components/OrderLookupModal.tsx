@@ -1,7 +1,7 @@
 import React from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { X, Search } from 'lucide-react';
+import { X, Search, MessageCircle } from 'lucide-react';
 
 interface OrderRecord {
   id: string;
@@ -14,6 +14,9 @@ interface OrderRecord {
   totalPrice: string;
   createdAt: string;
 }
+
+// 🌟 카카오 오픈채팅 링크 (Footer에서 쓰는 것과 동일)
+const KAKAO_OPEN_CHAT_URL = 'https://open.kakao.com/o/s8rZCYzi';
 
 export const OrderLookupModal = ({ onClose }: { onClose: () => void }) => {
   const [name, setName] = React.useState('');
@@ -50,6 +53,21 @@ export const OrderLookupModal = ({ onClose }: { onClose: () => void }) => {
       setIsSearching(false);
       setSearched(true);
     }
+  };
+
+  // 🌟 문의하기: 주문 정보를 클립보드에 복사 + 카톡 오픈채팅 새 탭으로 열기
+  const handleInquiry = async (order: OrderRecord) => {
+    const formattedDate = new Date(order.createdAt).toLocaleDateString('ko-KR');
+    const inquiryText = `[주문문의]\n상품명: ${order.productName}${order.option ? `\n옵션: ${order.option}` : ''}\n주문일: ${formattedDate}\n성함: ${order.customerName}\n\n문의내용: `;
+
+    try {
+      await navigator.clipboard.writeText(inquiryText);
+      alert('문의 내용이 복사되었습니다. 카카오톡 채팅창에 붙여넣어 주세요!');
+    } catch (error) {
+      console.error('클립보드 복사 실패:', error);
+    }
+
+    window.open(KAKAO_OPEN_CHAT_URL, '_blank', 'noreferrer');
   };
 
   return (
@@ -105,7 +123,16 @@ export const OrderLookupModal = ({ onClose }: { onClose: () => void }) => {
                 </div>
                 {order.option && <p className="text-[11px] text-ink-muted mb-1">옵션: {order.option}</p>}
                 <p className="text-[11px] text-ink-muted mb-1">수량: {order.quantity}개</p>
-                <p className="text-sm font-black text-brand-dark">{order.totalPrice}</p>
+                <p className="text-sm font-black text-brand-dark mb-3">{order.totalPrice}</p>
+
+                {/* 🌟 상품문의 버튼 */}
+                <button
+                  onClick={() => handleInquiry(order)}
+                  className="w-full py-2.5 bg-white border border-gray-200 text-ink-muted text-xs font-bold rounded-lg hover:border-ink hover:text-ink transition-all flex items-center justify-center gap-1.5"
+                >
+                  <MessageCircle size={14} />
+                  이 주문 문의하기 (카카오톡)
+                </button>
               </div>
             ))}
           </div>
