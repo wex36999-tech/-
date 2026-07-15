@@ -263,7 +263,7 @@ const CategoryButton = React.memo(({ cat, isActive, onClick }: { cat: string, is
 ));
 
 const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: { activeCategory: string, setActiveCategory: (c: string) => void, setShowCompleteModal: (v: boolean) => void }) => {
-  const { config, products } = useConfig();
+  const { config, products, addOrder } = useConfig();
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isOrderView, setIsOrderView] = React.useState(false);
 
@@ -469,9 +469,28 @@ const totalPriceString = React.useMemo(() => {
         headers: { 'Accept': 'application/json' }
       });
       if (response.ok) {
+        // 🌟 Firestore에 주문 정보 저장 (Formspree 전송과 별개로 병행 저장)
+        try {
+          await addOrder({
+            id: `ord_${new Date().getTime()}`,
+            customerName: formData.get('성함')?.toString() || '',
+            phone: formData.get('연락처')?.toString() || '',
+            address: formData.get('주소')?.toString() || '',
+            productName: selectedProduct?.name || '',
+            option: selectedOption || '',
+            quantity: quantity,
+            totalPrice: totalPriceString,
+            paymentId: `ord_${new Date().getTime()}`,
+            createdAt: new Date().toISOString(),
+          });
+        } catch (orderError) {
+          console.error('주문 저장 실패:', orderError);
+          // 🌟 저장 실패해도 고객 경험(완료 화면)은 그대로 진행 (Formspree로는 이미 전달됐으므로)
+        }
+
         setSelectedProduct(null);
         setIsOrderView(false);
-        setShowCompleteModal(true); // 🌟 alert 대신 완료 모달 열기
+        setShowCompleteModal(true);
       } else {
         alert("주문 전송에 실패했습니다. 다시 시도해주세요.");
       }
