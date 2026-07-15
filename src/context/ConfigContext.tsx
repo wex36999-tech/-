@@ -375,6 +375,7 @@ const addOrder = async (order: Order) => {
       {children}
     </ConfigContext.Provider>
   );
+};
 
 export const useConfig = () => {
   const context = useContext(ConfigContext);
