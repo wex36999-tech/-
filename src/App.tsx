@@ -4,6 +4,7 @@ import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown } from 'lucide-react';
 import { OrderModal } from './components/OrderModal';
+import { OrderLookupModal } from './components/OrderLookupModal';
 import { Terms } from './pages/Terms';
 import { BannerModal } from './components/BannerModal';
 import { FloatingMenu } from './components/FloatingMenu';
@@ -55,11 +56,13 @@ const MetadataManager = () => {
 const Navbar = ({ 
   activeCategory, 
   setActiveCategory,
-  onOpenContact // 👈 문의 모달을 열어주는 함수를 프롭스로 받습니다.
+  onOpenContact, // 👈 문의 모달을 열어주는 함수를 프롭스로 받습니다.
+  onOpenOrderLookup // 🔍 주문조회 모달을 여는 함수를 프롭스로 받습니다.
 }: { 
   activeCategory: string, 
   setActiveCategory: (c: string) => void,
-  onOpenContact: () => void 
+  onOpenContact: () => void,
+  onOpenOrderLookup: () => void
 }) => {
   const { config } = useConfig();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -123,7 +126,13 @@ const Navbar = ({
               />
             </Link>
           ))}
-          {/* 🌟 일반 고객에게 노출되던 관리자 버튼이 깔끔하게 제거되었습니다. */}
+          {/* 🔍 주문조회 버튼 */}
+          <button
+            onClick={onOpenOrderLookup}
+            className="text-[13px] font-bold px-4 py-2 rounded-full border border-gray-200 text-ink-muted hover:border-ink hover:text-ink transition-all"
+          >
+            주문조회
+          </button>
         </div>
         <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X /> : <Menu />}
@@ -155,6 +164,16 @@ const Navbar = ({
                 <ChevronRight size={20} className={`${(link.name === '메인' && activeCategory === '전체') || (link.name === '상품목록' && activeCategory !== '전체')  ? 'text-brand' : 'text-gray-300'} group-hover:text-brand transition-colors`} />
               </Link>
             ))}
+            {/* 🔍 모바일 메뉴에도 주문조회 추가 */}
+            <button
+              onClick={() => {
+                onOpenOrderLookup();
+                setIsOpen(false);
+              }}
+              className="text-lg font-black py-4 text-left text-ink"
+            >
+              주문조회
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -645,8 +664,10 @@ const AppContent = () => {
   const [showContactModal, setShowContactModal] = React.useState(false);
   // ✅ 결제완료 팝업 상태 추가
   const [showCompleteModal, setShowCompleteModal] = React.useState(false);
-
+  // 🔍 주문조회 팝업 상태 추가
+  const [showOrderLookup, setShowOrderLookup] = React.useState(false);
   // ✉️ 모달창 안에서 문의 제출 처리하는 함수 (기존 Footer에 있던 로직)
+
   const handleModalSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -678,6 +699,7 @@ const AppContent = () => {
         activeCategory={activeCategory} 
         setActiveCategory={setActiveCategory} 
         onOpenContact={() => setShowContactModal(true)} 
+        onOpenOrderLookup={() => setShowOrderLookup(true)}
       />
       
       {/* 🚀 플로팅 메뉴 추가 */}
@@ -789,6 +811,11 @@ const AppContent = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 🔍 주문조회 모달 */}
+      {showOrderLookup && (
+        <OrderLookupModal onClose={() => setShowOrderLookup(false)} />
       )}
     </div>
   );
