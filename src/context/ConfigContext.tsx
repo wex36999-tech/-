@@ -32,6 +32,19 @@ export interface Post {
   image: string;
 }
 
+export interface Order {
+  id: string;
+  customerName: string;
+  phone: string;
+  address: string;
+  productName: string;
+  option: string;
+  quantity: number;
+  totalPrice: string;
+  paymentId: string;
+  createdAt: string;
+}
+
 export interface SiteConfig {
   name: string;
   slogan: string;
@@ -50,16 +63,17 @@ export interface SiteConfig {
 }
 
 interface ConfigContextType {
-  config: SiteConfig;
-  products: Product[];
-  posts: Post[];
-  updateConfig: (newConfig: Partial<SiteConfig>) => void;
-  addProduct: (product: Product) => void;
-  updateProduct: (id: string, product: Product) => void;
-  deleteProduct: (id: string) => void;
-  addPost: (post: Post) => void;
-  updatePost: (id: string, post: Post) => void;
-  deletePost: (id: string) => void;
+  config: SiteConfig;
+  products: Product[];
+  posts: Post[];
+  updateConfig: (newConfig: Partial<SiteConfig>) => void;
+  addProduct: (product: Product) => void;
+  updateProduct: (id: string, product: Product) => void;
+  deleteProduct: (id: string) => void;
+  addPost: (post: Post) => void;
+  updatePost: (id: string, post: Post) => void;
+  deletePost: (id: string) => void;
+  addOrder: (order: Order) => Promise<void>;
 }
 
 const defaultConfig: SiteConfig = {
@@ -301,6 +315,15 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+const addOrder = async (order: Order) => {
+    try {
+      const { id, ...data } = order;
+      await setDoc(doc(db, 'orders', id), data);
+    } catch (error) {
+      handleFirestoreError(error, 'create', `orders/${order.id}`);
+    }
+  };
+  
   const addPost = (post: Post) => {
     setPosts(prev => [...prev, post]);
   };
@@ -343,15 +366,15 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   return (
-    <ConfigContext.Provider value={{
-      config, products, posts,
-      updateConfig, addProduct, updateProduct, deleteProduct,
-      addPost, updatePost, deletePost
-    }}>
-      {children}
-    </ConfigContext.Provider>
-  );
-};
+    <ConfigContext.Provider value={{
+      config, products, posts,
+      updateConfig, addProduct, updateProduct, deleteProduct,
+      addPost, updatePost, deletePost,
+      addOrder
+    }}>
+      {children}
+    </ConfigContext.Provider>
+  );
 
 export const useConfig = () => {
   const context = useContext(ConfigContext);
