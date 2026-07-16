@@ -273,13 +273,13 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return unsub;
   }, []);
 
-  // Safety timeout for loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Safety timeout for loading (네트워크가 느린 접속자를 위해 여유 있게 설정)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 15000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const updateConfig = async (newConfig: Partial<SiteConfig>) => {
     try {

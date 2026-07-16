@@ -319,77 +319,15 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
   const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 12;
 
-  // 🌟 [안전장치 보완] 상품 데이터 로딩 중이거나 없을 때 심사원 테스트용 더미 상품을 강제 노출합니다.
+  // 🌟 상품 데이터가 아직 로딩 중일 때는 스피너를 보여주고, 계속 기다립니다.
+  // (더미 상품 대신, 실제 데이터가 올 때까지 로딩 화면만 표시)
   if (!products || products.length === 0) {
-    // 심사 통과용 강제 더미 상품 데이터
-    const mockTestProduct = {
-      id: 'test-for-simsa',
-      name: '[심사통과용] 가성비 꿀사과 1kg',
-      description: '네이버페이 심사 테스트를 위한 정상 판매 상품입니다. 결제 테스트를 진행해 주세요.',
-      price: '10,000원',
-      image: 'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg',
-      category: '과일',
-      options: '기본선택/선물포장(+2,000원)',
-      detailImages: 'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg',
-      isSoldOut: false
-    };
-
     return (
-      <div className="pt-20">
-        {/* 메인 배너 (임시) */}
-        <section className="relative h-[500px] flex items-center overflow-hidden bg-gray-900">
-          <div className="absolute inset-0 z-0 opacity-50">
-            <img src="https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg" alt="Hero" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-          </div>
-          <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight">
-              오늘도가성비, <span className="text-brand italic">감각적인</span> 일상
-            </h1>
-          </div>
-        </section>
-
-        <main className="max-w-7xl mx-auto px-4 md:px-10 py-12">
-          <h2 className="text-xl font-black text-gray-800 mb-6">상품목록 (심사대기모드)</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-            {/* 🌟 통신 지연 시에도 강제로 렌더링되는 심사 테스트용 상품 카드 */}
-            <div 
-              onClick={() => setSelectedProduct(mockTestProduct)} 
-              className="bg-white border border-gray-200 rounded-[16px] shadow-sm cursor-pointer overflow-hidden hover:shadow-md transition-all"
-            >
-              <div className="aspect-square bg-gray-50 overflow-hidden relative">
-                <img 
-                  src={mockTestProduct.image} 
-                  alt={mockTestProduct.name} 
-                  className="w-full h-full object-cover" 
-                  referrerPolicy="no-referrer" 
-                />
-                <div className="absolute top-2 left-2 bg-red-700 text-white text-[10px] font-black px-2 py-0.5 rounded shadow">
-                  심사테스트
-                </div>
-              </div>
-              <div className="p-3">
-                <h3 className="text-[14px] font-bold text-ink line-clamp-2">{mockTestProduct.name}</h3>
-                <div className="text-[14px] text-brand-dark font-black mt-1">{mockTestProduct.price}</div>
-              </div>
-            </div>
-          </div>
-        </main>
-
-        {/* 📬 강제 노출된 상품과 연결되는 주문 모달 */}
-        <OrderModal 
-          selectedProduct={selectedProduct}
-          setSelectedProduct={setSelectedProduct}
-          totalPriceString={mockTestProduct.price}
-          quantity={quantity}
-          setQuantity={setQuantity}
-          selectedOption={selectedOption}
-          setSelectedOption={setSelectedOption}
-          productOptions={['기본선택', '선물포장 (12,000원)']}
-          handleOrderSubmit={handleOrderSubmit}
-          isSubmitting={isSubmitting}
-          isOrderView={isOrderView}
-          setIsOrderView={setIsOrderView}
-        />
+      <div className="pt-20 min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-400 text-sm font-medium">상품을 불러오는 중입니다...</p>
+        </div>
       </div>
     );
   }
