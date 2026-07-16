@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown, Minus, Plus, ArrowLeft } from 'lucide-react';
+import { optimizeCloudinaryUrl } from '../lib/imageUtils';
 
 export const OrderModal = ({ 
   selectedProduct, setSelectedProduct, totalPriceString, quantity, 
@@ -80,7 +81,7 @@ export const OrderModal = ({
         >
           {!isDetailView && (
             <div className="w-full h-56 overflow-hidden relative flex-shrink-0">
-              <img src={selectedProduct?.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
+              <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
                 <X size={20} />
               </button>
@@ -94,7 +95,7 @@ export const OrderModal = ({
                   <ArrowLeft size={14} /> 돌아가기
                 </button>
                 {selectedProduct?.detailImages ? selectedProduct.detailImages.split(',').map((url: string, idx: number) => (
-                  <img key={idx} src={url.trim()} alt="상세이미지" className="w-full mb-3 rounded-xl shadow-sm image-rendering-crisp-edges" referrerPolicy="no-referrer" />
+                  <img key={idx} src={optimizeCloudinaryUrl(url.trim(), 800)} alt="상세이미지" loading="lazy" className="w-full mb-3 rounded-xl shadow-sm image-rendering-crisp-edges" referrerPolicy="no-referrer" />
                 )) : <p className="text-center text-gray-400 py-10 text-xs">상세 이미지가 없습니다.</p>}
               </div>
             ) : !isOrderView ? (

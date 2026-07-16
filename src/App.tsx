@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown } from 'lucide-react';
 import { OrderModal } from './components/OrderModal';
 import { OrderLookupModal } from './components/OrderLookupModal';
+import { optimizeCloudinaryUrl } from './lib/imageUtils';
 import { Terms } from './pages/Terms';
 import { BannerModal } from './components/BannerModal';
 import { FloatingMenu } from './components/FloatingMenu';
@@ -255,7 +256,7 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
         </div>
       )}
 
-      <img src={product.image} alt={product.name} loading="lazy" className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isSoldOut ? 'grayscale-[0.5] blur-[1px]' : ''}`} referrerPolicy="no-referrer" />
+      <img src={optimizeCloudinaryUrl(product.image, 500)} alt={product.name} loading="lazy" className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isSoldOut ? 'grayscale-[0.5] blur-[1px]' : ''}`} referrerPolicy="no-referrer" />
       
       {product.isSoldOut && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
