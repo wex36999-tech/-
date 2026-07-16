@@ -53,6 +53,9 @@ const AdminPage = () => {
   // 상품 목록 필터링용 상태
   const [selectedFilter, setSelectedFilter] = useState<string>('전체');
   const [showOnlySoldOut, setShowOnlySoldOut] = useState(false);
+  // 📄 상품 목록 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
 
   // 상품 등록 팝업(모달) 제어 상태
   const [showAddModal, setShowAddModal] = useState(false);
@@ -89,7 +92,7 @@ const AdminPage = () => {
     }
   };
 
-  // 1. 카테고리 추가 함수
+  // 1. 카테고리 추가 함수 (항상 맨 뒤에 추가, 순서는 화살표로 조정)
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
@@ -97,10 +100,9 @@ const AdminPage = () => {
       alert('이미 존재하는 카테고리입니다.');
       return;
     }
-    const updatedCategories = [...categories, { name: newCategoryName.trim(), order: Number(newCategoryOrder) }];
+    const updatedCategories = [...categories, { name: newCategoryName.trim(), order: categories.length + 1 }];
     await updateConfig({ categories: updatedCategories });
     setNewCategoryName('');
-    setNewCategoryOrder(updatedCategories.length + 1);
   };
 
   // 2. 카테고리 삭제 함수
@@ -231,6 +233,16 @@ const AdminPage = () => {
   return matchesCategory && matchesSearch && matchesSoldOut;
 });
 
+  // 📄 필터/검색 조건이 바뀌면 항상 1페이지로 되돌아갑니다.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedFilter, searchQuery, showOnlySoldOut]);
+
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+
   if (!isAuthorized) {
     return (
       <div className="pt-40 pb-20 px-6 max-w-md mx-auto flex flex-col items-center justify-center min-h-[60vh]">
@@ -323,7 +335,7 @@ const AdminPage = () => {
 
         {/* 상품 리스트 */}
         <div className="space-y-3 pr-1">
-          {filteredProducts.map((product: Product) => (
+          {currentProducts.map((product: Product) => (
             <div key={product.id} className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/70 rounded-2xl transition-all border gap-4 ${product.isSoldOut ? 'border-dashed border-gray-300 opacity-60' : 'border-transparent shadow-sm'}`}>
               <div onClick={() => { setEditingProduct(product); setShowEditModal(true); }} className="flex items-center gap-4 cursor-pointer flex-1">
                 <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 border border-gray-100 flex-shrink-0">
@@ -367,6 +379,35 @@ const AdminPage = () => {
             </div>
           )}
         </div>
+
+        {/* 📄 페이지네이션 버튼 */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => prev - 1)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${currentPage === 1 ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-ink hover:bg-gray-50'}`}
+            >
+              이전
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${currentPage === pageNum ? 'bg-brand text-black font-black shadow-sm' : 'bg-white text-gray-400 hover:text-ink'}`}
+              >
+                {pageNum}
+              </button>
+            ))}
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${currentPage === totalPages ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-ink hover:bg-gray-50'}`}
+            >
+              다음
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 우측 하단 고정형 대형 저장하기 버튼 */}
@@ -451,13 +492,12 @@ const AdminPage = () => {
             </div>
             <form onSubmit={handleAddCategory} className="flex gap-2 mb-4">
               <input required value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} className="flex-1 p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-brand text-sm" placeholder="예: 축산물, 과일류" />
-              <input type="number" value={newCategoryOrder} onChange={e => setNewCategoryOrder(Number(e.target.value))} className="w-16 p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-brand text-sm" placeholder="순서" />
               <button type="submit" className="px-4 bg-brand text-black font-bold text-sm rounded-xl transition-all">추가</button>
             </form>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {categories.map((cat, index) => (
                 <div key={cat.name} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
-                  <span className="truncate max-w-[140px]">{cat.name} <span className="text-gray-400 font-normal">({cat.order}번)</span></span>
+                  <span className="truncate max-w-[140px]">{cat.name}</span>
                   <div className="flex items-center gap-1">
                     <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로"><ArrowUp size={15} /></button>
                     <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로"><ArrowDown size={15} /></button>
