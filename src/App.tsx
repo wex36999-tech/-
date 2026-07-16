@@ -293,20 +293,6 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
     setSelectedOption('');
   }, [selectedProduct]);
 
-  // 스크롤 제어 로직 (주문창이 열리면 스크롤 막기)
-  React.useEffect(() => {
-    if (isOrderView) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-      document.documentElement.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-      document.documentElement.style.overflow = 'unset';
-    };
-  }, [isOrderView]);
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 

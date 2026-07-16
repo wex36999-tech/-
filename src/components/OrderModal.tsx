@@ -10,16 +10,23 @@ export const OrderModal = ({
 }: any) => {
   const [isDetailView, setIsDetailView] = React.useState(false);
 
-  // 모달창이 열려있는 동안 뒷배경(body)의 스크롤을 완전히 강제 차단합니다
+  // 모달창이 열려있는 동안 뒷배경의 스크롤을 완전히 강제 차단합니다 (html, body 둘 다 처리)
   React.useEffect(() => {
     if (selectedProduct) {
-      document.body.style.overflow = 'hidden'; 
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.touchAction = 'none'; // 모바일 터치 스크롤 방지
+    } else {
+      // 🌟 모달이 완전히 닫혔을 때(selectedProduct가 null) 확실하게 원상복구
+      document.body.style.overflow = 'unset';
+      document.documentElement.style.overflow = 'unset';
+      document.body.style.touchAction = 'unset';
     }
     return () => {
       document.body.style.overflow = 'unset';
+      document.documentElement.style.overflow = 'unset';
       document.body.style.touchAction = 'unset';
-      setIsDetailView(false); // 🌟 [핵심 보완] 상품이 바뀌거나 모달이 닫힐 때 상세 보기 모드를 무조건 해제합니다.
+      setIsDetailView(false); // 상품이 바뀌거나 모달이 닫힐 때 상세 보기 모드를 무조건 해제
     };
   }, [selectedProduct]);
 
