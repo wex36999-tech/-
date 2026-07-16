@@ -411,7 +411,7 @@ const AdminPage = () => {
             <label className="text-xs font-bold text-gray-400 ml-1">카테고리 선택</label>
             <select value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand">
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat.name} value={cat.name}>{cat.name}</option>
               ))}
             </select>
           </div>

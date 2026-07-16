@@ -355,14 +355,17 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
       return matchesCategory && matchesSearch && isNotSoldOut;
     });
 
-    // 2. 필터링된 결과물 내에서 "특가할인" 포함 여부에 따라 정렬합니다.
-    return filtered.sort((a, b) => {
+    // 2. 관리자 페이지에서 설정한 순서(order)를 우선 적용하고, 순서가 같으면 "특가할인" 상품을 앞에 둡니다.
+    return filtered.sort((a: any, b: any) => {
+      const orderA = Number(a.order) || 0;
+      const orderB = Number(b.order) || 0;
+      if (orderA !== orderB) return orderA - orderB; // 🌟 숫자가 작을수록 먼저 노출
+
       const isAEvent = a.name.includes("특가할인");
       const isBEvent = b.name.includes("특가할인");
-      
-      if (isAEvent && !isBEvent) return -1; // "특가할인"이 있는 상품을 앞으로
-      if (!isAEvent && isBEvent) return 1;  // 없는 상품은 뒤로
-      return 0; // 나머지는 기존 순서 유지
+      if (isAEvent && !isBEvent) return -1;
+      if (!isAEvent && isBEvent) return 1;
+      return 0;
     });
   }, [products, activeCategory, searchQuery]);
 
