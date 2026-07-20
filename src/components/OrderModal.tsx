@@ -87,7 +87,7 @@ export const OrderModal = ({
           onClick={e => e.stopPropagation()}
         >
           {!isDetailView && (
-            <div className="w-full h-56 overflow-hidden relative flex-shrink-0">
+            <div className="w-full h-72 md:h-80 overflow-hidden relative flex-shrink-0">
               <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
                 <X size={20} />
