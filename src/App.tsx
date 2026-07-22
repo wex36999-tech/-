@@ -473,7 +473,7 @@ const totalPriceString = React.useMemo(() => {
           <AnimatePresence mode="sync">
             <motion.img
               key={currentBanner}
-              src={bannerImages[currentBanner]}
+              src={optimizeCloudinaryUrl(bannerImages[currentBanner], 1920)}
               alt="Hero"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
