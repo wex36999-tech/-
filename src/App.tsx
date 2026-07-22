@@ -289,10 +289,10 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
 
   // 🌟 메인 배너 슬라이드용 이미지 목록과 현재 인덱스
   const bannerImages = [
+    'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg',
     'https://res.cloudinary.com/dzehtppiz/image/upload/v1784616337/%EC%A0%95%ED%92%88%EC%88%98%EB%B0%95%EC%8D%B8_cpsozh.jpg',
     'https://res.cloudinary.com/dzehtppiz/image/upload/v1784718437/1_4_q2d5eb.jpg',
     'https://res.cloudinary.com/dzehtppiz/image/upload/v1780477844/%EB%8F%8C%EB%AF%B8%EB%82%98%EB%A6%AC%EC%8D%B8_ikbx6m.jpg',
-    'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891467/%EC%95%8C%EC%AD%88%EA%BE%B8%EB%AF%B8_%EC%9A%A9%EB%9F%89_cjukrn.png',
   ];
   const [currentBanner, setCurrentBanner] = React.useState(0);
 
@@ -470,7 +470,7 @@ const totalPriceString = React.useMemo(() => {
       {/* 메인 배너 (슬라이드) */}
       <section className="relative h-[75vh] md:h-[85vh] min-h-[500px] md:min-h-[600px] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <AnimatePresence mode="sync">
+          <AnimatePresence>
             <motion.img
               key={currentBanner}
               src={optimizeCloudinaryUrl(bannerImages[currentBanner], 1920)}
@@ -478,7 +478,7 @@ const totalPriceString = React.useMemo(() => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1 }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
