@@ -287,6 +287,23 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isOrderView, setIsOrderView] = React.useState(false);
 
+  // 🌟 메인 배너 슬라이드용 이미지 목록과 현재 인덱스
+  const bannerImages = [
+    'https://res.cloudinary.com/dzehtppiz/image/upload/v1784616337/%EC%A0%95%ED%92%88%EC%88%98%EB%B0%95%EC%8D%B8_cpsozh.jpg',
+    'https://res.cloudinary.com/dzehtppiz/image/upload/v1784718437/1_4_q2d5eb.jpg',
+    'https://res.cloudinary.com/dzehtppiz/image/upload/v1780477844/%EB%8F%8C%EB%AF%B8%EB%82%98%EB%A6%AC%EC%8D%B8_ikbx6m.jpg',
+    'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891467/%EC%95%8C%EC%AD%88%EA%BE%B8%EB%AF%B8_%EC%9A%A9%EB%9F%89_cjukrn.png',
+  ];
+  const [currentBanner, setCurrentBanner] = React.useState(0);
+
+  // 🌟 4초마다 자동으로 다음 배너로 전환
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % bannerImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
   // 모달이 닫히거나 상품이 바뀔 때 초기화
   React.useEffect(() => {
     setQuantity(1);
@@ -450,10 +467,22 @@ const totalPriceString = React.useMemo(() => {
 
   return (
     <div className="pt-20">
-      {/* 메인 배너 */}
+      {/* 메인 배너 (슬라이드) */}
       <section className="relative h-[75vh] md:h-[85vh] min-h-[500px] md:min-h-[600px] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img src="https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg" alt="Hero" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <AnimatePresence mode="sync">
+            <motion.img
+              key={currentBanner}
+              src={bannerImages[currentBanner]}
+              alt="Hero"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-0 w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </AnimatePresence>
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 w-full">
@@ -463,6 +492,18 @@ const totalPriceString = React.useMemo(() => {
             </h1>
             <p className="text-[15px] md:text-[20px] text-white/90 mb-8 md:mb-10 max-w-md break-keep">{config.description}</p>
           </motion.div>
+        </div>
+
+        {/* 🌟 하단 슬라이드 인디케이터(점) */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+          {bannerImages.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentBanner(idx)}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentBanner ? 'bg-white w-6' : 'bg-white/50'}`}
+              aria-label={`배너 ${idx + 1}번으로 이동`}
+            />
+          ))}
         </div>
       </section>
 
