@@ -304,6 +304,14 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
     return () => clearInterval(timer);
   }, []);
 
+  // 🌟 모든 배너 이미지를 미리 불러와서(preload), 어떤 순서로 넘어가도 부드럽게 전환되도록 함
+  React.useEffect(() => {
+    bannerImages.forEach((url) => {
+      const img = new Image();
+      img.src = optimizeCloudinaryUrl(url, 1920);
+    });
+  }, []);
+
   // 모달이 닫히거나 상품이 바뀔 때 초기화
   React.useEffect(() => {
     setQuantity(1);
