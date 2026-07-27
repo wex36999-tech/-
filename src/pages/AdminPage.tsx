@@ -509,7 +509,7 @@ const AdminPage = () => {
           </div>
         </div>
       )}
-
+ 
       {/* 팝업 3: 상품 상세 수정 모달 */}
         {showEditModal && editingProduct && (
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
