@@ -67,8 +67,8 @@ const AdminPage = () => {
     price: '',
     description: '',
     image: '',
-    detailImages: '', // 👈 이거 하나만 추가!
-    category: categories[0] || '농산물',
+    detailImages: '',
+    category: categories[0]?.name || '농산물', // 🌟 객체가 아니라 이름(문자열)만 사용
     options: '', 
     isSoldOut: false,
     order: 0
