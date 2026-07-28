@@ -105,10 +105,9 @@ const AdminPage = () => {
     setNewCategoryName('');
   };
 
-  // 2. 카테고리 삭제 함수
   const handleDropCategory = async (catName: string) => {
     if (window.confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) {
-      const updatedCategories = categories.filter(c => c !== catName);
+      const updatedCategories = categories.filter(c => c.name !== catName);
       await updateConfig({ categories: updatedCategories });
       
       // 현재 선택된 필터가 삭제된 카테고리라면 '전체'로 되돌리기
@@ -116,7 +115,7 @@ const AdminPage = () => {
         setSelectedFilter('전체');
       }
       if (newProduct.category === catName) {
-        setNewProduct({ ...newProduct, category: updatedCategories[0] || '' });
+        setNewProduct({ ...newProduct, category: updatedCategories[0]?.name || '' });
       }
     }
   };
@@ -164,7 +163,7 @@ const AdminPage = () => {
       description: '', 
       image: '', 
       detailImages: '', // detailImages도 초기화 추가
-      category: categories[0] || '농산물', 
+      category: categories[0]?.name || '농산물', 
       options: '',
       isSoldOut: false,
       order: 0 // order 초기화 추가
@@ -221,14 +220,15 @@ const AdminPage = () => {
 
   // 카테고리 변경 시 등록 폼의 기본 카테고리 동기화
   useEffect(() => {
-    if (categories.length > 0 && !categories.includes(newProduct.category)) {
-      setNewProduct(prev => ({ ...prev, category: categories[0] }));
+    const categoryNames = categories.map(c => c.name);
+    if (categories.length > 0 && !categoryNames.includes(newProduct.category)) {
+      setNewProduct(prev => ({ ...prev, category: categories[0]?.name }));
     }
   }, [categories, newProduct.category]);
 
   const filteredProducts = products.filter((p: any) => {
   const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
-  const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const matchesSearch = (p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
   const matchesSoldOut = !showOnlySoldOut || p.isSoldOut; // 🌟 체크하면 품절만, 아니면 전체
   return matchesCategory && matchesSearch && matchesSoldOut;
 });
