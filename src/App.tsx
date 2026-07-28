@@ -366,17 +366,24 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
       return matchesCategory && matchesSearch && isNotSoldOut;
     });
 
-    // 2. 관리자 페이지에서 설정한 순서(order)를 우선 적용하고, 순서가 같으면 "특가할인" 상품을 앞에 둡니다.
+    // 2. 관리자 페이지에서 설정한 "카테고리 순서"를 먼저 적용하고,
+    //    같은 카테고리 안에서는 "특가할인" 상품을 앞에, 그다음 개별 order 값으로 정렬합니다.
     return filtered.sort((a: any, b: any) => {
-      const orderA = Number(a.order) || 0;
-      const orderB = Number(b.order) || 0;
-      if (orderA !== orderB) return orderA - orderB; // 🌟 숫자가 작을수록 먼저 노출
+      const categoryList = config.categories || [];
+      const catIndexA = categoryList.findIndex((c: any) => (typeof c === 'string' ? c : c.name) === a.category);
+      const catIndexB = categoryList.findIndex((c: any) => (typeof c === 'string' ? c : c.name) === b.category);
+      const safeIndexA = catIndexA === -1 ? 999 : catIndexA;
+      const safeIndexB = catIndexB === -1 ? 999 : catIndexB;
+      if (safeIndexA !== safeIndexB) return safeIndexA - safeIndexB;
 
       const isAEvent = a.name.includes("특가할인");
       const isBEvent = b.name.includes("특가할인");
       if (isAEvent && !isBEvent) return -1;
       if (!isAEvent && isBEvent) return 1;
-      return 0;
+
+      const orderA = Number(a.order) || 0;
+      const orderB = Number(b.order) || 0;
+      return orderA - orderB;
     });
   }, [products, activeCategory, searchQuery]);
 
