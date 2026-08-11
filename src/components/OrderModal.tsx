@@ -45,7 +45,7 @@ export const OrderModal = ({
 
     const response = await PortOne.requestPayment({
       storeId: "store-bbb8e621-99c0-4a9f-b62c-8e7670dcb6a6",
-      channelKey: "channel-key-96a2003d-b553-4afd-924c-f3d3cef99bf6",
+      channelKey: "channel-key-786f2a24-0f8d-4f16-9ac4-58ba24b7a598",
       paymentId: `ord_${new Date().getTime()}`,
       orderName: selectedProduct?.name || "상품 결제",
       totalAmount: calculatedAmount,
