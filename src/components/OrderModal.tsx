@@ -86,19 +86,23 @@ export const OrderModal = ({
           className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] shadow-2xl relative pointer-events-auto overflow-y-auto overscroll-contain touch-pan-y" 
           onClick={e => e.stopPropagation()}
         >
-          {/* 🌟 스크롤과 무관하게 항상 모달 우측 상단에 고정되는 닫기 버튼 */}
-          <button 
-            onClick={() => setSelectedProduct(null)} 
-            className="sticky top-4 float-right mr-4 z-30 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md"
-          >
-            <X size={20} />
-          </button>
-
           {!isDetailView && (
-            <div className="w-full h-72 md:h-80 overflow-hidden relative -mt-[68px]">
+            <div className="w-full h-72 md:h-80 overflow-hidden relative">
               <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
             </div>
           )}
+
+          {/* 🌟 실제 공간을 차지하지 않는 sticky 래퍼(h-0) 안에 버튼을 배치 - 여백 생성 없이 사진 위에 고정 */}
+          <div className="sticky top-4 h-0 z-30">
+            <div className="flex justify-end pr-4">
+              <button 
+                onClick={() => setSelectedProduct(null)} 
+                className="w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
 
           <div className="p-6 pb-10 relative">
             {isDetailView ? (
