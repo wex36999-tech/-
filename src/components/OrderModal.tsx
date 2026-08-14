@@ -83,24 +83,24 @@ export const OrderModal = ({
           animate={{ scale: 1, opacity: 1 }} 
           exit={{ scale: 0.9, opacity: 0 }} 
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative pointer-events-auto overscroll-contain" 
+          className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] shadow-2xl relative pointer-events-auto overflow-y-auto overscroll-contain touch-pan-y" 
           onClick={e => e.stopPropagation()}
         >
-          {/* 🌟 스크롤과 무관하게 항상 화면 우측 상단에 고정되는 닫기 버튼 */}
+          {/* 🌟 스크롤과 무관하게 항상 모달 우측 상단에 고정되는 닫기 버튼 */}
           <button 
             onClick={() => setSelectedProduct(null)} 
-            className="fixed top-4 right-4 z-30 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md"
+            className="sticky top-4 float-right mr-4 z-30 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md"
           >
             <X size={20} />
           </button>
 
           {!isDetailView && (
-            <div className="w-full h-72 md:h-80 overflow-hidden relative">
+            <div className="w-full h-72 md:h-80 overflow-hidden relative -mt-[52px]">
               <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
             </div>
           )}
 
-          <div className="p-6 overflow-y-auto flex-1 relative overscroll-contain touch-pan-y">
+          <div className="p-6 pb-10 relative">
             {isDetailView ? (
               <div className="w-full">
                 <button type="button" onClick={() => setIsDetailView(false)} className="sticky top-0 z-20 flex items-center gap-1.5 px-4 py-2 bg-white/90 backdrop-blur-md border border-gray-100 rounded-full text-[12px] font-bold shadow-sm mb-4">
