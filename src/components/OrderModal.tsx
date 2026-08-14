@@ -86,12 +86,6 @@ export const OrderModal = ({
           className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] shadow-2xl relative pointer-events-auto overflow-y-auto overscroll-contain touch-pan-y" 
           onClick={e => e.stopPropagation()}
         >
-          {!isDetailView && (
-            <div className="w-full h-72 md:h-80 overflow-hidden relative">
-              <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
-            </div>
-          )}
-
           {/* 🌟 실제 공간을 차지하지 않는 sticky 래퍼(h-0) 안에 버튼을 배치 - 여백 생성 없이 사진 위에 고정 */}
           <div className="sticky top-4 h-0 z-30">
             <div className="flex justify-end pr-4">
@@ -103,6 +97,12 @@ export const OrderModal = ({
               </button>
             </div>
           </div>
+
+          {!isDetailView && (
+            <div className="w-full h-72 md:h-80 overflow-hidden relative">
+              <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
+            </div>
+          )}
 
           <div className="p-6 pb-10 relative">
             {isDetailView ? (
