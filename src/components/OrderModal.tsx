@@ -86,12 +86,17 @@ export const OrderModal = ({
           className="bg-white max-w-lg w-full h-[90vh] rounded-[24px] overflow-hidden shadow-2xl flex flex-col relative pointer-events-auto overscroll-contain" 
           onClick={e => e.stopPropagation()}
         >
+          {/* 🌟 스크롤과 무관하게 항상 화면 우측 상단에 고정되는 닫기 버튼 */}
+          <button 
+            onClick={() => setSelectedProduct(null)} 
+            className="fixed top-4 right-4 z-30 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md"
+          >
+            <X size={20} />
+          </button>
+
           {!isDetailView && (
-            <div className="w-full h-72 md:h-80 overflow-hidden relative flex-shrink-0">
+            <div className="w-full h-72 md:h-80 overflow-hidden relative">
               <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
-              <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-9 h-9 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
-                <X size={20} />
-              </button>
             </div>
           )}
 
