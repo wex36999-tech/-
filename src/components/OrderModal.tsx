@@ -95,7 +95,7 @@ export const OrderModal = ({
           </button>
 
           {!isDetailView && (
-            <div className="w-full h-72 md:h-80 overflow-hidden relative -mt-[52px]">
+            <div className="w-full h-72 md:h-80 overflow-hidden relative -mt-[68px]">
               <img src={optimizeCloudinaryUrl(selectedProduct?.image, 800)} className="w-full h-full object-cover" alt={selectedProduct.name} />
             </div>
           )}
