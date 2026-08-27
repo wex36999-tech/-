@@ -250,7 +250,7 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
     <div className="w-full aspect-square bg-gray-50/50 rounded-t-[16px] overflow-hidden relative">
       
       {/* 🌟 왼쪽 위 고급스러운 다크 레드 특가할인 배지 */}
-      {product.name.includes("특가할인") && (
+      {product.isSpecialOffer && (
         <div className="absolute top-2 left-2 z-20 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
           특가할인
         </div>
@@ -376,8 +376,8 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
       const safeIndexB = catIndexB === -1 ? 999 : catIndexB;
       if (safeIndexA !== safeIndexB) return safeIndexA - safeIndexB;
 
-      const isAEvent = a.name.includes("특가할인");
-      const isBEvent = b.name.includes("특가할인");
+      const isAEvent = a.isSpecialOffer;
+      const isBEvent = b.isSpecialOffer;
       if (isAEvent && !isBEvent) return -1;
       if (!isAEvent && isBEvent) return 1;
 

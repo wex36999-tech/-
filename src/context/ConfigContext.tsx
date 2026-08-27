@@ -22,6 +22,7 @@ export interface Product {
   category: string;
   options: string;
   isSoldOut?: boolean;
+isSpecialOffer?: boolean;
 }
 
 export interface Post {

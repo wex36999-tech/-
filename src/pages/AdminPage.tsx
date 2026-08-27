@@ -16,6 +16,7 @@ interface Product {
   category: string;
   options: string;
   isSoldOut: boolean;
+  isSpecialOffer?: boolean;
   order?: number;
 }
 
@@ -71,6 +72,7 @@ const AdminPage = () => {
     category: categories[0]?.name || '농산물', // 🌟 객체가 아니라 이름(문자열)만 사용
     options: '', 
     isSoldOut: false,
+    isSpecialOffer: false,
     order: 0
   });
 
@@ -166,6 +168,7 @@ const AdminPage = () => {
       category: categories[0]?.name || '농산물', 
       options: '',
       isSoldOut: false,
+      isSpecialOffer: false,
       order: 0 // order 초기화 추가
     });
     setShowAddModal(false);
@@ -470,10 +473,14 @@ const AdminPage = () => {
           <input value={newProduct.detailImages} onChange={e => setNewProduct({...newProduct, detailImages: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand" placeholder="예: url1, url2" />
         </div>
         <div>
-          <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
-          <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24" placeholder="상품 설명을 적어주세요."></textarea>
-        </div>
-        <div className="flex gap-3 pt-2">
+  <label className="text-xs font-bold text-gray-400 ml-1">상품 설명</label>
+  <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24" placeholder="상품 설명을 적어주세요."></textarea>
+</div>
+<div className="flex items-center gap-2 p-1">
+  <input type="checkbox" id="newSpecialOffer" checked={newProduct.isSpecialOffer} onChange={e => setNewProduct({...newProduct, isSpecialOffer: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+  <label htmlFor="newSpecialOffer" className="text-sm font-bold text-ink select-none cursor-pointer">특가할인 상품으로 표시하기</label>
+</div>
+<div className="flex gap-3 pt-2">
           <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
           <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">등록하기</button>
         </div>
@@ -558,9 +565,13 @@ const AdminPage = () => {
                   <textarea required value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand h-24"></textarea>
                 </div>
                 <div className="flex items-center gap-2 p-1">
-                  <input type="checkbox" id="editSoldOut" checked={editingProduct.isSoldOut || false} onChange={e => setEditingProduct({...editingProduct, isSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
-                  <label htmlFor="editSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">이 상품 품절 처리하기</label>
-                </div>
+  <input type="checkbox" id="editSoldOut" checked={editingProduct.isSoldOut || false} onChange={e => setEditingProduct({...editingProduct, isSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+  <label htmlFor="editSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">이 상품 품절 처리하기</label>
+</div>
+<div className="flex items-center gap-2 p-1">
+  <input type="checkbox" id="editSpecialOffer" checked={editingProduct.isSpecialOffer || false} onChange={e => setEditingProduct({...editingProduct, isSpecialOffer: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+  <label htmlFor="editSpecialOffer" className="text-sm font-bold text-ink select-none cursor-pointer">특가할인 상품으로 표시하기</label>
+</div>
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
                   <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">수정 완료</button>
