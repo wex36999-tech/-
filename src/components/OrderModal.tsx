@@ -1,14 +1,32 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Minus, Plus, ArrowLeft } from 'lucide-react';
+import { X, ChevronDown, Minus, Plus, ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { optimizeCloudinaryUrl } from '../lib/imageUtils';
+import { useCart } from '../context/CartContext';
 
 export const OrderModal = ({ 
-  selectedProduct, setSelectedProduct, totalPriceString, quantity, 
+  selectedProduct, setSelectedProduct, totalPriceString, unitPrice, quantity, 
   setQuantity, selectedOption, setSelectedOption, productOptions, 
   handleOrderSubmit, isSubmitting, isOrderView, setIsOrderView
 }: any) => {
   const [isDetailView, setIsDetailView] = React.useState(false);
+  const { addToCart } = useCart();
+  const [showAddedToast, setShowAddedToast] = React.useState(false);
+
+  const handleAddToCart = () => {
+    if (productOptions.length > 0 && !selectedOption) {
+      alert("옵션을 선택해 주세요.");
+      return;
+    }
+    addToCart(
+      { id: selectedProduct.id, name: selectedProduct.name, image: selectedProduct.image },
+      selectedOption,
+      unitPrice,
+      quantity
+    );
+    setShowAddedToast(true);
+    setTimeout(() => setShowAddedToast(false), 1800);
+  };
 
   // 모달창이 열려있는 동안 뒷배경의 스크롤을 완전히 강제 차단합니다 (html, body 둘 다 처리)
   React.useEffect(() => {
@@ -155,11 +173,31 @@ export const OrderModal = ({
                   )}
                 </div>
 
-                {/* 가격 및 구매/네이버페이 결제 버튼 영역 */}
-                <div className="space-y-3 pt-4 border-t border-gray-100 mt-auto">
-                  <div className="flex items-center justify-between">
+                {/* 가격 및 구매/담아두기 버튼 영역 */}
+                <div className="space-y-3 pt-4 border-t border-gray-100 mt-auto relative">
+                  {/* 🌟 담아두기 완료 토스트 */}
+                  <AnimatePresence>
+                    {showAddedToast && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute -top-12 left-0 right-0 flex justify-center"
+                      >
+                        <div className="bg-ink text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                          <Check size={14} className="text-brand" /> 장바구니에 담았습니다
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-lg font-black text-ink">{totalPriceString}</span>
-                    <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white px-6 py-3.5 rounded-xl font-extrabold text-xs">구매하기</button>
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={handleAddToCart} className="flex items-center gap-1.5 bg-white border-2 border-ink text-ink px-4 py-3.5 rounded-xl font-extrabold text-xs">
+                        <ShoppingCart size={15} /> 담아두기
+                      </button>
+                      <button type="button" onClick={() => { if (productOptions.length > 0 && !selectedOption) { alert("옵션을 선택해 주세요."); return; } setIsOrderView(true); }} className="bg-ink text-white px-6 py-3.5 rounded-xl font-extrabold text-xs">구매하기</button>
+                    </div>
                   </div>
                 </div>
               </div>

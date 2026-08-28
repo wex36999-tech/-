@@ -1,9 +1,10 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
+import { CartProvider, useCart } from './context/CartContext';
 import { CartProvider } from './context/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown } from 'lucide-react';
+import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown, ShoppingCart } from 'lucide-react';
 import { OrderModal } from './components/OrderModal';
 import { OrderLookupModal } from './components/OrderLookupModal';
 import { optimizeCloudinaryUrl } from './lib/imageUtils';
@@ -58,15 +59,18 @@ const MetadataManager = () => {
 const Navbar = ({ 
   activeCategory, 
   setActiveCategory,
-  onOpenContact, // 👈 문의 모달을 열어주는 함수를 프롭스로 받습니다.
-  onOpenOrderLookup // 🔍 주문조회 모달을 여는 함수를 프롭스로 받습니다.
+  onOpenContact,
+  onOpenOrderLookup,
+  onOpenCart
 }: { 
   activeCategory: string, 
   setActiveCategory: (c: string) => void,
   onOpenContact: () => void,
-  onOpenOrderLookup: () => void
+  onOpenOrderLookup: () => void,
+  onOpenCart: () => void
 }) => {
   const { config } = useConfig();
+  const { totalCount } = useCart();
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
 
@@ -128,6 +132,19 @@ const Navbar = ({
               />
             </Link>
           ))}
+          {/* 🛒 장바구니 버튼 */}
+          <button
+            onClick={onOpenCart}
+            className="relative text-[13px] font-bold px-4 py-2 rounded-full border border-gray-200 text-ink-muted hover:border-ink hover:text-ink transition-all flex items-center gap-1.5"
+          >
+            <ShoppingCart size={15} />
+            장바구니
+            {totalCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-brand text-ink text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                {totalCount > 9 ? '9+' : totalCount}
+              </span>
+            )}
+          </button>
           {/* 🔍 주문조회 버튼 */}
           <button
             onClick={onOpenOrderLookup}
@@ -166,6 +183,22 @@ const Navbar = ({
                 <ChevronRight size={20} className={`${(link.name === '메인' && activeCategory === '전체') || (link.name === '상품목록' && activeCategory !== '전체')  ? 'text-brand' : 'text-gray-300'} group-hover:text-brand transition-colors`} />
               </Link>
             ))}
+            {/* 🛒 모바일 메뉴에도 장바구니 추가 */}
+            <button
+              onClick={() => {
+                onOpenCart();
+                setIsOpen(false);
+              }}
+              className="text-lg font-black py-4 text-left text-ink flex items-center gap-2"
+            >
+              <ShoppingCart size={20} />
+              장바구니
+              {totalCount > 0 && (
+                <span className="bg-brand text-ink text-[11px] font-black px-2 py-0.5 rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
             {/* 🔍 모바일 메뉴에도 주문조회 추가 */}
             <button
               onClick={() => {
@@ -405,38 +438,36 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
 
   // 💰 [완전 수정!] 옵션에 명시된 금액 자체를 총 단가로 꽂아 넣는 절대 가격 산정 방식
 // 💰 [최종 수정] 괄호 안의 금액을 우선 추출하는 정규식 로직
-const totalPriceString = React.useMemo(() => {
-  if (!selectedProduct || !selectedProduct.price) return '0원';
+const unitPrice = React.useMemo(() => {
+  if (!selectedProduct || !selectedProduct.price) return 0;
   
   let currentUnitPrice = 0;
 
   if (selectedOption) {
-    // 1. 괄호 () 안에 있는 숫자와 쉼표를 찾습니다. (예: (19,000원) -> 19,000)
     const bracketMatch = selectedOption.match(/\(([^)]+)\)/);
     
     if (bracketMatch) {
-      // 괄호 내용물 안에서 숫자만 쏙 뺍니다.
       const rawPrice = bracketMatch[1].replace(/[^0-9]/g, '');
       currentUnitPrice = parseInt(rawPrice, 10) || 0;
     } else {
-      // 2. 괄호가 없다면, 기존 방식대로 '원' 앞의 숫자 뭉치를 찾습니다.
       const priceMatch = selectedOption.match(/([0-9,]+)\s*원/);
       if (priceMatch) {
         currentUnitPrice = parseInt(priceMatch[1].replace(/[^0-9]/g, ''), 10) || 0;
       } else {
-        // 3. 숫자나 괄호가 없으면 상품의 기본 가격을 사용합니다.
         currentUnitPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
       }
     }
   } else {
-    // 옵션 선택 전에는 기본 상품 가격 적용
     currentUnitPrice = parseInt(selectedProduct.price.toString().replace(/[^0-9]/g, ''), 10) || 0;
   }
   
-  // 최종 단가 * 구매 수량 계산
-  const calculatedTotal = currentUnitPrice * quantity;
+  return currentUnitPrice;
+}, [selectedProduct, selectedOption]);
+
+const totalPriceString = React.useMemo(() => {
+  const calculatedTotal = unitPrice * quantity;
   return `${calculatedTotal.toLocaleString()}원`;
-}, [selectedProduct, selectedOption, quantity]);
+}, [unitPrice, quantity]);
 
   const handleOrderSubmit = async (form: HTMLFormElement) => {
     setIsSubmitting(true);
@@ -627,6 +658,7 @@ const totalPriceString = React.useMemo(() => {
         selectedProduct={selectedProduct}
         setSelectedProduct={setSelectedProduct}
         totalPriceString={totalPriceString}
+        unitPrice={unitPrice}
         quantity={quantity}
         setQuantity={setQuantity}
         selectedOption={selectedOption}
@@ -652,6 +684,7 @@ const AppContent = () => {
   // 🔍 주문조회 팝업 상태 추가
   const [showOrderLookup, setShowOrderLookup] = React.useState(false);
   // ✉️ 모달창 안에서 문의 제출 처리하는 함수 (기존 Footer에 있던 로직)
+  const [showCart, setShowCart] = React.useState(false);
 
   const handleModalSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -685,6 +718,7 @@ const AppContent = () => {
         setActiveCategory={setActiveCategory} 
         onOpenContact={() => setShowContactModal(true)} 
         onOpenOrderLookup={() => setShowOrderLookup(true)}
+        onOpenCart={() => setShowCart(true)}
       />
       
       {/* 🚀 플로팅 메뉴 추가 */}
