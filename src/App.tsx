@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown, ShoppingCart } from 'lucide-react';
 import { OrderModal } from './components/OrderModal';
 import { OrderLookupModal } from './components/OrderLookupModal';
+import { CartModal } from './components/CartModal';
 import { optimizeCloudinaryUrl } from './lib/imageUtils';
 import { Terms } from './pages/Terms';
 import { BannerModal } from './components/BannerModal';
@@ -835,6 +836,17 @@ const AppContent = () => {
       {/* 🔍 주문조회 모달 */}
       {showOrderLookup && (
         <OrderLookupModal onClose={() => setShowOrderLookup(false)} />
+      )}
+
+      {/* 🛒 장바구니 모달 */}
+      {showCart && (
+        <CartModal 
+          onClose={() => setShowCart(false)} 
+          onOrderComplete={() => {
+            setShowCart(false);
+            setShowCompleteModal(true);
+          }}
+        />
       )}
     </div>
   );
