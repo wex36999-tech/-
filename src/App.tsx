@@ -136,7 +136,7 @@ const Navbar = ({
           {/* 🛒 장바구니 버튼 */}
           <button
             onClick={onOpenCart}
-            className="relative text-[13px] font-bold px-4 py-2 rounded-full border border-gray-200 text-ink-muted hover:border-ink hover:text-ink transition-all flex items-center gap-1.5"
+            className="relative h-10 text-[13px] font-bold px-4 rounded-full border border-gray-200 text-ink-muted hover:border-brand hover:bg-brand/10 hover:text-brand-dark transition-all flex items-center gap-1.5"
           >
             <ShoppingCart size={15} />
             장바구니
@@ -149,8 +149,9 @@ const Navbar = ({
           {/* 🔍 주문조회 버튼 */}
           <button
             onClick={onOpenOrderLookup}
-            className="text-[13px] font-bold px-4 py-2 rounded-full border border-gray-200 text-ink-muted hover:border-ink hover:text-ink transition-all"
+            className="h-10 text-[13px] font-bold px-4 rounded-full border border-gray-200 text-ink-muted hover:border-brand hover:bg-brand/10 hover:text-brand-dark transition-all flex items-center gap-1.5"
           >
+            <Search size={15} />
             주문조회
           </button>
         </div>
