@@ -1,9 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown, Save } from 'lucide-react';
+import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown, Save, ClipboardList, ChevronDown } from 'lucide-react';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 // 🔒 사장님이 요청하신 관리자 새 비밀번호!
 const ADMIN_PASSWORD = '0121';
+
+// 주문 인터페이스 정의
+interface OrderItem {
+  productName: string;
+  option: string;
+  quantity: number;
+  itemPrice: string;
+}
+
+interface OrderRecord {
+  id: string;
+  customerName: string;
+  phone: string;
+  address: string;
+  productName: string;
+  option: string;
+  quantity: number;
+  totalPrice: string;
+  paymentId: string;
+  createdAt: string;
+  items?: OrderItem[];
+}
 
 // 상품 인터페이스 정의 (타입 안전성 확보)
 interface Product {
@@ -82,6 +106,40 @@ const AdminPage = () => {
 
   // 💡 미니 저장 알림창(Toast) 제어 상태
   const [showToast, setShowToast] = useState(false);
+
+  // 🗂️ 탭 전환 상태 (상품 관리 / 주문 관리)
+  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+
+  // 📦 주문 목록 상태
+  const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  // 인증된 이후에만 주문 목록을 실시간으로 불러옵니다.
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as OrderRecord));
+      setOrders(list);
+      setOrdersLoading(false);
+    }, (error) => {
+      console.error('주문 목록 불러오기 실패:', error);
+      setOrdersLoading(false);
+    });
+    return unsub;
+  }, [isAuthorized]);
+
+  const filteredOrders = orders.filter(o => {
+    const q = orderSearchQuery.toLowerCase();
+    if (!q) return true;
+    return (
+      (o.customerName || '').toLowerCase().includes(q) ||
+      (o.phone || '').toLowerCase().includes(q) ||
+      (o.productName || '').toLowerCase().includes(q)
+    );
+  });
 
   // 비밀번호 검사
   const handleLogin = (e: React.FormEvent) => {
@@ -275,7 +333,7 @@ const AdminPage = () => {
       )}
 
       {/* 상단 헤더 */}
-      <div className="flex items-center justify-between mb-10 pb-4 border-b border-gray-100">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <Settings className="text-brand-dark" />
           <h1 className="text-3xl font-black">오늘도가성비 관리자</h1>
@@ -283,6 +341,18 @@ const AdminPage = () => {
         <button onClick={() => setIsAuthorized(false)} className="text-xs font-bold text-gray-400 hover:text-red-500 border border-gray-200 px-4 py-2 rounded-xl bg-white transition-all">로그아웃</button>
       </div>
 
+      {/* 🗂️ 탭 전환 버튼 */}
+      <div className="flex gap-2 bg-gray-100 p-1.5 rounded-2xl mb-8 w-fit">
+        <button onClick={() => setActiveTab('products')} className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'products' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>
+          <Package size={16} /> 상품 관리
+        </button>
+        <button onClick={() => setActiveTab('orders')} className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'orders' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>
+          <ClipboardList size={16} /> 주문 관리 {orders.length > 0 && <span className="text-brand-dark">({orders.length})</span>}
+        </button>
+      </div>
+
+      {activeTab === 'products' && (
+      <>
       {/* 등록된 상품 관리 한 축으로 넓게 재배치 */}
       <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm mb-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
@@ -412,15 +482,99 @@ const AdminPage = () => {
           </div>
         )}
       </div>
+      </>
+      )}
 
-      {/* 우측 하단 고정형 대형 저장하기 버튼 */}
-      <button 
-        onClick={handleMainSave}
-        className="fixed bottom-8 right-8 z-[150] flex items-center gap-2 bg-ink text-white hover:bg-brand hover:text-black font-black px-7 py-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 group border border-white/10"
-      >
-        <Save size={20} className="group-hover:rotate-12 transition-transform" />
-        저장하기
-      </button>
+      {/* 📦 주문 관리 탭 */}
+      {activeTab === 'orders' && (
+        <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm mb-12">
+          <div className="flex items-center gap-2 mb-6">
+            <ClipboardList size={24} className="text-gray-700" />
+            <h2 className="text-2xl font-black text-ink">
+              주문 내역 <span className="text-brand-dark text-lg ml-1">({filteredOrders.length})</span>
+            </h2>
+          </div>
+
+          <div className="relative mb-6">
+            <Search className="absolute left-4 top-3.5 text-gray-400" size={18} />
+            <input type="text" value={orderSearchQuery} onChange={e => setOrderSearchQuery(e.target.value)} className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand text-sm font-medium" placeholder="성함, 연락처, 상품명으로 검색..." />
+            {orderSearchQuery && (
+              <button onClick={() => setOrderSearchQuery('')} className="absolute right-4 top-3.5 text-gray-400 hover:text-ink"><X size={16} /></button>
+            )}
+          </div>
+
+          {ordersLoading ? (
+            <div className="text-center py-20 text-sm text-gray-400">주문 내역을 불러오는 중...</div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <ClipboardList size={32} className="mx-auto text-gray-300 mb-2" />
+              <p className="text-sm text-gray-400 font-medium">주문 내역이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredOrders.map(order => {
+                const isExpanded = expandedOrderId === order.id;
+                return (
+                  <div key={order.id} className="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
+                    <div
+                      onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                      className="p-4 flex items-center justify-between cursor-pointer gap-4"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-extrabold text-sm text-ink">{order.customerName}</p>
+                          <span className="text-[11px] text-gray-400">{order.phone}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 truncate max-w-md">{order.productName}</p>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="text-right">
+                          <p className="text-sm font-black text-brand-dark">{order.totalPrice}</p>
+                          <p className="text-[10px] text-gray-400">{new Date(order.createdAt).toLocaleString('ko-KR')}</p>
+                        </div>
+                        <ChevronDown size={16} className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-1 border-t border-gray-200/60">
+                        <p className="text-[11px] text-gray-500 mb-2"><span className="font-bold text-ink">배송지:</span> {order.address}</p>
+                        <p className="text-[11px] text-gray-500 mb-3"><span className="font-bold text-ink">결제ID:</span> {order.paymentId}</p>
+
+                        {order.items && order.items.length > 0 ? (
+                          <div className="space-y-1.5">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center justify-between bg-white p-2.5 rounded-lg text-xs">
+                                <span className="font-bold text-ink">{item.productName}{item.option ? ` (${item.option})` : ''} x{item.quantity}</span>
+                                <span className="font-bold text-brand-dark">{item.itemPrice}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="bg-white p-2.5 rounded-lg text-xs">
+                            <span className="font-bold text-ink">{order.productName}{order.option ? ` (${order.option})` : ''} x{order.quantity}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 우측 하단 고정형 대형 저장하기 버튼 (상품 관리 탭에서만 표시) */}
+      {activeTab === 'products' && (
+        <button 
+          onClick={handleMainSave}
+          className="fixed bottom-8 right-8 z-[150] flex items-center gap-2 bg-ink text-white hover:bg-brand hover:text-black font-black px-7 py-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 group border border-white/10"
+        >
+          <Save size={20} className="group-hover:rotate-12 transition-transform" />
+          저장하기
+        </button>
+      )}
 
 
       {/* 📬 팝업 1: 새 상품 등록 모달 */}
