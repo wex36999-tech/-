@@ -33,6 +33,13 @@ export interface Post {
   image: string;
 }
 
+export interface OrderItem {
+  productName: string;
+  option: string;
+  quantity: number;
+  itemPrice: string;
+}
+
 export interface Order {
   id: string;
   customerName: string;
@@ -44,6 +51,7 @@ export interface Order {
   totalPrice: string;
   paymentId: string;
   createdAt: string;
+  items?: OrderItem[];
 }
 
 export interface SiteConfig {

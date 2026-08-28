@@ -1,6 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
+import { CartProvider } from './context/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Settings, ChevronRight, Mail, Phone, MapPin, Plus, Minus, Search, ShoppingBag, ChevronDown } from 'lucide-react';
 import { OrderModal } from './components/OrderModal';
@@ -808,9 +809,11 @@ const AppContent = () => {
 export default function App() {
   return (
     <ConfigProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <CartProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </CartProvider>
     </ConfigProvider>
   );
 }
