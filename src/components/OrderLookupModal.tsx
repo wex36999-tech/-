@@ -3,6 +3,13 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { X, Search, MessageCircle } from 'lucide-react';
 
+interface OrderItem {
+  productName: string;
+  option: string;
+  quantity: number;
+  itemPrice: string;
+}
+
 interface OrderRecord {
   id: string;
   customerName: string;
@@ -13,6 +20,7 @@ interface OrderRecord {
   quantity: number;
   totalPrice: string;
   createdAt: string;
+  items?: OrderItem[];
 }
 
 // 🌟 카카오 오픈채팅 링크 (Footer에서 쓰는 것과 동일)
@@ -58,7 +66,10 @@ export const OrderLookupModal = ({ onClose }: { onClose: () => void }) => {
   // 🌟 문의하기: 주문 정보를 클립보드에 복사 + 카톡 오픈채팅 새 탭으로 열기
   const handleInquiry = async (order: OrderRecord) => {
     const formattedDate = new Date(order.createdAt).toLocaleDateString('ko-KR');
-    const inquiryText = `[주문문의]\n상품명: ${order.productName}${order.option ? `\n옵션: ${order.option}` : ''}\n주문일: ${formattedDate}\n성함: ${order.customerName}\n\n문의내용: `;
+    const productLines = order.items && order.items.length > 0
+      ? order.items.map(i => `- ${i.productName}${i.option ? ` (${i.option})` : ''} x${i.quantity}`).join('\n')
+      : `${order.productName}${order.option ? `\n옵션: ${order.option}` : ''}`;
+    const inquiryText = `[주문문의]\n${order.items ? '주문상품:\n' + productLines : '상품명: ' + productLines}\n주문일: ${formattedDate}\n성함: ${order.customerName}\n\n문의내용: `;
 
     try {
       await navigator.clipboard.writeText(inquiryText);
@@ -121,9 +132,25 @@ export const OrderLookupModal = ({ onClose }: { onClose: () => void }) => {
                   <span className="text-sm font-bold text-ink">{order.productName}</span>
                   <span className="text-[10px] text-gray-400">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</span>
                 </div>
-                {order.option && <p className="text-[11px] text-ink-muted mb-1">옵션: {order.option}</p>}
-                <p className="text-[11px] text-ink-muted mb-1">수량: {order.quantity}개</p>
-                <p className="text-sm font-black text-brand-dark mb-3">{order.totalPrice}</p>
+
+                {order.items && order.items.length > 0 ? (
+                  <div className="space-y-1.5 my-2 pl-1 border-l-2 border-gray-200">
+                    {order.items.map((item, idx) => (
+                      <div key={idx} className="pl-2 text-[11px] text-ink-muted">
+                        <span className="font-bold text-ink">{item.productName}</span>
+                        {item.option && <span> ({item.option})</span>}
+                        <span> x{item.quantity} — {item.itemPrice}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    {order.option && <p className="text-[11px] text-ink-muted mb-1">옵션: {order.option}</p>}
+                    <p className="text-[11px] text-ink-muted mb-1">수량: {order.quantity}개</p>
+                  </>
+                )}
+
+                <p className="text-sm font-black text-brand-dark mb-3 mt-1">{order.totalPrice}</p>
 
                 {/* 🌟 상품문의 버튼 */}
                 <button

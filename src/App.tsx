@@ -781,7 +781,7 @@ const AppContent = () => {
               오늘도 가성비를 이용해주셔서 감사합니다.
             </p>
             <p className="text-[11px] font-bold text-brand-dark bg-brand/10 p-3 rounded-xl border border-brand/20 mb-5 leading-relaxed break-keep">
-              🚚 배송 안내: 결제 완료 후 배송 완료까지 영업일 기준 2~5일 소요됩니다. (주말/공휴일 제외)
+              🚚 배송 안내: 결제 완료 후 배송 완료까지 영업일 기준 2~3일 소요됩니다. (주말/공휴일 제외)
             </p>
 
             {/* 🌟 CS(환불/교환) 안내 아코디언 */}
