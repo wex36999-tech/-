@@ -83,6 +83,7 @@ interface ConfigContextType {
   updatePost: (id: string, post: Post) => void;
   deletePost: (id: string) => void;
   addOrder: (order: Order) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
 }
 
 const defaultConfig: SiteConfig = {
@@ -332,8 +333,16 @@ const addOrder = async (order: Order) => {
       handleFirestoreError(error, 'create', `orders/${order.id}`);
     }
   };
+
+  const deleteOrder = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'orders', id));
+    } catch (error) {
+      handleFirestoreError(error, 'delete', `orders/${id}`);
+    }
+  };
   
-  const addPost = (post: Post) => {
+  const addPost = (post: Post) => {
     setPosts(prev => [...prev, post]);
   };
 
@@ -379,7 +388,7 @@ const addOrder = async (order: Order) => {
       config, products, posts,
       updateConfig, addProduct, updateProduct, deleteProduct,
       addPost, updatePost, deletePost,
-      addOrder
+      addOrder, deleteOrder
     }}>
       {children}
     </ConfigContext.Provider>

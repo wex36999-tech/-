@@ -52,7 +52,8 @@ const AdminPage = () => {
     updateProduct, 
     deleteProduct, 
     config, 
-    updateConfig 
+    updateConfig,
+    deleteOrder
   } = useConfig();
 
   const [passwordInput, setPasswordInput] = useState('');
@@ -542,7 +543,7 @@ const AdminPage = () => {
                         <p className="text-[11px] text-gray-500 mb-3"><span className="font-bold text-ink">결제ID:</span> {order.paymentId}</p>
 
                         {order.items && order.items.length > 0 ? (
-                          <div className="space-y-1.5">
+                          <div className="space-y-1.5 mb-3">
                             {order.items.map((item, idx) => (
                               <div key={idx} className="flex items-center justify-between bg-white p-2.5 rounded-lg text-xs">
                                 <span className="font-bold text-ink">{item.productName}{item.option ? ` (${item.option})` : ''} x{item.quantity}</span>
@@ -551,10 +552,22 @@ const AdminPage = () => {
                             ))}
                           </div>
                         ) : (
-                          <div className="bg-white p-2.5 rounded-lg text-xs">
+                          <div className="bg-white p-2.5 rounded-lg text-xs mb-3">
                             <span className="font-bold text-ink">{order.productName}{order.option ? ` (${order.option})` : ''} x{order.quantity}</span>
                           </div>
                         )}
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('이 주문 내역을 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.')) {
+                              deleteOrder(order.id);
+                            }
+                          }}
+                          className="flex items-center gap-1.5 text-red-400 hover:bg-red-50 text-xs font-bold px-3 py-2 rounded-lg transition-all"
+                        >
+                          <Trash2 size={14} /> 이 주문 내역 삭제
+                        </button>
                       </div>
                     )}
                   </div>
