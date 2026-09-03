@@ -45,8 +45,9 @@ export const BannerModal = () => {
               {/* 글씨 크기를 시원하게 키웠습니다 */}
               <h3 className="text-sm md:text-base font-black text-ink mb-1">전 품목 무료배송</h3>
               <p className="text-[11px] md:text-[13px] text-gray-500 leading-relaxed">
-                배송비 걱정 마세요.<br/>
-                오늘도 가성비는 무료입니다!
+                가격은 내리고, 배송비는 지웠습니다.<br/>
+                부담은 낮추고 만족은 채우는 알뜰 장보기,<br/>
+                지금 바로 시작하세요!
               </p>
             </div>
           </div>
