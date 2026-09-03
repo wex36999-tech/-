@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown, Save, ClipboardList, ChevronDown, FileText, Printer } from 'lucide-react';
+import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown, Save, ClipboardList, ChevronDown, FileText, Printer, Download } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -84,7 +86,24 @@ const InvoiceGenerator = () => {
 
   const [year, month, day] = date.split('-');
 
+  const invoiceRef = useRef<HTMLDivElement>(null);
+
   const handlePrint = () => window.print();
+
+  const handleDownloadPdf = async () => {
+    if (!invoiceRef.current) return;
+    const canvas = await html2canvas(invoiceRef.current, {
+      scale: 2, // 고화질로 캡처
+      backgroundColor: '#ffffff',
+    });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgWidth = pageWidth - 20;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 10, 15, imgWidth, imgHeight);
+    pdf.save(`거래명세표_${serial}.pdf`);
+  };
 
   return (
     <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm mb-12">
@@ -103,9 +122,14 @@ const InvoiceGenerator = () => {
             <FileText size={24} className="text-gray-700" />
             <h2 className="text-2xl font-black text-ink">거래명세표 발급</h2>
           </div>
-          <button onClick={handlePrint} className="flex items-center gap-1.5 bg-ink text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-brand hover:text-ink transition-all">
-            <Printer size={16} /> 인쇄 / PDF 저장
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={handleDownloadPdf} className="flex items-center gap-1.5 bg-ink text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-brand hover:text-ink transition-all">
+              <Download size={16} /> PDF 저장
+            </button>
+            <button onClick={handlePrint} className="hidden md:flex items-center gap-1.5 bg-gray-100 text-gray-500 px-5 py-3 rounded-2xl font-bold text-sm hover:bg-gray-200 transition-all">
+              <Printer size={16} /> 바로 인쇄 (PC 전용)
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
@@ -151,8 +175,9 @@ const InvoiceGenerator = () => {
       </div>
 
       {/* 🖨️ 실제로 인쇄되는 문서 영역 */}
-      <div id="invoice-printable" style={{ fontFamily: "'Malgun Gothic', sans-serif", color: '#000', fontSize: '9pt' }}>
-        <div style={{ maxWidth: 820, margin: '0 auto', border: '2px solid #0000ff', padding: 8, background: '#fff' }}>
+      <div style={{ overflowX: 'auto', paddingBottom: 8 }}>
+        <div id="invoice-printable" ref={invoiceRef} style={{ fontFamily: "'Malgun Gothic', sans-serif", color: '#000', fontSize: '9.5pt', width: 820 }}>
+        <div style={{ width: 820, border: '2.5px solid #0000ff', padding: 10, background: '#fff' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 5 }}>
             <tbody>
               <tr>
@@ -257,6 +282,7 @@ const InvoiceGenerator = () => {
               </tr>
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>
