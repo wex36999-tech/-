@@ -46,7 +46,7 @@ export const BannerModal = () => {
               <h3 className="text-sm md:text-base font-black text-ink mb-1">전 품목 무료배송</h3>
               <p className="text-[11px] md:text-[13px] text-gray-500 leading-relaxed">
                 가격은 내리고, 배송비는 지웠습니다.<br/>
-                부담은 낮추고 만족은 채우는 알뜰 장보기,<br/>
+                부담은 낮추고 만족은 채우고 알뜰하게!<br/>
                 지금 바로 시작하세요!
               </p>
             </div>
