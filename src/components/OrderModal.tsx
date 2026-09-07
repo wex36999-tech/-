@@ -47,10 +47,47 @@ export const OrderModal = ({
       setIsDetailView(false); // 상품이 바뀌거나 모달이 닫힐 때 상세 보기 모드를 무조건 해제
     };
   }, [selectedProduct]);
+  // 🌟 카카오페이 결제 후 리다이렉트되어 돌아왔을 때, URL의 결제 결과를 확인하고 처리
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentId = urlParams.get('paymentId');
+    const errorCode = urlParams.get('code');
+
+    if (!paymentId) return; // 결제 리다이렉트로 돌아온 게 아니면 아무것도 안 함
+
+    const pendingOrderRaw = sessionStorage.getItem('pendingOrder');
+
+    if (errorCode) {
+      // 결제 실패 또는 취소
+      alert(`결제 실패: ${urlParams.get('message') || '알 수 없는 오류가 발생했습니다.'}`);
+      sessionStorage.removeItem('pendingOrder');
+      window.history.replaceState({}, '', window.location.pathname); // 주소창 URL 파라미터 정리
+      return;
+    }
+
+    if (pendingOrderRaw) {
+      // 결제 성공 -> 저장해둔 폼 데이터로 가상 form을 만들어 기존 주문 전송 로직 실행
+      const pendingOrder = JSON.parse(pendingOrderRaw);
+      const virtualForm = document.createElement('form');
+      Object.entries(pendingOrder).forEach(([key, value]) => {
+        if (key === 'paymentId' || key === 'productName' || key === 'option' || key === 'quantity' || key === 'totalPrice') return;
+        const input = document.createElement('input');
+        input.name = key;
+        input.value = value as string;
+        virtualForm.appendChild(input);
+      });
+
+      handleOrderSubmit(virtualForm);
+      sessionStorage.removeItem('pendingOrder');
+    }
+
+    window.history.replaceState({}, '', window.location.pathname); // 주소창 URL 파라미터 정리
+  }, []);
 
   const handlePortOnePay = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget; // 🌟 결제창 대기 중 이벤트가 만료되기 전에 폼을 미리 저장
+    const formData = new FormData(form);
 
     const PortOne = (window as any).PortOne;
 
@@ -60,29 +97,34 @@ export const OrderModal = ({
     }
 
     const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
+    const paymentId = `ord_${new Date().getTime()}`;
 
-    const response = await PortOne.requestPayment({
+    // 🌟 결제 폼 데이터를 미리 저장 (모바일 리다이렉트 후에도 정보가 유지되도록)
+    sessionStorage.setItem('pendingOrder', JSON.stringify({
+      paymentId,
+      성함: formData.get('성함'),
+      연락처: formData.get('연락처'),
+      주소: formData.get('주소'),
+      productName: selectedProduct?.name || '',
+      option: selectedOption || '',
+      quantity,
+      totalPrice: totalPriceString,
+    }));
+
+    await PortOne.requestPayment({
       storeId: "store-bbb8e621-99c0-4a9f-b62c-8e7670dcb6a6",
       channelKey: "channel-key-786f2a24-0f8d-4f16-9ac4-58ba24b7a598",
-      paymentId: `ord_${new Date().getTime()}`,
+      paymentId,
       orderName: selectedProduct?.name || "상품 결제",
       totalAmount: calculatedAmount,
       currency: "CURRENCY_KRW",
       payMethod: "EASY_PAY",
       easyPay: {
-        easyPayProvider: "EASY_PAY_PROVIDER_KAKAOPAY", // 🌟 카카오페이 지정
+        easyPayProvider: "EASY_PAY_PROVIDER_KAKAOPAY",
       },
+      redirectUrl: window.location.origin + window.location.pathname, // 🌟 결제 후 이 주소로 돌아옴
     });
-
-    if (response.code !== undefined) {
-      // 결제 실패 (또는 사용자 취소)
-      console.error("포트원 결제 상세 에러:", response);
-      alert(`결제 실패: ${response.message || "알 수 없는 오류가 발생했습니다."}`);
-      return;
-    }
-
-    // 결제 성공 -> 기존 주문 전송 로직 실행 (이벤트 대신 form을 넘김)
-    handleOrderSubmit(form);
+    // 🌟 redirectUrl 설정 시 여기 이후 코드는 실행되지 않고, 결제 완료 시 페이지가 새로고침됩니다.
   };
 
   if (!selectedProduct) return null;
