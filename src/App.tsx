@@ -329,7 +329,7 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
     'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg',
     'https://res.cloudinary.com/dzehtppiz/image/upload/v1784616337/%EC%A0%95%ED%92%88%EC%88%98%EB%B0%95%EC%8D%B8_cpsozh.jpg',
     'https://res.cloudinary.com/dzehtppiz/image/upload/v1784718437/1_4_q2d5eb.jpg',
-    'https://res.cloudinary.com/dzehtppiz/image/upload/v1780477844/%EB%8F%8C%EB%AF%B8%EB%82%98%EB%A6%AC%EC%8D%B8_ikbx6m.jpg',
+    'https://res.cloudinary.com/dzehtppiz/image/upload/v1779795266/%ED%96%87%EC%96%91%ED%8C%8C_meitng.jpg',
   ];
   const [currentBanner, setCurrentBanner] = React.useState(0);
 
