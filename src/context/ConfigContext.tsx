@@ -55,20 +55,22 @@ export interface Order {
 }
 
 export interface SiteConfig {
-  name: string;
-  slogan: string;
-  description: string;
-  heroImage: string;
-  contactEmail: string;
-  phone: string;
-  address: string;
-  businessNumber: string;
-  representative: string;
-  categories: string[];
-  sns: {
-    instagram: string;
-    kakao: string;
-  };
+  name: string;
+  slogan: string;
+  description: string;
+  heroImage: string;
+  contactEmail: string;
+  phone: string;
+  address: string;
+  businessNumber: string;
+  representative: string;
+  categories: string[];
+  sns: {
+    instagram: string;
+    kakao: string;
+  };
+  announcementImage?: string;   // 🌟 공지 팝업 이미지 URL
+  announcementActive?: boolean; // 🌟 공지 팝업 노출 여부
 }
 
 interface ConfigContextType {
@@ -87,20 +89,22 @@ interface ConfigContextType {
 }
 
 const defaultConfig: SiteConfig = {
-  name: '오늘도가성비',
-  slogan: '프리미엄 가성비의 새로운 기준',
-  description: '우리는 일상의 가치를 높이는 최고의 상품을 합리적인 가격에 제공합니다.',
-  heroImage: 'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg',
-  contactEmail: 'wex369@naver.com',
-  phone: '02-1234-5678',
-  address: '서울특별시 중랑구 중랑천로 200.',
-  businessNumber: '123-45-67890',
-  representative: '홍길동',
-  categories: ['주방용품', '생활가전', '농산물', '수산물', '명절선물', '기타'],
-  sns: {
-    instagram: 'https://instagram.com',
-    kakao: 'https://pf.kakao.com',
-  },
+  name: '오늘도가성비',
+  slogan: '프리미엄 가성비의 새로운 기준',
+  description: '우리는 일상의 가치를 높이는 최고의 상품을 합리적인 가격에 제공합니다.',
+  heroImage: 'https://res.cloudinary.com/dzehtppiz/image/upload/v1777891454/%EB%86%8D%EC%82%B0%EB%AC%BC%EC%82%AC%EC%A7%841_ki6ftr.jpg',
+  contactEmail: 'wex369@naver.com',
+  phone: '02-1234-5678',
+  address: '서울특별시 중랑구 중랑천로 200.',
+  businessNumber: '123-45-67890',
+  representative: '홍길동',
+  categories: ['주방용품', '생활가전', '농산물', '수산물', '명절선물', '기타'],
+  sns: {
+    instagram: 'https://instagram.com',
+    kakao: 'https://pf.kakao.com',
+  },
+  announcementImage: '',       // 🌟 공지 팝업 기본값 (비어있으면 팝업 안 뜸)
+  announcementActive: false,   // 🌟 기본은 꺼짐
 };
 
 const defaultProducts: Product[] = [

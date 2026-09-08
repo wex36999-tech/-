@@ -106,11 +106,14 @@ const AdminPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // 💡 미니 저장 알림창(Toast) 제어 상태
+    // 💡 미니 저장 알림창(Toast) 제어 상태
   const [showToast, setShowToast] = useState(false);
 
-  // 🗂️ 탭 전환 상태 (상품 관리 / 주문 관리)
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'invoice'>('products');
+  // 📢 공지 팝업 관리용 입력 상태 (config 값으로 초기화, 저장 버튼 눌러야 반영)
+  const [announcementImageInput, setAnnouncementImageInput] = useState(config.announcementImage || '');
+
+  // 🗂️ 탭 전환 상태 (상품 관리 / 주문 관리 / 거래명세표 / 공지 관리)
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'invoice' | 'announcement'>('products');
 
   // 📦 주문 목록 상태
   const [orders, setOrders] = useState<OrderRecord[]>([]);
@@ -272,6 +275,25 @@ const AdminPage = () => {
     setShowToast(true);
   };
 
+  // 📢 공지 팝업 설정 저장 함수
+  const handleSaveAnnouncement = async () => {
+    await updateConfig({ announcementImage: announcementImageInput });
+    setShowToast(true);
+  };
+
+  // 📢 공지 팝업 노출 여부 토글 함수 (체크박스 클릭 시 바로 반영)
+  const toggleAnnouncementActive = async () => {
+    await updateConfig({ announcementActive: !config.announcementActive });
+  };
+
+  // 📢 공지 이미지 삭제 함수
+  const handleDeleteAnnouncement = async () => {
+    if (window.confirm('공지 이미지를 삭제하시겠습니까?')) {
+      await updateConfig({ announcementImage: '', announcementActive: false });
+      setAnnouncementImageInput('');
+    }
+  };
+
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -343,8 +365,8 @@ const AdminPage = () => {
         <button onClick={() => setIsAuthorized(false)} className="text-xs font-bold text-gray-400 hover:text-red-500 border border-gray-200 px-4 py-2 rounded-xl bg-white transition-all">로그아웃</button>
       </div>
 
-      {/* 🗂️ 탭 전환 버튼 */}
-      <div className="flex gap-2 bg-gray-100 p-1.5 rounded-2xl mb-8 w-fit">
+            {/* 🗂️ 탭 전환 버튼 */}
+      <div className="flex gap-2 bg-gray-100 p-1.5 rounded-2xl mb-8 w-fit flex-wrap">
         <button onClick={() => setActiveTab('products')} className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'products' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>
           <Package size={16} /> 상품 관리
         </button>
@@ -353,6 +375,9 @@ const AdminPage = () => {
         </button>
         <button onClick={() => setActiveTab('invoice')} className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'invoice' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>
           <FileText size={16} /> 거래명세표 발급
+        </button>
+        <button onClick={() => setActiveTab('announcement')} className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'announcement' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>
+          <ClipboardList size={16} /> 공지 관리
         </button>
       </div>
 
@@ -582,8 +607,54 @@ const AdminPage = () => {
         </div>
       )}
 
-      {/* 🧾 거래명세표 발급 탭 */}
+            {/* 🧾 거래명세표 발급 탭 */}
       {activeTab === 'invoice' && <InvoiceGenerator />}
+
+      {/* 📢 공지 관리 탭 */}
+      {activeTab === 'announcement' && (
+        <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm mb-12 max-w-xl">
+          <h2 className="text-2xl font-black text-ink mb-6">공지 팝업 관리</h2>
+
+          <div className="mb-4">
+            <label className="text-xs font-bold text-gray-400 ml-1">공지 이미지 URL (Cloudinary)</label>
+            <input
+              value={announcementImageInput}
+              onChange={e => setAnnouncementImageInput(e.target.value)}
+              className="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-brand"
+              placeholder="https://res.cloudinary.com/..."
+            />
+          </div>
+
+          {announcementImageInput && (
+            <div className="mb-4">
+              <p className="text-xs font-bold text-gray-400 mb-2 ml-1">미리보기</p>
+              <img src={announcementImageInput} alt="공지 미리보기" className="w-full max-w-xs rounded-2xl border border-gray-100" />
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 p-1 mb-6">
+            <input
+              type="checkbox"
+              id="announcementActive"
+              checked={config.announcementActive || false}
+              onChange={toggleAnnouncementActive}
+              className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300"
+            />
+            <label htmlFor="announcementActive" className="text-sm font-bold text-ink select-none cursor-pointer">
+              사이트에 공지 팝업 노출하기
+            </label>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={handleSaveAnnouncement} className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">
+              저장하기
+            </button>
+            <button onClick={handleDeleteAnnouncement} className="px-6 py-4 bg-red-50 text-red-500 font-extrabold rounded-2xl hover:bg-red-100 transition-all">
+              삭제
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 우측 하단 고정형 대형 저장하기 버튼 (상품 관리 탭에서만 표시) */}
       {activeTab === 'products' && (

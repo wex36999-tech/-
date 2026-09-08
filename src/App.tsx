@@ -11,6 +11,7 @@ import { CartModal } from './components/CartModal';
 import { optimizeCloudinaryUrl } from './lib/imageUtils';
 import { Terms } from './pages/Terms';
 import { BannerModal } from './components/BannerModal';
+import { AnnouncementModal } from './components/AnnouncementModal';
 import { FloatingMenu } from './components/FloatingMenu';
 
 // --- 관리자 페이지 임포트 ---
@@ -711,6 +712,7 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-white font-pretendard text-ink">
+      <AnnouncementModal />
       <BannerModal />
       <MetadataManager />
       <ScrollToTop />
