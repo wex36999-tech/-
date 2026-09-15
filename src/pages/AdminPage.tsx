@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown, Save, ClipboardList, ChevronDown, FileText } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { Plus, Trash2, Package, Settings, Lock, Edit3, Eye, EyeOff, FolderPlus, X, Search, ArrowUp, ArrowDown, Save, ClipboardList, ChevronDown, FileText, Printer, CheckCircle2 } from 'lucide-react';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { InvoiceGenerator } from '../components/InvoiceGenerator';
+import { InvoiceGenerator, InvoiceInitialData } from '../components/InvoiceGenerator';
 
 // 🔒 사장님이 요청하신 관리자 새 비밀번호!
 const ADMIN_PASSWORD = '0121';
@@ -28,6 +28,7 @@ interface OrderRecord {
   paymentId: string;
   createdAt: string;
   items?: OrderItem[];
+  confirmed?: boolean;
 }
 
 // 상품 인터페이스 정의 (타입 안전성 확보)
@@ -120,6 +121,8 @@ const AdminPage = () => {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [invoiceInitialData, setInvoiceInitialData] = useState<InvoiceInitialData | null>(null);
+  const [invoiceKey, setInvoiceKey] = useState('manual');
 
   // 인증된 이후에만 주문 목록을 실시간으로 불러옵니다.
   useEffect(() => {
@@ -145,6 +148,48 @@ const AdminPage = () => {
       (o.productName || '').toLowerCase().includes(q)
     );
   });
+
+  // 🔴 아직 "확인" 안 한 주문 개수 (탭 위 뱃지용)
+  const unconfirmedOrderCount = orders.filter(o => !o.confirmed).length;
+
+  // ✅ 주문을 확인 처리
+  const confirmOrder = async (id: string) => {
+    try {
+      await updateDoc(doc(db, 'orders', id), { confirmed: true });
+    } catch (error) {
+      console.error('주문 확인 처리 실패:', error);
+    }
+  };
+
+  // 🧾 주문 정보를 거래명세표 탭에 자동으로 채워서 이동
+  const handleInvoiceFromOrder = (order: OrderRecord) => {
+    const parseNum = (s: string) => Number((s || '').replace(/[^0-9]/g, '')) || 0;
+
+    const items = order.items && order.items.length > 0
+      ? order.items.map(it => {
+          const total = parseNum(it.itemPrice);
+          const qty = it.quantity || 1;
+          return {
+            name: it.option ? `${it.productName} (${it.option})` : it.productName,
+            qty,
+            price: qty > 0 ? Math.round(total / qty) : total,
+          };
+        })
+      : [{
+          name: order.option ? `${order.productName} (${order.option})` : order.productName,
+          qty: order.quantity || 1,
+          price: order.quantity > 0 ? Math.round(parseNum(order.totalPrice) / order.quantity) : parseNum(order.totalPrice),
+        }];
+
+    setInvoiceInitialData({
+      customerName: order.customerName,
+      customerAddress: order.address,
+      date: order.createdAt ? order.createdAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
+      items,
+    });
+    setInvoiceKey(order.id);
+    setActiveTab('invoice');
+  };
 
   // 비밀번호 검사
   const handleLogin = (e: React.FormEvent) => {
@@ -371,7 +416,7 @@ const AdminPage = () => {
           <Package size={16} /> 상품 관리
         </button>
         <button onClick={() => setActiveTab('orders')} className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'orders' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>
-          <ClipboardList size={16} /> 주문 관리 {orders.length > 0 && <span className="text-brand-dark">({orders.length})</span>}
+          <ClipboardList size={16} /> 주문 관리 {unconfirmedOrderCount > 0 && <span className="text-red-500">({unconfirmedOrderCount})</span>}
         </button>
         <button onClick={() => setActiveTab('invoice')} className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${activeTab === 'invoice' ? 'bg-white shadow-sm text-ink' : 'text-gray-400 hover:text-gray-600'}`}>
           <FileText size={16} /> 거래명세표 발급
@@ -552,7 +597,10 @@ const AdminPage = () => {
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-extrabold text-sm text-ink">{order.customerName}</p>
+                          <p className="font-extrabold text-sm text-ink flex items-center gap-1.5">
+                            {!order.confirmed && <span className="w-2 h-2 bg-red-500 rounded-full inline-block flex-shrink-0"></span>}
+                            {order.customerName}
+                          </p>
                           <span className="text-[11px] text-gray-400">{order.phone}</span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1 truncate max-w-md">{order.productName}</p>
@@ -586,17 +634,33 @@ const AdminPage = () => {
                           </div>
                         )}
 
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (window.confirm('이 주문 내역을 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.')) {
-                              deleteOrder(order.id);
-                            }
-                          }}
-                          className="flex items-center gap-1.5 text-red-400 hover:bg-red-50 text-xs font-bold px-3 py-2 rounded-lg transition-all"
-                        >
-                          <Trash2 size={14} /> 이 주문 내역 삭제
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleInvoiceFromOrder(order); }}
+                            className="flex items-center gap-1.5 text-ink bg-white border border-gray-200 hover:border-ink text-xs font-bold px-3 py-2 rounded-lg transition-all"
+                          >
+                            <Printer size={14} /> 명세표 출력
+                          </button>
+                          {!order.confirmed && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); confirmOrder(order.id); }}
+                              className="flex items-center gap-1.5 text-brand-dark bg-brand/10 hover:bg-brand/20 text-xs font-bold px-3 py-2 rounded-lg transition-all"
+                            >
+                              <CheckCircle2 size={14} /> 주문 확인
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm('이 주문 내역을 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.')) {
+                                deleteOrder(order.id);
+                              }
+                            }}
+                            className="flex items-center gap-1.5 text-red-400 hover:bg-red-50 text-xs font-bold px-3 py-2 rounded-lg transition-all"
+                          >
+                            <Trash2 size={14} /> 이 주문 내역 삭제
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -608,7 +672,7 @@ const AdminPage = () => {
       )}
 
             {/* 🧾 거래명세표 발급 탭 */}
-      {activeTab === 'invoice' && <InvoiceGenerator />}
+      {activeTab === 'invoice' && <InvoiceGenerator key={invoiceKey} initialData={invoiceInitialData || undefined} />}
 
       {/* 📢 공지 관리 탭 */}
       {activeTab === 'announcement' && (

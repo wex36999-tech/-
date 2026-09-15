@@ -10,13 +10,24 @@ interface InvoiceItem {
   price: number;
 }
 
-export const InvoiceGenerator = () => {
+export interface InvoiceInitialData {
+  customerName?: string;
+  customerAddress?: string;
+  date?: string; // yyyy-mm-dd
+  items?: { name: string; qty: number; price: number }[];
+}
+
+export const InvoiceGenerator = ({ initialData }: { initialData?: InvoiceInitialData }) => {
   const [serial, setSerial] = useState(`${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-01`);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(initialData?.date || new Date().toISOString().slice(0, 10));
   const [customerCompany, setCustomerCompany] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
-  const [items, setItems] = useState<InvoiceItem[]>([{ id: 1, name: '', qty: 1, price: 0 }]);
+  const [customerName, setCustomerName] = useState(initialData?.customerName || '');
+  const [customerAddress, setCustomerAddress] = useState(initialData?.customerAddress || '');
+  const [items, setItems] = useState<InvoiceItem[]>(
+    initialData?.items && initialData.items.length > 0
+      ? initialData.items.map((it, idx) => ({ id: idx + 1, name: it.name, qty: it.qty, price: it.price }))
+      : [{ id: 1, name: '', qty: 1, price: 0 }]
+  );
 
   const addItem = () => {
     setItems(prev => [...prev, { id: Date.now(), name: '', qty: 1, price: 0 }]);
