@@ -472,44 +472,60 @@ const totalPriceString = React.useMemo(() => {
   return `${calculatedTotal.toLocaleString()}원`;
 }, [unitPrice, quantity]);
 
-  const handleOrderSubmit = async (form: HTMLFormElement) => {
+  const handleOrderSubmit = async (
+    form: HTMLFormElement,
+    snapshot?: { paymentId: string; productName: string; option: string; quantity: number; totalPrice: string }
+  ) => {
     setIsSubmitting(true);
     const formData = new FormData(form);
-    
-    try {
-      const response = await fetch("https://formspree.io/f/xaqaervl", {
-        method: "POST",
-        body: formData,
-        headers: { 'Accept': 'application/json' }
-      });
-      if (response.ok) {
-        // 🌟 Firestore에 주문 정보 저장 (Formspree 전송과 별개로 병행 저장)
-        try {
-          await addOrder({
-            id: `ord_${new Date().getTime()}`,
-            customerName: formData.get('성함')?.toString() || '',
-            phone: formData.get('연락처')?.toString() || '',
-            address: formData.get('주소')?.toString() || '',
-            productName: selectedProduct?.name || '',
-            option: selectedOption || '',
-            quantity: quantity,
-            totalPrice: totalPriceString,
-            paymentId: `ord_${new Date().getTime()}`,
-            createdAt: new Date().toISOString(),
-          });
-        } catch (orderError) {
-          console.error('주문 저장 실패:', orderError);
-          // 🌟 저장 실패해도 고객 경험(완료 화면)은 그대로 진행 (Formspree로는 이미 전달됐으므로)
-        }
 
-        setSelectedProduct(null);
-        setIsOrderView(false);
-        setShowCompleteModal(true);
-      } else {
-        alert("주문 전송에 실패했습니다. 다시 시도해주세요.");
+    // 🌟 리다이렉트로 돌아온 경우 화면 상태(selectedProduct 등)가 이미 초기화되어 있으므로,
+    //    결제 시작 전에 저장해둔 스냅샷을 우선 사용. 스냅샷이 없으면(리다이렉트 없이 바로 처리되는 경우) 기존처럼 화면 상태 사용.
+    const orderProductName = snapshot?.productName ?? (selectedProduct?.name || '');
+    const orderOption = snapshot?.option ?? (selectedOption || '');
+    const orderQuantity = snapshot?.quantity ?? quantity;
+    const orderTotalPrice = snapshot?.totalPrice ?? totalPriceString;
+    const orderPaymentId = snapshot?.paymentId ?? `ord_${new Date().getTime()}`;
+
+    // 메일에도 상품 정보가 같이 오도록 추가
+    formData.append('상품명', orderProductName);
+    formData.append('옵션', orderOption);
+    formData.append('수량', String(orderQuantity));
+    formData.append('결제금액', orderTotalPrice);
+
+    try {
+      // 1) 주문 저장(Firestore)을 먼저 — 폼프리가 실패해도 주문 기록은 남도록
+      try {
+        await addOrder({
+          id: orderPaymentId,
+          customerName: formData.get('성함')?.toString() || '',
+          phone: formData.get('연락처')?.toString() || '',
+          address: formData.get('주소')?.toString() || '',
+          productName: orderProductName,
+          option: orderOption,
+          quantity: orderQuantity,
+          totalPrice: orderTotalPrice,
+          paymentId: orderPaymentId,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (orderError) {
+        console.error('주문 저장 실패:', orderError);
       }
-    } catch (error) {
-      alert("네트워크 오류가 발생했습니다.");
+
+      // 2) 메일 알림(폼프리) — 실패해도 결제/주문은 이미 완료된 상태이므로 사용자 경험은 그대로 진행
+      try {
+        await fetch("https://formspree.io/f/xaqaervl", {
+          method: "POST",
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+      } catch (mailError) {
+        console.error('메일 전송 실패:', mailError);
+      }
+
+      setSelectedProduct(null);
+      setIsOrderView(false);
+      setShowCompleteModal(true);
     } finally {
       setIsSubmitting(false);
     }

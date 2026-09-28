@@ -66,7 +66,7 @@ export const OrderModal = ({
     }
 
     if (pendingOrderRaw) {
-      // 결제 성공 -> 저장해둔 폼 데이터로 가상 form을 만들어 기존 주문 전송 로직 실행
+      // 결제 성공 -> 성함/연락처/주소는 가상 form으로, 상품 정보는 저장해둔 스냅샷을 그대로 전달
       const pendingOrder = JSON.parse(pendingOrderRaw);
       const virtualForm = document.createElement('form');
       Object.entries(pendingOrder).forEach(([key, value]) => {
@@ -77,7 +77,13 @@ export const OrderModal = ({
         virtualForm.appendChild(input);
       });
 
-      handleOrderSubmit(virtualForm);
+      handleOrderSubmit(virtualForm, {
+        paymentId: pendingOrder.paymentId,
+        productName: pendingOrder.productName,
+        option: pendingOrder.option,
+        quantity: pendingOrder.quantity,
+        totalPrice: pendingOrder.totalPrice,
+      });
       sessionStorage.removeItem('pendingOrder');
     }
 
@@ -96,16 +102,20 @@ export const OrderModal = ({
       return;
     }
 
-    const calculatedAmount = parseInt(totalPriceString?.replace(/[^0-9]/g, ''), 10) || 10000;
+    const calculatedAmount = parseInt((totalPriceString || '').replace(/[^0-9]/g, ''), 10) || 0;
+    if (!selectedProduct?.name || calculatedAmount <= 0) {
+      alert("주문 금액을 확인할 수 없습니다. 다시 시도해 주세요.");
+      return;
+    }
     const paymentId = `ord_${new Date().getTime()}`;
 
-    // 🌟 결제 폼 데이터를 미리 저장 (모바일 리다이렉트 후에도 정보가 유지되도록)
+    // 🌟 결제 폼 데이터 + 상품 스냅샷을 미리 저장 (모바일 리다이렉트 후에도 정보가 유지되도록)
     sessionStorage.setItem('pendingOrder', JSON.stringify({
       paymentId,
       성함: formData.get('성함'),
       연락처: formData.get('연락처'),
       주소: formData.get('주소'),
-      productName: selectedProduct?.name || '',
+      productName: selectedProduct.name,
       option: selectedOption || '',
       quantity,
       totalPrice: totalPriceString,
@@ -115,7 +125,7 @@ export const OrderModal = ({
       storeId: "store-bbb8e621-99c0-4a9f-b62c-8e7670dcb6a6",
       channelKey: "channel-key-786f2a24-0f8d-4f16-9ac4-58ba24b7a598",
       paymentId,
-      orderName: selectedProduct?.name || "상품 결제",
+      orderName: selectedProduct.name,
       totalAmount: calculatedAmount,
       currency: "CURRENCY_KRW",
       payMethod: "EASY_PAY",
