@@ -399,8 +399,9 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
     const filtered = products.filter(p => {
       const matchesCategory = activeCategory === '전체' || p.category === activeCategory;
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const isNotSoldOut = !p.isSoldOut; // 🌟 품절 상품은 여기서 제외합니다.
-      return matchesCategory && matchesSearch && isNotSoldOut;
+      // 🌟 품절이 아니거나, 품절이어도 "계속 노출" 체크된 상품은 목록에 남김 (장바구니/구매는 기존처럼 막힘)
+      const shouldShow = !p.isSoldOut || p.showWhenSoldOut;
+      return matchesCategory && matchesSearch && shouldShow;
     });
 
     // 2. 관리자 페이지에서 설정한 "카테고리 순서"를 먼저 적용하고,

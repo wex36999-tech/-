@@ -14,15 +14,16 @@ import { db, auth } from '../lib/firebase';
 import { signInAnonymously } from 'firebase/auth';
 
 export interface Product {
-  id: string;
-  name: string;
-  price: string;
-  description: string;
-  image: string;
-  category: string;
-  options: string;
-  isSoldOut?: boolean;
-isSpecialOffer?: boolean;
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  image: string;
+  category: string;
+  options: string;
+  isSoldOut?: boolean;
+  isSpecialOffer?: boolean;
+  showWhenSoldOut?: boolean;
 }
 
 export interface Post {

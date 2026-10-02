@@ -43,6 +43,7 @@ interface Product {
   options: string;
   isSoldOut: boolean;
   isSpecialOffer?: boolean;
+  showWhenSoldOut?: boolean;
   order?: number;
 }
 
@@ -96,10 +97,11 @@ const AdminPage = () => {
     description: '',
     image: '',
     detailImages: '',
-    category: categories[0]?.name || '농산물', // 🌟 객체가 아니라 이름(문자열)만 사용
+    category: categories[0]?.name || '농산물',
     options: '', 
     isSoldOut: false,
     isSpecialOffer: false,
+    showWhenSoldOut: false,
     order: 0
   });
 
@@ -272,12 +274,13 @@ const AdminPage = () => {
       price: '', 
       description: '', 
       image: '', 
-      detailImages: '', // detailImages도 초기화 추가
+      detailImages: '',
       category: categories[0]?.name || '농산물', 
       options: '',
       isSoldOut: false,
       isSpecialOffer: false,
-      order: 0 // order 초기화 추가
+      showWhenSoldOut: false,
+      order: 0
     });
     setShowAddModal(false);
     alert('상품이 구글 데이터베이스에 안전하게 등록되었습니다!');
@@ -359,7 +362,8 @@ const AdminPage = () => {
   const filteredProducts = products.filter((p: any) => {
   const matchesCategory = selectedFilter === '전체' || p.category === selectedFilter;
   const matchesSearch = (p.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-  const matchesSoldOut = !showOnlySoldOut || p.isSoldOut; // 🌟 체크하면 품절만, 아니면 전체
+  // 🌟 체크 안 하면 품절 상품은 숨기고(판매중만), 체크하면 품절 상품만 보여줌
+  const matchesSoldOut = showOnlySoldOut ? p.isSoldOut : !p.isSoldOut;
   return matchesCategory && matchesSearch && matchesSoldOut;
 });
 
@@ -789,6 +793,10 @@ const AdminPage = () => {
   <input type="checkbox" id="newSpecialOffer" checked={newProduct.isSpecialOffer} onChange={e => setNewProduct({...newProduct, isSpecialOffer: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
   <label htmlFor="newSpecialOffer" className="text-sm font-bold text-ink select-none cursor-pointer">특가할인 상품으로 표시하기</label>
 </div>
+<div className="flex items-center gap-2 p-1">
+  <input type="checkbox" id="newShowWhenSoldOut" checked={newProduct.showWhenSoldOut} onChange={e => setNewProduct({...newProduct, showWhenSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+  <label htmlFor="newShowWhenSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">품절되어도 사이트에 계속 노출하기</label>
+</div>
 <div className="flex gap-3 pt-2">
           <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
           <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">등록하기</button>
@@ -876,6 +884,10 @@ const AdminPage = () => {
                 <div className="flex items-center gap-2 p-1">
   <input type="checkbox" id="editSoldOut" checked={editingProduct.isSoldOut || false} onChange={e => setEditingProduct({...editingProduct, isSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
   <label htmlFor="editSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">이 상품 품절 처리하기</label>
+</div>
+<div className="flex items-center gap-2 p-1">
+  <input type="checkbox" id="editShowWhenSoldOut" checked={editingProduct.showWhenSoldOut || false} onChange={e => setEditingProduct({...editingProduct, showWhenSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+  <label htmlFor="editShowWhenSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">품절되어도 사이트에 계속 노출하기</label>
 </div>
 <div className="flex items-center gap-2 p-1">
   <input type="checkbox" id="editSpecialOffer" checked={editingProduct.isSpecialOffer || false} onChange={e => setEditingProduct({...editingProduct, isSpecialOffer: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
