@@ -283,15 +283,15 @@ const Footer = () => {
 
 {/* 🔍 2열 최적화가 적용된 상품 카드 컴포넌트 */}
 const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (p: any) => void }) => (
-  <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative rounded-[16px]">
+  <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
 
-    {/* 🌟 배지: 사진 틀 바깥, 카드 왼쪽 위 모서리에 반쯤 걸쳐서 표시 */}
+    {/* 🌟 배지: 카드 왼쪽 위 모서리에 딱 붙는 작은 탭 (카드 안쪽에서만 표시) */}
     {product.isWeeklyDeal ? (
-      <div className="absolute -top-2.5 -left-2.5 z-30 bg-orange-500 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
+      <div className="absolute top-0 left-0 z-30 bg-orange-500 text-white text-[10px] md:text-[11px] font-black px-2 py-0.5 rounded-tl-[16px] rounded-br-lg">
         🔥 이번주 특가
       </div>
     ) : product.isSpecialOffer && (
-      <div className="absolute -top-2.5 -left-2.5 z-30 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
+      <div className="absolute top-0 left-0 z-30 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2 py-0.5 rounded-tl-[16px] rounded-br-lg">
         할인
       </div>
     )}
