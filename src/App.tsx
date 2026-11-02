@@ -293,7 +293,7 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
         </div>
       ) : product.isSpecialOffer && (
         <div className="absolute top-2 left-2 z-20 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
-          특가할인
+          할인
         </div>
       )}
 
