@@ -286,8 +286,12 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
   <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
     <div className="w-full aspect-square bg-gray-50/50 rounded-t-[16px] overflow-hidden relative">
       
-      {/* 🌟 왼쪽 위 고급스러운 다크 레드 특가할인 배지 */}
-      {product.isSpecialOffer && (
+      {/* 🌟 왼쪽 위 배지: 이번주 특가(주황)가 있으면 우선, 없으면 특가할인(다크 레드) */}
+      {product.isWeeklyDeal ? (
+        <div className="absolute top-2 left-2 z-20 bg-orange-500 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
+          🔥 이번주 특가
+        </div>
+      ) : product.isSpecialOffer && (
         <div className="absolute top-2 left-2 z-20 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
           특가할인
         </div>
@@ -393,10 +397,21 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
     setSelectedOption('');
   }, [selectedProduct]);
 
+  // 🔥 이번주 특가 영역은 "전체" 보기 + 검색 안 할 때만 맨 위에 표시
+  const showWeeklySection = activeCategory === '전체' && !searchQuery.trim();
+
+  const weeklyDeals = React.useMemo(() => {
+    return products
+      .filter((p: any) => p.isWeeklyDeal && (!p.isSoldOut || p.showWhenSoldOut))
+      .sort((a: any, b: any) => (Number(a.order) || 0) - (Number(b.order) || 0));
+  }, [products]);
+
   // 🔍 [카테고리 + 실시간 검색 + 품절상품 숨기기] 결합된 필터링 로직
   const filteredProducts = React.useMemo(() => {
     // 1. 먼저 카테고리와 검색어, 그리고 품절 여부로 필터링합니다.
     const filtered = products.filter(p => {
+      // 이번주 특가 영역이 보이는 중이면 일반 목록에서는 중복으로 빼줍니다.
+      if (showWeeklySection && p.isWeeklyDeal) return false;
       const matchesCategory = activeCategory === '전체' || p.category === activeCategory;
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
       // 🌟 품절이 아니거나, 품절이어도 "계속 노출" 체크된 상품은 목록에 남김 (장바구니/구매는 기존처럼 막힘)
@@ -404,8 +419,7 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
       return matchesCategory && matchesSearch && shouldShow;
     });
 
-    // 2. 관리자 페이지에서 설정한 "카테고리 순서"를 먼저 적용하고,
-    //    같은 카테고리 안에서는 "특가할인" 상품을 앞에, 그다음 개별 order 값으로 정렬합니다.
+    // 2. 카테고리 순서 → 이번주 특가 → 특가할인 → 개별 order 값 순으로 정렬합니다.
     return filtered.sort((a: any, b: any) => {
       const categoryList = config.categories || [];
       const catIndexA = categoryList.findIndex((c: any) => (typeof c === 'string' ? c : c.name) === a.category);
@@ -413,6 +427,11 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
       const safeIndexA = catIndexA === -1 ? 999 : catIndexA;
       const safeIndexB = catIndexB === -1 ? 999 : catIndexB;
       if (safeIndexA !== safeIndexB) return safeIndexA - safeIndexB;
+
+      const isAWeekly = !!a.isWeeklyDeal;
+      const isBWeekly = !!b.isWeeklyDeal;
+      if (isAWeekly && !isBWeekly) return -1;
+      if (!isAWeekly && isBWeekly) return 1;
 
       const isAEvent = a.isSpecialOffer;
       const isBEvent = b.isSpecialOffer;
@@ -423,7 +442,7 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
       const orderB = Number(b.order) || 0;
       return orderA - orderB;
     });
-  }, [products, activeCategory, searchQuery]);
+  }, [products, activeCategory, searchQuery, showWeeklySection]);
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -602,6 +621,29 @@ const totalPriceString = React.useMemo(() => {
               )}
             </div>
           </div>
+
+          {/* 🔥 이번주 특가 영역 */}
+          {showWeeklySection && weeklyDeals.length > 0 && (
+            <div className="mb-10 md:mb-14">
+              <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-4 px-1">🔥 이번주 특가</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 p-3 md:p-4 rounded-3xl bg-orange-50/70 border border-orange-100">
+                {weeklyDeals.map((product: any) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onClick={(p) => {
+                      if (p.isSoldOut) {
+                        alert("죄송합니다. 현재 품절된 상품입니다.");
+                        return;
+                      }
+                      setSelectedProduct(p);
+                      setIsOrderView(false);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           <h2 className="text-xl md:text-2xl font-black text-gray-800 mb-6 px-1">상품목록</h2>
 
