@@ -283,19 +283,20 @@ const Footer = () => {
 
 {/* 🔍 2열 최적화가 적용된 상품 카드 컴포넌트 */}
 const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (p: any) => void }) => (
-  <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative overflow-hidden rounded-[16px]">
+  <div onClick={() => onClick(product)} className="product-card group bg-white/60 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md cursor-pointer relative rounded-[16px]">
+
+    {/* 🌟 배지: 사진 틀 바깥, 카드 왼쪽 위 모서리에 반쯤 걸쳐서 표시 */}
+    {product.isWeeklyDeal ? (
+      <div className="absolute -top-2.5 -left-2.5 z-30 bg-orange-500 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
+        🔥 이번주 특가
+      </div>
+    ) : product.isSpecialOffer && (
+      <div className="absolute -top-2.5 -left-2.5 z-30 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
+        할인
+      </div>
+    )}
+
     <div className="w-full aspect-square bg-gray-50/50 rounded-t-[16px] overflow-hidden relative">
-      
-      {/* 🌟 왼쪽 위 배지: 이번주 특가(주황)가 있으면 우선, 없으면 특가할인(다크 레드) */}
-      {product.isWeeklyDeal ? (
-        <div className="absolute top-2 left-2 z-20 bg-orange-500 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
-          🔥 이번주 특가
-        </div>
-      ) : product.isSpecialOffer && (
-        <div className="absolute top-2 left-2 z-20 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2.5 py-1 rounded-lg shadow-md border border-white/20">
-          할인
-        </div>
-      )}
 
       <img src={optimizeCloudinaryUrl(product.image, 500)} alt={product.name} loading="lazy" className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${product.isSoldOut ? 'grayscale-[0.5] blur-[1px]' : ''}`} referrerPolicy="no-referrer" />
       
