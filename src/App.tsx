@@ -291,7 +291,7 @@ const ProductCard = React.memo(({ product, onClick }: { product: any, onClick: (
         🔥 이번주 특가
       </div>
     ) : product.isSpecialOffer && (
-      <div className="absolute top-0 left-0 z-30 bg-red-700 text-white text-[10px] md:text-[11px] font-black px-2 py-0.5 rounded-tl-[16px] rounded-br-lg">
+      <div className="absolute top-0 left-0 z-30 bg-red-700 text-white text-[14px] md:text-[17px] font-black px-3.5 py-1.5 md:px-4 md:py-2 rounded-tl-[16px] rounded-br-xl shadow-md">
         할인
       </div>
     )}
