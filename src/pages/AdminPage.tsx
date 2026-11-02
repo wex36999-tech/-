@@ -44,6 +44,7 @@ interface Product {
   isSoldOut: boolean;
   isSpecialOffer?: boolean;
   showWhenSoldOut?: boolean;
+  isWeeklyDeal?: boolean;
   order?: number;
 }
 
@@ -102,6 +103,7 @@ const AdminPage = () => {
     isSoldOut: false,
     isSpecialOffer: false,
     showWhenSoldOut: false,
+    isWeeklyDeal: false,
     order: 0
   });
 
@@ -280,6 +282,7 @@ const AdminPage = () => {
       isSoldOut: false,
       isSpecialOffer: false,
       showWhenSoldOut: false,
+      isWeeklyDeal: false,
       order: 0
     });
     setShowAddModal(false);
@@ -797,6 +800,10 @@ const AdminPage = () => {
   <input type="checkbox" id="newShowWhenSoldOut" checked={newProduct.showWhenSoldOut} onChange={e => setNewProduct({...newProduct, showWhenSoldOut: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
   <label htmlFor="newShowWhenSoldOut" className="text-sm font-bold text-ink select-none cursor-pointer">품절되어도 사이트에 계속 노출하기</label>
 </div>
+<div className="flex items-center gap-2 p-1">
+  <input type="checkbox" id="newWeeklyDeal" checked={newProduct.isWeeklyDeal} onChange={e => setNewProduct({...newProduct, isWeeklyDeal: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+  <label htmlFor="newWeeklyDeal" className="text-sm font-bold text-ink select-none cursor-pointer">🔥 이번주 특가로 맨 위에 노출하기</label>
+</div>
 <div className="flex gap-3 pt-2">
           <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>
           <button type="submit" className="flex-1 py-4 bg-brand text-black font-extrabold rounded-2xl hover:shadow-lg transition-all">등록하기</button>
@@ -892,6 +899,10 @@ const AdminPage = () => {
 <div className="flex items-center gap-2 p-1">
   <input type="checkbox" id="editSpecialOffer" checked={editingProduct.isSpecialOffer || false} onChange={e => setEditingProduct({...editingProduct, isSpecialOffer: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
   <label htmlFor="editSpecialOffer" className="text-sm font-bold text-ink select-none cursor-pointer">특가할인 상품으로 표시하기</label>
+</div>
+<div className="flex items-center gap-2 p-1">
+  <input type="checkbox" id="editWeeklyDeal" checked={editingProduct.isWeeklyDeal || false} onChange={e => setEditingProduct({...editingProduct, isWeeklyDeal: e.target.checked})} className="w-4 h-4 rounded text-brand focus:ring-brand border-gray-300" />
+  <label htmlFor="editWeeklyDeal" className="text-sm font-bold text-ink select-none cursor-pointer">🔥 이번주 특가로 맨 위에 노출하기</label>
 </div>
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 font-extrabold rounded-2xl hover:bg-gray-200 transition-all">취소</button>

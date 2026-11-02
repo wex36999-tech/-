@@ -24,6 +24,7 @@ export interface Product {
   isSoldOut?: boolean;
   isSpecialOffer?: boolean;
   showWhenSoldOut?: boolean;
+  isWeeklyDeal?: boolean;
 }
 
 export interface Post {
