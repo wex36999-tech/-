@@ -373,6 +373,23 @@ const HomePage = ({ activeCategory, setActiveCategory, setShowCompleteModal }: {
   const [currentPage, setCurrentPage] = React.useState(1);
   const productsPerPage = 12;
 
+  // 📄 페이지 버튼으로 넘길 때만, 새 페이지가 그려진 "뒤에" 상품 목록 맨 위로 부드럽게 스크롤
+  const shouldScrollRef = React.useRef(false);
+  const goToPage = (page: number) => {
+    if (page === currentPage) return;
+    shouldScrollRef.current = true;
+    setCurrentPage(page);
+  };
+  React.useLayoutEffect(() => {
+    if (!shouldScrollRef.current) return;
+    shouldScrollRef.current = false;
+    const el = document.getElementById('products');
+    if (!el) return;
+    // 고정 상단바 높이만큼 보정해서 상품목록 제목이 가려지지 않게
+    const top = el.getBoundingClientRect().top + window.scrollY - 90;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  }, [currentPage]);
+
   // 🌟 상품 데이터가 아직 로딩 중일 때는 스피너를 보여주고, 계속 기다립니다.
   // (더미 상품 대신, 실제 데이터가 올 때까지 로딩 화면만 표시)
   if (!products || products.length === 0) {
@@ -679,10 +696,7 @@ const totalPriceString = React.useMemo(() => {
             <div className="flex justify-center items-center gap-2 mt-12">
               <button 
                 disabled={currentPage === 1}
-                onClick={() => {
-                  setCurrentPage(prev => prev - 1);
-                  document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => goToPage(currentPage - 1)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${currentPage === 1 ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-ink hover:bg-gray-50'}`}
               >
                 이전
@@ -691,10 +705,7 @@ const totalPriceString = React.useMemo(() => {
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
                 <button
                   key={pageNum}
-                  onClick={() => {
-                    setCurrentPage(pageNum);
-                    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                  onClick={() => goToPage(pageNum)}
                   className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${currentPage === pageNum ? 'bg-brand text-black font-black shadow-sm' : 'bg-white text-gray-400 hover:text-ink'}`}
                 >
                   {pageNum}
@@ -703,10 +714,7 @@ const totalPriceString = React.useMemo(() => {
 
               <button 
                 disabled={currentPage === totalPages}
-                onClick={() => {
-                  setCurrentPage(prev => prev + 1);
-                  document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => goToPage(currentPage + 1)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${currentPage === totalPages ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-ink hover:bg-gray-50'}`}
               >
                 다음
