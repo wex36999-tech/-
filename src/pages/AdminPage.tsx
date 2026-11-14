@@ -76,6 +76,8 @@ const AdminPage = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryOrder, setNewCategoryOrder] = useState<number>(categories.length + 1);
+  const [renamingCategory, setRenamingCategory] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
   
   // 🔍 상품 실시간 검색어 상태
   const [searchQuery, setSearchQuery] = useState('');
@@ -217,6 +219,38 @@ const AdminPage = () => {
     const updatedCategories = [...categories, { name: newCategoryName.trim(), order: categories.length + 1 }];
     await updateConfig({ categories: updatedCategories });
     setNewCategoryName('');
+  };
+
+  // ✏️ 카테고리 이름 변경 (해당 카테고리의 상품들도 함께 변경)
+  const handleRenameCategory = async (oldName: string) => {
+    const newName = renameValue.trim();
+    if (!newName || newName === oldName) {
+      setRenamingCategory(null);
+      return;
+    }
+    if (categories.some(c => c.name === newName)) {
+      alert('이미 존재하는 카테고리 이름입니다.');
+      return;
+    }
+    const affected = products.filter((p: any) => p.category === oldName);
+    if (!window.confirm(`'${oldName}' → '${newName}'(으)로 변경할까요?\n이 카테고리의 상품 ${affected.length}개도 함께 변경됩니다.`)) return;
+
+    try {
+      // 1) 이 카테고리 상품들의 카테고리 이름을 먼저 변경
+      for (const p of affected) {
+        await updateProduct(p.id, { ...p, category: newName });
+      }
+      // 2) 카테고리 목록의 이름 변경 (순서는 그대로 유지)
+      const updatedCategories = categories.map(c => (c.name === oldName ? { ...c, name: newName } : c));
+      await updateConfig({ categories: updatedCategories });
+
+      if (selectedFilter === oldName) setSelectedFilter(newName);
+      if (newProduct.category === oldName) setNewProduct({ ...newProduct, category: newName });
+      setRenamingCategory(null);
+    } catch (error) {
+      console.error('카테고리 이름 변경 실패:', error);
+      alert('이름 변경 중 오류가 발생했습니다. 새로고침 후 상품 카테고리가 제대로 바뀌었는지 확인해 주세요.');
+    }
   };
 
   const handleDropCategory = async (catName: string) => {
@@ -827,13 +861,24 @@ const AdminPage = () => {
             </form>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {categories.map((cat, index) => (
-                <div key={cat.name} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
-                  <span className="truncate max-w-[140px]">{cat.name}</span>
-                  <div className="flex items-center gap-1">
-                    <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로"><ArrowUp size={15} /></button>
-                    <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로"><ArrowDown size={15} /></button>
-                    <button type="button" onClick={() => handleDropCategory(cat.name)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
-                  </div>
+                <div key={cat.name} className="p-2.5 bg-gray-50 rounded-xl text-sm font-bold">
+                  {renamingCategory === cat.name ? (
+                    <div className="flex items-center gap-2">
+                      <input autoFocus value={renameValue} onChange={e => setRenameValue(e.target.value)} className="flex-1 min-w-0 p-2 bg-white rounded-lg outline-none focus:ring-2 focus:ring-brand text-sm" />
+                      <button type="button" onClick={() => handleRenameCategory(cat.name)} className="px-3 py-2 bg-brand text-black text-xs font-bold rounded-lg">저장</button>
+                      <button type="button" onClick={() => setRenamingCategory(null)} className="px-1 py-2 text-gray-400 text-xs">취소</button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <span className="truncate max-w-[140px]">{cat.name}</span>
+                      <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => { setRenamingCategory(cat.name); setRenameValue(cat.name); }} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 transition-all" title="이름 변경"><Edit3 size={15} /></button>
+                        <button type="button" onClick={() => handleMoveCategory(index, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="위로"><ArrowUp size={15} /></button>
+                        <button type="button" onClick={() => handleMoveCategory(index, 'down')} disabled={index === categories.length - 1} className="p-1 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-20 transition-all" title="아래로"><ArrowDown size={15} /></button>
+                        <button type="button" onClick={() => handleDropCategory(cat.name)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 ml-1 transition-all">삭제</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
